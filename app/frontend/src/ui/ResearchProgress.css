@@ -1,0 +1,22 @@
+.research-progress {
+  margin-block: 12px;
+  padding: 12px 14px;
+  border-inline-start: 3px solid var(--accent);
+  background: var(--accent-soft);
+  min-width: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.research-progress header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.research-progress p { margin-block: 8px; line-height: 1.6; }
+.research-progress small { color: var(--muted); }
+.research-progress .research-question { max-height: 4.8em; overflow: auto; }
+.research-progress-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.research-progress-actions:empty { display: none; }
+.research-progress-actions > button:not(.button) { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: transparent; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; color: var(--text); }
+.research-progress-actions .button { margin-top: 8px; padding: 6px 10px; font-size: 12px; min-height: 32px; }
+.research-connection { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 6px 0; color: var(--muted); font-size: 12px; width: 100%; }
+.research-connection small { color: var(--muted); }
+.research-connection-spinner { animation: research-spin 1s linear infinite; }
+@keyframes research-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .research-connection-spinner { animation: none; } }

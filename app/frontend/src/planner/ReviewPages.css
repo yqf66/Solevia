@@ -1,0 +1,89 @@
+.planner-stage-page.route-review-page, .planner-stage-page.plan-review-page { grid-template-columns: minmax(0, 1fr) 290px; }
+:is(.route-review-page,.plan-review-page) .planner-stage-header .stage-heading h1 { white-space: normal; font-size: 24px; }
+:is(.route-review-page,.plan-review-page) .planner-stage-header { grid-template-columns: minmax(0, 1fr) minmax(260px, 1fr); gap: 24px; }
+.route-review-page .route-main, .plan-review-page .relative-plan-main { width: min(820px, calc(100% - 64px)); padding-top: 30px; }
+.route-review-page .route-title-row h2 { font-size: 23px; margin: 0 0 10px; }
+.route-review-page .route-summary { font-size: 16px; line-height: 1.9; margin-block: 26px; }
+.route-review-page .route-stage-list { gap: 28px; }
+.route-review-page .route-stage-card { grid-template-columns: 28px minmax(0, 1fr); gap: 16px; }
+.route-review-page .route-number { width: 28px; height: 28px; margin-top: 4px; font-size: 12px; font-weight: 500; background: var(--surface-blue); color: var(--accent); }
+.route-review-page .route-stage-card h2 { font-size: 18px; line-height: 1.5; }
+.route-review-page .route-stage-card p, .route-review-page .route-stage-card li { font-size: 14px; line-height: 1.85; }
+.route-review-page .route-stage-card h3 { font-size: 13px; font-weight: 500; color: var(--muted); }
+.route-review-page .route-stage-card .panel { padding: 24px; border: 0; border-radius: 16px; background: var(--surface-subtle); }
+.route-review-page .route-options button { border-color: transparent; padding: 18px; }
+.route-review-page .route-options button.recommended { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.plan-review-page .relative-plan-intro { gap: 24px; }
+.plan-review-page .relative-plan-intro h2 { font-size: 23px; line-height: 1.6; }
+.plan-review-page .relative-plan-intro p { font-size: 14px; line-height: 1.85; }
+.plan-review-page .relative-plan-stats { background: var(--surface-subtle); border: 0; border-radius: 16px; padding: 20px 24px; }
+.plan-review-page .relative-plan-stats > div { background: transparent; }
+.plan-review-page .relative-plan-stats strong { font-size: 19px; font-weight: 500; }
+.plan-review-page .relative-plan-stats span, .plan-review-page .plan-side-notes p, .plan-review-page .confirmed-row p { font-size: 13px; line-height: 1.8; }
+.plan-review-page .plan-outline-list { gap: 14px; }
+.plan-review-page .plan-outline-card { border-radius: 16px; overflow: hidden; border-color: var(--line); transition: border-color 180ms, background 180ms; }
+.plan-review-page .plan-outline-card:hover { border-color: var(--control-line); }
+.plan-review-page .plan-outline-card[open] { background: var(--surface-subtle); }
+.plan-review-page .plan-outline-card > summary { padding: 22px; gap: 18px; }
+.plan-review-page .plan-outline-card > summary h3 { font-size: 16px; font-weight: 500; }
+.plan-review-page .plan-view-switch { border: 0; padding: 4px; border-radius: 12px; background: var(--surface-subtle); }
+.plan-review-page .plan-view-switch button { min-height: 36px; border: 0; border-radius: 8px; font-size: 12px; }
+.plan-review-page .plan-view-switch button.selected { background: var(--surface); color: var(--text); box-shadow: var(--shadow-control); }
+:is(.route-review-page,.plan-review-page) .route-discussion-dock { margin: 0 20px 16px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-control); }
+:is(.route-review-page,.plan-review-page) .route-discussion-bar { padding: 14px 18px; }
+:is(.route-review-page,.plan-review-page) .discussion-message { font-size: 14px; line-height: 1.8; }
+@media (max-width: 1200px) {
+  :is(.route-review-page,.plan-review-page) .planner-stage-header { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  :is(.route-review-page,.plan-review-page) .planner-stage-header .stepper { width: min(460px, 100%); }
+}
+@media (max-width: 1100px) {
+  .planner-stage-page.route-review-page, .planner-stage-page.plan-review-page { grid-template-columns: minmax(0, 1fr); }
+  :is(.route-review-page,.plan-review-page) .stage-context-column { display: none; }
+}
+@media (max-width: 540px) {
+  .plan-review-page .pending-adjustment-notice { flex-direction: column; align-items: stretch; gap: 16px; }
+  .plan-review-page .pending-adjustment-notice .button { align-self: start; }
+  .route-review-page .route-main, .plan-review-page .relative-plan-main { width: calc(100% - 40px); padding-top: 24px; }
+  :is(.route-review-page,.plan-review-page) .planner-stage-header .stage-heading h1 { font-size: 21px; }
+  .route-review-page .route-stage-card { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .route-review-page .route-stage-card .panel { padding: 20px; }
+  .plan-review-page .relative-plan-stats { padding: 18px; }
+  :is(.route-review-page,.plan-review-page) .route-discussion-dock { margin: 0 12px 12px; }
+}
+
+/* Readable plans: larger evidence and a compact sequence of real stages. */
+.route-review-page .route-main, .plan-review-page .relative-plan-main { width: min(900px, calc(100% - 56px)); padding-top: 28px; }
+.route-review-page .route-title-row h2, .plan-review-page .relative-plan-intro h2 { font-size: 28px; font-weight: 600; line-height: 1.5; }
+.route-review-page .route-summary { padding: 24px; margin: 22px 0 28px; border-radius: 20px; background: var(--surface-blue); font-size: 18px; line-height: 1.75; }
+.route-review-page .route-stage-card { padding: 0 0 28px; border-bottom: 1px solid var(--line); gap: 18px; }
+.route-review-page .route-stage-card:last-child { border-bottom: 0; }
+.route-review-page .route-stage-card h2 { font-size: 21px; }
+.route-review-page .route-stage-card :is(p,li) { font-size: 16px; line-height: 1.75; }
+.route-review-page .route-stage-card h3 { font-size: 15px; margin-top: 18px; }
+.route-review-page .route-number { width: 30px; height: 30px; font-size: 14px; }
+.plan-review-page .relative-plan-intro p { font-size: 16px; line-height: 1.75; }
+.plan-review-page .relative-plan-stats { border-radius: 20px; padding: 24px; background: var(--surface-lavender); }
+.plan-review-page .relative-plan-stats > div { border: 0; padding: 4px 16px; border-right: 1px solid var(--line); border-radius: 0; }
+.plan-review-page .relative-plan-stats > div:last-child { border-right: 0; }
+.plan-review-page .relative-plan-stats strong { font-size: 22px; font-weight: 400; }
+.plan-review-page .relative-plan-stats span, .plan-review-page .plan-side-notes p { font-size: 15px; }
+.plan-review-page .capacity-segment-list li { font-size: 15px; padding: 16px; line-height: 1.65; }
+.plan-review-page .plan-outline-card > summary { padding: 22px; }
+.plan-review-page .plan-outline-card > summary h3 { font-size: 19px; }
+.plan-review-page .plan-outline-card > summary :is(p,small) { font-size: 14px; }
+.plan-review-page .plan-day-card > summary > strong { font-size: 16px; }
+.plan-review-page .plan-day-card > summary :is(span,small) { font-size: 14px; }
+.plan-review-page .plan-day-detail li :is(p,small,span) { font-size: 14px; line-height: 1.7; }
+.plan-review-page :is(.plan-day-evidence,.plan-day-dont) { font-size: 14px; padding: 16px; }
+.plan-review-page .plan-view-switch button { font-size: 14px; }
+.plan-review-page .pending-adjustment-notice { padding: 24px; border: 0; border-radius: 20px; background: var(--surface-blue); }
+.plan-review-page .pending-adjustment-notice h3 { font-size: 21px; }
+.plan-review-page .pending-adjustment-notice p { font-size: 14px; line-height: 1.7; }
+:is(.route-review-page,.plan-review-page) .discussion-message { font-size: 16px; line-height: 1.75; }
+@media (max-width: 640px) {
+  .route-review-page .route-main, .plan-review-page .relative-plan-main { width: calc(100% - 40px); }
+  .route-review-page .route-summary { padding: 20px; font-size: 16px; }
+  .route-review-page .route-title-row h2, .plan-review-page .relative-plan-intro h2 { font-size: 24px; }
+  .plan-review-page .relative-plan-stats { gap: 16px; }
+  .plan-review-page .relative-plan-stats > div { padding: 0; border-right: 0; }
+}

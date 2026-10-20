@@ -1,0 +1,25 @@
+/* The brief is a focus sheet; tasks are checklists; the side rail is a toolkit. */
+.today-page .today-hero { position: relative; border-radius: 8px 24px 24px 8px; padding: 28px; }
+.today-page .today-hero::before { content: ''; position: absolute; top: 26px; bottom: 26px; left: 0; width: 3px; border-radius: 0 3px 3px 0; background: color-mix(in srgb, var(--accent) 55%, transparent); }
+.today-page .today-hero .today-brief-meta h2 { color: var(--accent); font-size: 15px; }
+.today-page .task-card { border-radius: 8px 20px 20px 8px; background: var(--surface-subtle); border: 1px solid transparent; }
+.today-page .task-card.in_progress { background: var(--surface-blue); border-color: color-mix(in srgb, var(--accent) 22%, transparent); }
+.today-page .task-card.completed { background: var(--surface); border-color: var(--line); }
+.today-page .task-status-mark, .today-page .task-order { border-radius: 6px; background: var(--surface); color: var(--accent); }
+.today-page .task-card.completed .task-status-mark { color: var(--positive); background: var(--surface-mint); }
+.today-page .task-card footer { padding-top: 16px; border-top: 1px solid var(--line); }
+.today-page .fixed-calendar-tool { padding: 0 0 18px; border-radius: 8px 8px 18px 18px; overflow: hidden; }
+.today-page .fixed-calendar-tool > header { padding: 14px 12px; border-bottom: 1px solid var(--line); background: var(--surface-lavender); }
+.today-page .fixed-calendar-tool .calendar-widget { padding: 12px 10px 0; }
+.today-page .collapsible-tool { border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
+.today-page .collapsible-tool > summary { padding: 16px 12px; }
+.today-page .collapsible-tool[open] > summary { border-bottom: 1px solid var(--line); }
+.today-page .fixed-execution-card header small { padding: 6px 10px; border-radius: 5px; background: var(--surface-lavender); color: var(--text); font-variant-numeric: tabular-nums; }
+.progress-page .progress-overview { border-radius: 8px; padding-block: 23px; background: var(--surface-subtle); }
+.progress-page .progress-section { border: 0; border-radius: 0; padding: 24px 0; border-top: 1px solid var(--line); background: transparent; }
+.progress-page .progress-section > header { padding-bottom: 16px; }
+.progress-page .progress-feedback-list article { padding: 20px; border: 0; border-radius: 5px 18px 18px 18px; background: var(--surface-lavender); }
+.progress-page .feedback-treatment { background: var(--surface); border-radius: 6px; }
+.progress-page .revisions-section { margin-top: 28px; }
+.progress-page .revision-list article { border-radius: 6px; }
+@media (max-width: 640px) { .today-page .today-hero { padding: 22px; } .progress-page .progress-section { padding-inline: 0; } }

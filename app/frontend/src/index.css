@@ -1,0 +1,15 @@
+@import './styles/tokens.css';
+@import './styles/fonts.css';
+:root { font-family: var(--font); font-size: 16px; color: var(--text); background: var(--ground); font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; line-height: 1.6; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100dvh; }
+button, textarea, input, select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+h1, h2, h3 { color: var(--text); }
+h1 { margin: 0 0 10px; font-size: clamp(24px, 2.2vw, 30px); font-weight: 600; line-height: 1.35; letter-spacing: -.025em; }
+h2 { margin: 0; font-size: 18px; font-weight: 600; line-height: 1.4; }
+p { margin: 0; line-height: 1.65; }
+::selection { color: var(--text); background: var(--accent-soft); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+input, select, textarea, time { font-variant-numeric: tabular-nums; }

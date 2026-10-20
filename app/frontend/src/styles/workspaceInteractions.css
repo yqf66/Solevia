@@ -1,0 +1,27 @@
+/* One writing surface: tools and send action belong inside the input well. */
+.composer-input-well { display: grid; gap: 8px; padding: 14px; border: 1px solid var(--control-line); border-radius: 18px; background: var(--surface); transition: border-color 160ms, box-shadow 160ms; }
+.composer-input-well:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent); }
+.clarification-page .reply-form > .composer-input-well { grid-column: 1 / -1; }
+.clarification-page .composer-shell { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.clarification-page .composer-hint { padding-inline: 14px; margin-bottom: 8px; font-size: 13px; }
+.clarification-page .composer-input-well { box-shadow: var(--shadow-control); }
+.clarification-page .composer-input-well:focus-within { border-color: color-mix(in srgb, var(--accent) 55%, var(--control-line)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent), var(--shadow-control); }
+.composer-input-well > textarea, .clarification-page .composer-input-well .reply-input { width: 100%; min-height: 66px; max-height: 180px; margin: 0; padding: 0 2px; border: 0; border-radius: 0; background: transparent; color: var(--text); box-shadow: none; font: inherit; font-size: 16px; line-height: 1.7; resize: vertical; }
+.composer-input-well > textarea:focus-visible { outline: none; box-shadow: none; }
+.composer-input-well .discussion-composer-toolbar { display: flex; width: 100%; align-items: center; gap: 8px; margin: 0; }
+.composer-input-well .discussion-composer-toolbar > button[type="submit"] { margin-left: auto; flex: 0 0 auto; min-width: 68px; max-width: 70%; min-height: 40px; padding: 9px 14px; font-size: 14px; border-radius: 12px; }
+.execution-discussion-compose { margin: 10px 14px 6px; padding: 14px; grid-template-columns: 34px 34px minmax(0,1fr) 40px; gap: 8px; border: 1px solid var(--control-line); border-radius: 18px; box-shadow: none; }
+.execution-discussion-compose:focus-within { border-color: var(--accent); }
+.execution-discussion-compose > textarea { grid-column: 1 / -1; padding: 0 2px; min-height: 64px; border: 0; border-radius: 0; background: transparent; font-size: 16px; line-height: 1.7; box-shadow: none; }
+.execution-discussion-compose > textarea:focus-visible { outline: none; box-shadow: none; }
+.execution-discussion-compose > button[type="submit"] { grid-column: 4; width: 40px; height: 40px; border-radius: 12px; }
+.execution-discussion-compose > .material-attachment-hint, .execution-discussion-compose > .material-attachment-strip { grid-column: 1 / -1; }
+.confirmation-dialog p { color: var(--muted); font-size: 16px; line-height: 1.75; }
+.sidebar .plan-row.current-plan { border-radius: 12px; background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.sidebar .plan-row.current-plan .current-plan-link { background: transparent; color: var(--accent); }
+.sidebar .plan-row.current-plan .plan-link strong { font-weight: 600; color: var(--accent); }
+.sidebar .plan-row.current-plan .plan-link span { color: var(--accent); }
+.sidebar .plan-row.current-plan .plan-actions > summary { color: var(--accent); }
+.sidebar .plan-list > .plan-link.active { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); color: var(--accent); border-radius: 12px; }
+.inline-dialog-backdrop { background: rgb(29 37 63 / 25%); backdrop-filter: blur(5px); }
+@media (prefers-reduced-motion: reduce) { .composer-input-well { transition: none; } }

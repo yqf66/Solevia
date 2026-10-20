@@ -1,0 +1,42 @@
+/* Shared interaction states. Feature selectors own geometry. */
+.button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 10px 16px; border: 1px solid var(--line); border-radius: var(--radius-control); color: var(--text); background: var(--surface); box-shadow: var(--shadow-control); font-size: 13px; font-weight: 500; line-height: 1.4; text-decoration: none; transition: transform var(--motion-duration) var(--motion-ease), box-shadow var(--motion-duration), background var(--motion-duration); }
+.button:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--control-line); box-shadow: var(--shadow-hover); }
+.button:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
+.button.primary { color: var(--accent-contrast); border-color: transparent; background: var(--accent); }
+.button.primary:hover:not(:disabled) { border-color: transparent; background: var(--accent-hover); }
+.button:disabled { color: var(--muted); border-color: var(--line); background: var(--surface-subtle); box-shadow: none; opacity: 1; cursor: not-allowed; }
+.button.danger-button { color: var(--danger); border-color: var(--line); background: var(--surface); }
+.text-button { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0; border: 0; color: var(--accent); background: transparent; font-size: 13px; font-weight: 500; }
+.text-button:hover { text-decoration: underline; text-underline-offset: 4px; }
+.icon-button { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-control); color: var(--muted); background: var(--surface); }
+.icon-button:hover { color: var(--text); background: var(--surface-subtle); }
+.mobile-menu-toggle { width: 40px; height: 40px; }
+textarea, input:not([type="checkbox"]):not([type="radio"]), select { color: var(--text); background-color: var(--surface); }
+textarea::placeholder, input::placeholder { color: var(--muted); opacity: 1; }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
+.form-error { color: var(--danger); font-size: 13px; }
+.inline-dialog { border: 0; border-radius: var(--radius-panel); background: var(--surface); box-shadow: var(--shadow-float); }
+.inline-dialog-backdrop { background: rgb(28 35 58 / 28%); backdrop-filter: none; }
+.route-discussion-dock, .composer-shell { background: var(--surface); backdrop-filter: none; }
+.route-options button, .candidate-pool-options label { border-radius: 14px; background: var(--surface-subtle); transition: transform var(--motion-duration), box-shadow var(--motion-duration); }
+.route-options button:hover, .candidate-pool-options label:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.route-options button.recommended, .candidate-pool-options label.selected { background: var(--accent-soft); }
+.light-segment { gap: 4px; width: fit-content; padding: 4px; border-radius: var(--radius-control); background: var(--surface-subtle); }
+.light-segment button, .light-segment button + button { border: 0; border-radius: var(--radius-small); color: var(--muted); background: transparent; }
+.light-segment button[aria-pressed="true"] { color: var(--text); background: var(--surface); box-shadow: var(--shadow-control); }
+.light-page input, .light-page select, .light-page textarea { border-color: var(--control-line); border-radius: var(--radius-control); color: var(--text); background: var(--surface); }
+.light-task-editor { padding: 20px; border-color: var(--line); border-radius: var(--radius-panel); background: var(--surface-subtle); }
+.light-header { border-color: var(--line); }
+.light-plan-list a, .light-execution-task, .light-execution-list { border-color: var(--line); color: var(--text); }
+.light-plan-list span, .light-page summary, .light-execution-content p, .light-execution-content small { color: var(--muted); }
+.user-settings-panel { border: 0; border-radius: var(--radius-panel); box-shadow: var(--shadow-float); }
+@media (max-width: 1100px) { .user-settings-panel { position: fixed; inset: auto 16px 16px; width: auto; max-height: calc(100dvh - 80px); } }
+@media (max-width: 540px) {
+  .button, .text-button { min-height: 44px; }
+  .inline-dialog { max-width: calc(100vw - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; }
+  .light-task-editor { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: 0ms !important; }
+  .button:hover:not(:disabled), .today-task-card:hover, .today-task-schedule:hover, .route-options button:hover, .candidate-pool-options label:hover { transform: none; }
+}

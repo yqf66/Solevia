@@ -1,0 +1,18 @@
+.planning-guide { align-self: start; padding: 8px 8px 24px; border-radius: 0; background: transparent; }
+.planning-guide .planning-guide-mark { width: 56px; height: 56px; margin: 0 0 24px; color: var(--accent); }
+.planning-guide h2 { white-space: pre-line; font-family: var(--font-editorial); font-size: 26px; line-height: 1.65; font-weight: 500; margin: 0; }
+.planning-guide ol { list-style: none; margin: 28px 0; padding: 0 0 0 13px; }
+.planning-guide li { position: relative; padding: 0 0 24px 22px; border-left: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
+.planning-guide li::before { content: ''; position: absolute; left: -4px; top: 9px; width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--accent) 40%, var(--surface)); }
+.planning-guide li:first-child::before { background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 8%, transparent); }
+.planning-guide li:last-child { border-color: transparent; padding-bottom: 0; }
+.planning-guide li strong { font-size: 16px; font-weight: 500; }
+.planning-guide li p { margin: 5px 0 0; font-size: 14px; line-height: 1.65; color: var(--muted); }
+.planning-guide-motto { padding-top: 20px; border-top: 1px solid var(--line); margin: 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+.planning-guide-motto span { display: block; margin-top: 4px; }
+@media (max-width: 1250px) and (min-width: 1101px), (max-width: 880px) {
+  .planning-guide { padding: 0; }
+  .planning-guide-mark, .planning-guide h2, .planning-guide ol { display: none; }
+  .planning-guide-motto { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }
+  .planning-guide-motto span { margin-top: 0; }
+}

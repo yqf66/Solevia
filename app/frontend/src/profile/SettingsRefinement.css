@@ -1,0 +1,47 @@
+.user-settings-backdrop { z-index: 100; background: rgb(29 37 63 / 22%); }
+.user-settings-backdrop .user-settings-panel { width: min(690px, calc(100vw - clamp(244px,18vw,292px) - 32px)); border: 0; border-radius: 24px; box-shadow: 0 24px 70px rgb(27 37 69 / 18%); }
+.user-settings-backdrop .user-settings-panel > header { padding: 28px 28px 22px; }
+.user-settings-backdrop .user-settings-panel > header .eyebrow { font-size: 12px; letter-spacing: 0; color: var(--muted); }
+.user-settings-backdrop .user-settings-panel h2 { margin-top: 6px; font-family: var(--font-editorial); font-size: 29px; font-weight: 600; }
+.user-settings-backdrop .user-settings-panel > nav { gap: 4px; padding: 0 20px 12px; border-bottom: 1px solid var(--line); }
+.user-settings-backdrop .user-settings-panel > nav button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; flex: 1; padding: 11px 8px; border: 0; border-radius: 10px; font-size: 14px; font-weight: 400; white-space: nowrap; }
+.user-settings-backdrop .user-settings-panel > nav button.active { background: var(--surface-blue); color: var(--accent); font-weight: 500; }
+.user-settings-panel .user-settings-body { padding: 24px 28px 28px; }
+.user-settings-panel .user-settings-body .settings-form { gap: 22px; }
+.user-settings-panel .user-settings-body .settings-intro { padding: 18px 20px; border-radius: 6px 16px 16px 6px; background: var(--surface-blue); }
+.user-settings-panel .user-settings-body .settings-intro strong { font-size: 17px; font-weight: 500; }
+.user-settings-panel .user-settings-body :is(.settings-intro p,.settings-source-note,.settings-form small) { font-size: 13px; line-height: 1.7; }
+.user-settings-panel .user-settings-body .settings-form label > span { font-size: 14px; font-weight: 500; }
+.routine-boundary-grid { gap: 12px; }
+.user-settings-panel .user-settings-body .routine-block-row { grid-template-columns: 80px minmax(0,1fr) minmax(0,1fr); padding: 18px; gap: 14px; border: 0; border-radius: 14px; background: var(--surface-subtle); }
+.user-settings-panel .user-settings-body .routine-block-row:nth-child(even) { background: color-mix(in srgb, var(--surface-lavender) 65%, var(--surface)); }
+.routine-section-heading strong { font-size: 17px; font-weight: 500; }
+.user-settings-panel .user-settings-body .routine-section-heading small { font-size: 13px; margin-top: 4px; }
+.user-settings-panel .user-settings-body .routine-toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
+.user-settings-panel .user-settings-body .routine-toggle span { font-size: 15px; }
+.user-settings-panel .routine-extra-row { grid-template-columns: 18px minmax(90px,1fr) minmax(94px,1fr) minmax(94px,1fr) 28px; }
+.settings-success { padding: 12px 14px; border-radius: 8px; background: var(--surface-mint); color: var(--text); font-size: 13px; }
+@media (max-width: 1100px) {
+  .user-settings-backdrop .user-settings-panel { left: 16px; right: 16px; width: min(690px, calc(100vw - 32px)); margin-inline: auto; }
+}
+@media (max-width: 540px) {
+  .user-settings-backdrop .user-settings-panel { left: 8px; right: 8px; width: auto; bottom: 8px; border-radius: 20px; max-height: calc(100dvh - 16px); }
+  .user-settings-backdrop .user-settings-panel > header { padding: 22px 20px 18px; }
+  .user-settings-backdrop .user-settings-panel h2 { font-size: 26px; }
+  .user-settings-backdrop .user-settings-panel > nav { padding-inline: 12px; gap: 2px; }
+  .user-settings-backdrop .user-settings-panel > nav button { gap: 5px; padding: 10px 5px; font-size: 12px; }
+  .user-settings-backdrop .user-settings-panel > nav svg { display: none; }
+  .user-settings-panel .user-settings-body { padding: 20px; }
+  .user-settings-panel .routine-boundary-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+  .routine-boundary-grid .time-field input[type="text"] { padding-left: 8px; padding-right: 31px; font-size: 16px; letter-spacing: 0; }
+  .routine-boundary-grid .time-field-trigger { width: 28px; right: 1px; }
+  .user-settings-panel .user-settings-body .routine-block-row { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; padding: 16px; }
+  .routine-block-row .routine-toggle { grid-column: 1 / -1 !important; }
+  .user-settings-panel .routine-extra-row { grid-template-columns: 18px minmax(0,1fr) minmax(0,1fr) 28px; gap: 8px; }
+  .routine-extra-row > input:not([type="checkbox"]) { grid-row: 1; grid-column: 2 / 4; }
+  .routine-extra-row > .time-field { grid-row: 2; }
+  .routine-extra-row > .time-field:first-of-type { grid-column: 1 / 3; }
+  .routine-extra-row > .time-field:last-of-type { grid-column: 3 / 5; }
+  .routine-extra-row > button { grid-row: 1; grid-column: 4; }
+  .routine-section-heading > button { white-space: nowrap; flex-shrink: 0; }
+}

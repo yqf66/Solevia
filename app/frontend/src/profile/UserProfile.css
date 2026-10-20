@@ -1,0 +1,24 @@
+.user-avatar { display: inline-grid; flex: none; width: 40px; height: 40px; place-items: center; overflow: hidden; border-radius: 13px; background: var(--surface-lavender); color: var(--accent); }
+.user-avatar :is(img,svg) { width: 100%; height: 100%; object-fit: cover; }
+.profile-editor { display: grid; gap: 18px; }
+.profile-identity-card { display: flex; align-items: center; gap: 22px; padding: 26px; border-radius: 8px 22px 22px 22px; background: var(--surface-blue); }
+.profile-avatar-preview { width: 88px; height: 88px; border-radius: 27px; background: var(--surface); }
+.profile-identity-card > div { min-width: 0; }
+.profile-identity-card span { color: var(--muted); font-size: 13px; }
+.profile-identity-card h3 { margin: 7px 0; font-size: 25px; font-weight: 500; overflow-wrap: anywhere; }
+.profile-identity-card p { color: var(--muted); font-size: 13px; }
+.profile-avatar-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; }
+.profile-avatar-actions button { display: inline-flex; align-items: center; gap: 7px; }
+.profile-file-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.profile-help, .profile-save-row p { color: var(--muted); font-size: 13px; }
+.profile-help { margin-top: -8px; }
+.profile-nickname-label { display: grid; gap: 9px; font-size: 15px; }
+.profile-nickname-label input { width: 100%; padding: 13px 14px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--surface); color: var(--text); }
+.profile-nickname-label small { justify-self: end; color: var(--muted); font-size: 12px; }
+.profile-save-row { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.sidebar .sidebar-user-option { grid-template-columns: 40px minmax(0, 1fr) 18px; padding: 12px 10px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.sidebar-user-option strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-user-option .user-avatar { transition: border-radius 180ms; }
+.sidebar-user-option:hover .user-avatar { border-radius: 50%; }
+@media (max-width: 540px) { .profile-identity-card { padding: 22px 18px; gap: 16px; } .profile-avatar-preview { width: 70px; height: 70px; border-radius: 22px; } .profile-identity-card h3 { font-size: 23px; } }
+@media (prefers-reduced-motion: reduce) { .sidebar-user-option .user-avatar { transition: none; } }

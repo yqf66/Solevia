@@ -1,0 +1,9 @@
+.solevia-mark { display: block; width: 32px; height: 32px; flex: none; object-fit: contain; }
+.solevia-emblem { display: grid; place-items: center; width: 42px; height: 46px; }
+.solevia-emblem > .solevia-mark { width: 40px; height: 40px; }
+.solevia-wordmark { display: grid; gap: 5px; }
+.solevia-wordmark > strong { display: flex; align-items: baseline; gap: 9px; font-family: var(--font-display); font-size: 23px; font-weight: 600; letter-spacing: -.6px; }
+.solevia-wordmark > strong > span { color: var(--muted); font-family: var(--font); font-size: 12px; font-weight: 400; letter-spacing: 2px; }
+.solevia-wordmark > small { color: var(--muted); font-size: 11px; font-weight: 400; letter-spacing: 0; }
+.agent-identity > .solevia-mark { width: 28px; height: 28px; }
+@media (max-width: 1100px) { .mobile-workspace-bar .solevia-emblem { width: 32px; height: 34px; } .mobile-workspace-bar .solevia-mark { width: 32px; height: 32px; } .mobile-workspace-bar .solevia-wordmark > strong { font-size: 20px; } .mobile-workspace-bar .solevia-wordmark > small { display: none; } }

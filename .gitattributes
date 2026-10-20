@@ -1,0 +1,2 @@
+# Preserve the exact release bytes used by MANIFEST.json on every checkout.
+* -text

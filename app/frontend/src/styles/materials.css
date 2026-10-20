@@ -1,0 +1,108 @@
+/* Materials styles. Tokens live in tokens.css. */
+.material-attachment-strip, .message-materials { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 0; }
+.material-attachment-strip > span, .message-materials > span { display: inline-flex; align-items: center; gap: 5px; min-width: 0; max-width: 100%; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); font-size: 12px; }
+.material-attachment-strip > span > span { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.material-attachment-strip > span > small { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.material-attachment-strip button { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; border: 0; background: transparent; }
+.material-attachment-hint { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+.message-materials > span { overflow-wrap: anywhere; }
+.material-conversation-picker > input { width: 100%; margin: 8px 0; }
+.material-upload-actions { display: flex; gap: 8px; margin: 8px 0; }
+.material-help { display: block; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.material-reader-text, .material-diff { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.7; max-height: 45vh; overflow-y: auto; padding: 14px; border: 1px solid var(--line); border-radius: 8px; }
+.material-reader-outline { display: flex; flex-direction: column; max-height: 200px; overflow-y: auto; }
+.material-reader-outline button { text-align: left; }
+.material-diff-added { color: var(--accent); background: var(--surface-subtle); }
+.material-diff-removed { color: var(--missed); background: var(--missed-soft); }
+.execution-discussion-compose .material-attachment-strip, .execution-discussion-compose .material-attachment-hint { grid-column: 1 / -1; }
+.material-conversation-picker .material-scope-list { max-height: 300px; overflow-y: auto; }
+.material-conversation-picker label span { min-width: 0; overflow-wrap: anywhere; }
+.material-conversation-picker label small { display: block; color: var(--muted); font-size: 11px; }
+.material-collapsible > summary { padding: 10px 0; cursor: pointer; font-size: 13px; font-weight: 600; }
+.material-workspace-panel { margin: 12px 0 16px; border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line)); border-radius: 14px; background: color-mix(in srgb, var(--accent-soft) 24%, var(--surface)); }
+.material-workspace-panel.compact { position: relative; width: 32px; margin: 0; border: 0; border-radius: 8px; background: transparent; }
+.material-workspace-compact-trigger { width: 32px; height: 32px; display: inline-grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); background: var(--surface); font-size: 20px; line-height: 1; cursor: pointer; }
+.material-workspace-compact-trigger:hover, .material-workspace-compact-trigger[aria-expanded='true'] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.material-upload-menu { position: fixed; z-index: 170; width: min(200px, calc(100vw - 16px)); padding: 5px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); box-shadow: 0 6px 22px rgb(0 0 0 / 12%); }
+.material-upload-menu > button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 8px 10px; border: 0; border-radius: 4px; background: transparent; color: var(--text); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.material-upload-menu > button:hover, .material-upload-menu > button:focus-visible { background: var(--accent-soft); outline: none; }
+.material-upload-menu svg { flex: none; color: var(--muted); }
+.material-upload-notice { position: absolute; bottom: calc(100% + 8px); left: 0; z-index: 169; width: 240px; max-width: calc(100vw - 32px); padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); font-size: 12px; overflow-wrap: anywhere; }
+.material-upload-spinner { animation: material-upload-spin 1s linear infinite; }
+@keyframes material-upload-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+.material-upload-spinner { animation: none; }
+}
+.material-dialog-backdrop { position: fixed; inset: 0; z-index: 150; display: grid; place-items: center; padding: 16px; background: rgb(0 0 0 / 24%); }
+.material-dialog { width: min(800px, 100%); max-height: calc(100dvh - 32px); min-height: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); box-shadow: 0 16px 48px rgb(0 0 0 / 15%); }
+.material-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; gap: 12px; }
+.material-dialog-header h2 { margin: 0 0 4px; font-size: 18px; }
+.material-dialog-header small { color: var(--muted); font-size: 12px; }
+.material-dialog-header button { width: 32px; height: 32px; border: 0; background: transparent; color: var(--text); cursor: pointer; display: grid; place-items: center; }
+.material-dialog > .material-workspace-body { overflow-y: auto; min-height: 0; padding: 16px; }
+.material-tabs { display: flex; padding: 0 16px; border-bottom: 1px solid var(--line); gap: 20px; }
+.material-tabs button { border: 0; border-bottom: 2px solid transparent; padding: 10px 0; background: transparent; color: var(--muted); font: inherit; cursor: pointer; }
+.material-tabs button[aria-selected='true'] { color: var(--accent); border-bottom-color: var(--accent); }
+.material-directory-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.material-directory-toolbar > input, .material-directory-toolbar > select { flex: 1; min-width: 140px; }
+.material-directory-toolbar input, .material-directory-toolbar select, .material-directory-toolbar button, .material-analysis-form textarea { padding: 8px; border: 1px solid var(--line); border-radius: 6px; color: var(--text); background: var(--surface); font: inherit; font-size: 12px; }
+.material-directory-toolbar button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+.material-directory-toolbar button:disabled { opacity: .5; cursor: default; }
+.material-file-browser { display: grid; gap: 10px; }
+.material-scan-list { list-style: none; padding: 0; margin: 0; max-height: 260px; overflow-y: auto; border-block: 1px solid var(--line); }
+.material-scan-list li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.material-scan-list label { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; }
+.material-scan-list span { min-width: 0; overflow-wrap: anywhere; }
+.material-scan-list small { display: block; margin-top: 3px; color: var(--muted); }
+.material-scope-list { display: grid; gap: 6px; max-height: 180px; overflow-y: auto; font-size: 12px; overflow-wrap: anywhere; }
+.material-analysis-form textarea { min-width: 0; min-height: 72px; resize: vertical; }
+.material-analysis-form button { align-self: end; }
+.material-dialog .material-analysis-result { border-radius: 8px; overflow-wrap: anywhere; }
+.material-conflicts { padding: 10px; background: var(--warm-soft); color: var(--warm); border-left: 3px solid var(--warm); }
+.material-conflicts p { margin: 4px 0; }
+.material-dialog .material-list small { overflow-wrap: anywhere; }
+@media (max-width: 540px) {
+.material-dialog-backdrop { padding: 8px; }
+.material-dialog { max-height: calc(100dvh - 16px); }
+.material-dialog > .material-workspace-body { padding: 12px; }
+}
+.material-workspace-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 0; color: var(--text); background: transparent; text-align: left; cursor: pointer; }
+.material-workspace-toggle span { display: grid; gap: 3px; }
+.material-workspace-toggle strong { font-size: 13px; }
+.material-workspace-toggle small, .material-workspace-note, .material-list small, .material-analysis-result small { color: var(--muted); font-size: 11px; line-height: 1.45; }
+.material-workspace-toggle i { color: var(--accent); font-style: normal; }
+.material-workspace-body { display: grid; gap: 10px; padding: 0 14px 14px; }
+.material-workspace-note { margin: 0; padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--surface); }
+.material-root-form, .material-link-form, .material-analysis-form { display: grid; grid-template-columns: 1fr 2fr auto; gap: 7px; }
+.material-analysis-form { grid-template-columns: 1fr auto; }
+.material-root-form input, .material-link-form input, .material-link-form select, .material-analysis-form input { min-width: 0; padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; font-size: 12px; }
+.material-root-form button, .material-link-form button, .material-actions button { padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--accent); font: inherit; font-size: 11px; cursor: pointer; }
+.material-root-form button:disabled, .material-link-form button:disabled, .material-actions button:disabled { opacity: .5; cursor: default; }
+.material-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.material-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.material-list li > div:first-child { display: grid; min-width: 0; gap: 2px; }
+.material-list strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.material-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
+.material-analysis-result { display: grid; gap: 8px; padding: 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.material-analysis-result > header { display: flex; justify-content: space-between; gap: 10px; }
+.material-analysis-result > header > div { display: grid; gap: 2px; min-width: 0; }
+.material-analysis-result > header strong { font-size: 12px; }
+.material-analysis-result > header span { flex: none; color: var(--accent); font-size: 11px; }
+.material-analysis-result > p { margin: 0; font-size: 12px; line-height: 1.55; }
+.material-analysis-result section { display: grid; gap: 5px; }
+.material-analysis-result section > strong { font-size: 11px; }
+.material-analysis-result ul { display: grid; gap: 6px; margin: 0; padding-left: 18px; }
+.material-analysis-result li { display: grid; gap: 2px; font-size: 11px; line-height: 1.45; }
+.material-analysis-result li > span { color: var(--text); }
+.material-finding { display: flex; align-items: flex-start; gap: 7px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; font-size: 11px; line-height: 1.45; cursor: pointer; }
+.material-finding input { margin-top: 2px; }
+.material-finding span { display: grid; gap: 2px; }
+.material-finding em { margin-left: auto; flex: none; color: var(--accent); font-size: 11px; font-style: normal; }
+.material-open-questions { padding-top: 3px; }
+@media (max-width: 760px) {
+.material-root-form, .material-link-form, .material-analysis-form { grid-template-columns: 1fr; }
+.material-list li { align-items: flex-start; flex-direction: column; }
+.material-actions { justify-content: flex-start; }
+}
+.execution-discussion-compose .material-workspace-compact-trigger { width: 32px; height: 32px; color: var(--muted); background: var(--surface); }
+.execution-discussion-compose .material-attachment-strip button { width: 22px; height: 22px; color: var(--muted); background: transparent; }

@@ -1,0 +1,14 @@
+.today-focus { position: relative; display: flex; flex-direction: column; align-items: start; min-width: 0; padding: 28px; border-radius: 24px 8px 24px 24px; background: var(--surface-blue); }
+.today-focus::after { content: ''; position: absolute; right: 0; bottom: 28px; width: 32px; height: 72px; border: 1px solid color-mix(in srgb, var(--accent) 16%, transparent); border-right: 0; border-radius: 40px 0 0 40px; pointer-events: none; }
+.today-focus-heading { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 20px; color: var(--accent); font-size: 14px; font-weight: 500; }
+.focus-path { display: flex; align-items: center; width: 96px; }
+.focus-path i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.focus-path > span { height: 1px; flex: 1; background: currentColor; opacity: .4; }
+.today-focus-body { margin-top: 22px; }
+.today-focus .today-focus-body h2 { font-size: clamp(21px, 1.8vw, 27px); font-weight: 600; line-height: 1.55; overflow-wrap: anywhere; }
+.today-focus-body p { margin-top: 12px; font-size: 14px; color: var(--muted); }
+.today-focus-action { display: flex; align-items: center; gap: 24px; margin-top: auto; padding: 11px 16px; border: 0; border-radius: 12px; color: var(--text); background: var(--surface); box-shadow: var(--shadow-control); font-size: 15px; font-weight: 500; transition: transform 180ms, box-shadow 180ms; }
+.today-focus-body { padding-bottom: 24px; }
+.today-focus-action:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+@media (max-width: 540px) { .today-focus { padding: 22px; } .today-focus-body { margin-top: 16px; } }
+@media (prefers-reduced-motion: reduce) { .today-focus-action:hover { transform: none; } }

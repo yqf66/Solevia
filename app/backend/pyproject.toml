@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "elastic-planner-api"
+version = "0.1.0"
+description = "API for the elastic goal planning agent"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "alembic>=1.16,<2",
+  "fastapi>=0.116,<1",
+  "pydantic>=2.11,<3",
+  "pydantic-settings>=2.10,<3",
+  "python-dotenv>=1,<2",
+  "sqlalchemy>=2.0,<3",
+  "tzdata>=2025.2",
+  "uvicorn[standard]>=0.35,<1",
+  "httpx>=0.28,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx2>=2,<3",
+  "pytest>=8.4,<10",
+  "pytest-cov>=6,<8",
+  "ruff>=0.12,<1",
+]
+materials = [
+  "markitdown[docx,pdf,pptx,xls,xlsx]>=0.1.8,<0.2",
+  "docling>=2.130,<3",
+  "crawl4ai>=0.9,<1",
+  "pdfplumber>=0.11.10,<1",
+]
+web = ["crawl4ai>=0.9,<1"]
+knowledge = ["faiss-cpu>=1.9,<2"]
+knowledge-milvus = ["pymilvus==2.6.11"]
+ocr = ["rapidocr>=3.9,<4", "onnxruntime>=1.20,<2", "pypdfium2>=4,<6", "pillow>=11,<13"]
+semantic = ["torch>=2.4,<3", "transformers>=4.45,<6", "huggingface-hub>=0.25,<2"]
+mineru = ["mineru==4.0.10"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/planner_api"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501", "I001"]

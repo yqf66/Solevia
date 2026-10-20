@@ -1,0 +1,21 @@
+/* Reading sizes belong to roles, not to a global zoom. */
+.app-shell .button, .app-shell .text-button { font-size: 15px; }
+.app-shell .button { min-height: 44px; }
+.app-shell .sidebar-quick-nav a { font-size: 16px; min-height: 48px; }
+.app-shell .plan-link strong { font-size: 15px; line-height: 1.5; }
+.app-shell .plan-link > span, .app-shell .goal-group > summary, .app-shell .plan-list > p { font-size: 13px; }
+.app-shell .plan-link { gap: 3px; padding-block: 10px; }
+.app-shell .sidebar-user-option strong { font-size: 14px; }
+.app-shell .sidebar-user-option small { font-size: 12px; }
+.app-shell .stepper li { font-size: 13px; }
+.app-shell .stepper .step-dot { font-size: 12px; }
+.app-shell .planner-stage-header .stage-heading h1 { font-size: 28px; line-height: 1.4; }
+.app-shell .planner-stage-header .stage-heading .eyebrow { font-size: 14px; }
+.app-shell .stage-context-column h2 { font-size: 19px; }
+.app-shell .stage-context-column :is(p,li) { font-size: 15px; line-height: 1.75; }
+.app-shell .stage-context-column :is(.memory-kicker,.facts-preview span) { font-size: 14px; }
+.app-shell :is(.research-source-item > summary,.research-source-item p,.research-source-item a) { font-size: 13px; }
+.app-shell :is(.inline-dialog,.schedule-dialog) { font-size: 15px; }
+.app-shell .create-plan-popover strong { font-size: 16px; }
+.app-shell .create-plan-popover span { font-size: 14px; line-height: 1.6; }
+@media (max-width: 540px) { .app-shell .planner-stage-header .stage-heading h1 { font-size: 24px; } }

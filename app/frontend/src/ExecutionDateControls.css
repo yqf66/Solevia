@@ -1,0 +1,26 @@
+.smart-calendar-control > label, .execution-day-move-dialog > label { display: grid; gap: 8px; margin: 16px 0; }
+.smart-calendar-control textarea { width: 100%; min-height: 96px; resize: vertical; padding: 12px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+.smart-calendar-control > header { display: flex; align-items: center; gap: 12px; }
+.smart-calendar-control > header svg { flex: 0 0 auto; }
+.smart-calendar-control .button, .date-mode-control button { display: inline-flex; align-items: center; gap: 8px; }
+.calendar-start-choice { display: flex !important; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.6; }
+.calendar-start-choice input { flex: 0 0 16px; width: 16px !important; min-height: 16px !important; height: 16px; margin-top: 4px; padding: 0 !important; }
+.smart-calendar-result, .execution-day-move-result { padding-top: 16px; line-height: 1.6; }
+.execution-move-blockers, .execution-move-warnings { padding: 12px 14px; border-left: 3px solid var(--warm); background: var(--warm-soft); }
+.execution-move-blockers ul, .execution-move-warnings ul { margin: 6px 0 0; padding-left: 20px; }
+.execution-move-warnings { border-left-color: var(--accent); background: var(--accent-soft); }
+.smart-calendar-result details { margin: 12px 0; }
+.execution-date-list { max-height: 300px; overflow: auto; margin: 12px 0; }
+.execution-date-list > div { display: grid; grid-template-columns: minmax(120px, auto) minmax(0, 1fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--surface-subtle); }
+.execution-date-list span, .execution-date-list time { overflow-wrap: anywhere; }
+.execution-day-move-dialog { width: min(760px, calc(100vw - 24px)); max-height: 85vh; min-width: 0; overflow-x: hidden; overflow-y: auto; border-radius: 8px; }
+.execution-day-move-dialog > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.execution-day-move-dialog .icon-button { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 5px; color: var(--muted); background: var(--surface); cursor: pointer; }
+.execution-day-move-dialog .date-mode-control { margin: 0; }
+.execution-day-move-dialog > label { margin: 8px 0; }
+.execution-day-move-dialog > *, .execution-day-move-result, .execution-date-list, .execution-date-list > div { min-width: 0; max-width: 100%; }
+.execution-day-move-dialog select { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; min-height: 42px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; color: var(--text); background: var(--surface); font: inherit; }
+.date-mode-control { display: flex; gap: 0; margin: 16px 0; }
+.date-mode-control button { flex: 1; padding: 12px; border: 1px solid var(--line); border-radius: 0; background: white; justify-content: center; }
+.date-mode-control button.selected { background: var(--surface-subtle); color: var(--accent); border-color: var(--accent); }
+@media (max-width: 600px) { .inline-dialog-backdrop:has(.execution-day-move-dialog) { padding: 12px; } .execution-day-move-dialog { max-height: calc(100dvh - 24px); padding: 20px 16px; gap: 14px; } .execution-date-list > div { grid-template-columns: 1fr; gap: 4px; } .date-mode-control button { padding: 10px 6px; font-size: 14px; } .execution-day-move-dialog .inline-dialog-actions { position: sticky; bottom: -20px; margin: 0 -16px -20px; padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--surface-subtle); } }

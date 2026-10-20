@@ -1,0 +1,2101 @@
+{
+  "product": "Solevia",
+  "version": "0.1.0",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 84,
+      "sha256": "3dd935565831e8155a1b199bf7c18ad9a2dc1b7f2a879a56c47f4e8f073f852d"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 212,
+      "sha256": "5231e6c6ecbd6c424d1807594dd6201faf075af1d7b4c307dddca6c3466c746a"
+    },
+    {
+      "path": "Install.cmd",
+      "bytes": 235,
+      "sha256": "a3a2793c5cb1132a8eb5f67fa4ae51032e19c55f4b7b5a1ef16c67b1ad422025"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1085,
+      "sha256": "40f57886ab26f1a0ecf44578fcc973afd3d8ce8a3078895b5927407d525370a0"
+    },
+    {
+      "path": "Models.cmd",
+      "bytes": 171,
+      "sha256": "d959ce2cadc398d0450211b2c0d2c9b0a01f62f832b6ba08bc02749af12e7ac1"
+    },
+    {
+      "path": "README.md",
+      "bytes": 9799,
+      "sha256": "cdc76caa4bdb6a8f4ddab96f30f79f97ae8a993c63159c4d98937319ffcdab94"
+    },
+    {
+      "path": "START_HERE.md",
+      "bytes": 3346,
+      "sha256": "3bb269e92fe9344b63dc1801237fe8695a9bc9dd28821e49d540a4710b079c0e"
+    },
+    {
+      "path": "Start.cmd",
+      "bytes": 172,
+      "sha256": "e8a9915bfab3b0878b0d05ac9cb499d8acedf48304023028ae5e5615e1aa10ba"
+    },
+    {
+      "path": "Stop.cmd",
+      "bytes": 137,
+      "sha256": "21e649d4b41e325fd793364455300a2a7ee1593c33532a7bb730545453a5f3db"
+    },
+    {
+      "path": "Update.cmd",
+      "bytes": 157,
+      "sha256": "55528454749db6cc398496a6fca1994418d9d3f51b8710c5e8415657598cbcf9"
+    },
+    {
+      "path": "app/backend/README.md",
+      "bytes": 87,
+      "sha256": "f506f012572657dcb52527cd31f6c0351830834c3fa1ad927adc79476e9daecb"
+    },
+    {
+      "path": "app/backend/alembic.ini",
+      "bytes": 5038,
+      "sha256": "fbd1999c73dc3b56def01b24b7d1868ef277af5f8f6fafbbc048caaf2ad38903"
+    },
+    {
+      "path": "app/backend/migrations/env.py",
+      "bytes": 2284,
+      "sha256": "b50f8144a945b3c7813943adfbc04be7777917c36ef2fef6e45c9f260ea52e0a"
+    },
+    {
+      "path": "app/backend/migrations/script.py.mako",
+      "bytes": 704,
+      "sha256": "d38920781b4d31ae1c0a71bc09f41c2ade8feab9e5a087e3f30cb4bbf0c1c9d3"
+    },
+    {
+      "path": "app/backend/migrations/versions/0001_day2_clarification.py",
+      "bytes": 5569,
+      "sha256": "2aa8af4e4fa8832c81be1cfd48bba60a534bcb4017b4183109677e41c0e02c45"
+    },
+    {
+      "path": "app/backend/migrations/versions/0002_route_versions.py",
+      "bytes": 2880,
+      "sha256": "fd01d52bb7657cc2f1ccd379dceaba5dc6c70c9ffdd1210b537f39924e610353"
+    },
+    {
+      "path": "app/backend/migrations/versions/0003_route_stage_options.py",
+      "bytes": 608,
+      "sha256": "f724ca6f7d5431fae632c574cd921b9e0f61c104b001924adafc9088056afb9b"
+    },
+    {
+      "path": "app/backend/migrations/versions/0004_relative_plans.py",
+      "bytes": 5969,
+      "sha256": "d148f05d6de4f4e50d14865a276caeaaa5fcf1ee85774e16ee879495ab3cf95d"
+    },
+    {
+      "path": "app/backend/migrations/versions/0005_plan_discussion.py",
+      "bytes": 833,
+      "sha256": "8be3c1e0295958e42a2face7c160a08b704883708a4e253ebf26f72bd2013bcb"
+    },
+    {
+      "path": "app/backend/migrations/versions/0006_execution_start.py",
+      "bytes": 3594,
+      "sha256": "4665f7ad13e29f0ba9687dfc5fce0831e14cfb3d1613cf867fbec9ea89da7e77"
+    },
+    {
+      "path": "app/backend/migrations/versions/0007_daily_feedback.py",
+      "bytes": 1990,
+      "sha256": "e4d8d8edcb12321cea77091d75ed4e7757e9657dbaecee1d9b8d43a1e1f4ef48"
+    },
+    {
+      "path": "app/backend/migrations/versions/0008_plan_generation_jobs.py",
+      "bytes": 1748,
+      "sha256": "f174c418f7c5789718e9ba8624ef6ec13233c67badc23e43490acb4112e827f5"
+    },
+    {
+      "path": "app/backend/migrations/versions/0009_feedback_adjustments.py",
+      "bytes": 3358,
+      "sha256": "b2b59109363153bafa638c598037d57b3ccc2f71faa4b53f2bae976934dceb99"
+    },
+    {
+      "path": "app/backend/migrations/versions/0010_execution_companion.py",
+      "bytes": 2546,
+      "sha256": "b0e147c5c3e5d5a0910d8125a74bf6e24b5720529ed66d254f489914d55692a9"
+    },
+    {
+      "path": "app/backend/migrations/versions/0011_planning_compiler.py",
+      "bytes": 4798,
+      "sha256": "0baa4a1076be975dd88dd5f81bb72959eeb1bcbaf8f27b78cd67bd5fa203dbeb"
+    },
+    {
+      "path": "app/backend/migrations/versions/0012_recovery_shift.py",
+      "bytes": 2720,
+      "sha256": "f2b00152c457c637a90122ede4f03de68c122a7b400b82645872ed8fa92fbdd2"
+    },
+    {
+      "path": "app/backend/migrations/versions/0013_progress_lineage.py",
+      "bytes": 1826,
+      "sha256": "cf4052be01af5b4cd837f20796d5d29f9682e4445a8bb5c4ca787d4206229dfb"
+    },
+    {
+      "path": "app/backend/migrations/versions/0014_backfill_task_lineage.py",
+      "bytes": 900,
+      "sha256": "e025551e64da9befd79056d7b51af6a89ffa1c17cf2530fc228342bf4c0a45ff"
+    },
+    {
+      "path": "app/backend/migrations/versions/0015_goal_lifecycle.py",
+      "bytes": 1280,
+      "sha256": "6508d294784ed2f1e013e2f21ca2b78d6ecc7b2b7a9197fdac384a095e772132"
+    },
+    {
+      "path": "app/backend/migrations/versions/0016_requirement_memory.py",
+      "bytes": 3196,
+      "sha256": "51e2a488fcc32c62f9a5b734cc199c8e5ca8ea6c8c03f76ec9ae6aac3f5b62c0"
+    },
+    {
+      "path": "app/backend/migrations/versions/0017_clarification_analysis_jobs.py",
+      "bytes": 2865,
+      "sha256": "48b956fcc1aaf2d527c629bf3ba02d6f43a0b56f0b4d62170b83795c9c83ba6c"
+    },
+    {
+      "path": "app/backend/migrations/versions/0018_execution_scheduling_foundation.py",
+      "bytes": 7431,
+      "sha256": "9a381b5baefddc8e68ec208777f631e45f4598994aff1b4037e3031cb7ec4ca6"
+    },
+    {
+      "path": "app/backend/migrations/versions/0019_shared_schedule_manual_plans.py",
+      "bytes": 4664,
+      "sha256": "8ca2dd5f8472ff9ec23a61b3b698b783793c1d1fd5960f35efd24772536e983a"
+    },
+    {
+      "path": "app/backend/migrations/versions/0020_parallel_schedule_confirmation.py",
+      "bytes": 1074,
+      "sha256": "48fae4aa7386b0ecb02f6dfd269ed06cfb2e36858b6161b2cb2c06d5dcc1d6c4"
+    },
+    {
+      "path": "app/backend/migrations/versions/0021_parallel_pair_consent.py",
+      "bytes": 1213,
+      "sha256": "1d092a1e94a65e6357117477fa26359c97aab48181c016db5a6fe91d71639853"
+    },
+    {
+      "path": "app/backend/migrations/versions/0022_plan_adjustment_previews.py",
+      "bytes": 1620,
+      "sha256": "687ce689d0c45e176703a622f030ca638d86cda6a7a4057ab6ff5fb5ebae36ed"
+    },
+    {
+      "path": "app/backend/migrations/versions/0023_manual_task_recurrence.py",
+      "bytes": 927,
+      "sha256": "0bbf143315f702b03e9cefd736016f47da5bf9e6666070669a1647e20b31d96f"
+    },
+    {
+      "path": "app/backend/migrations/versions/0024_task_ai_schedule_preference.py",
+      "bytes": 629,
+      "sha256": "7ce6c575c4a92543b576faa44a08e30eaab4a0ab7f149ce7885a705813122720"
+    },
+    {
+      "path": "app/backend/migrations/versions/0025_manual_task_date_overrides.py",
+      "bytes": 1513,
+      "sha256": "584373445a26c0195aecd71a8bdfd00617c4ba8e63906a454a250dbe36c9a572"
+    },
+    {
+      "path": "app/backend/migrations/versions/0026_manual_task_override_status.py",
+      "bytes": 764,
+      "sha256": "3a4f3fee4534a41cf29041c743aad6e49c33460c4efa553fbf26c28a4a7886a0"
+    },
+    {
+      "path": "app/backend/migrations/versions/0027_holiday_calendar.py",
+      "bytes": 2812,
+      "sha256": "d5e207555a3898198f6cef6d482e6665f882d5f721ba7830d58ce094ff82e496"
+    },
+    {
+      "path": "app/backend/migrations/versions/0028_semantic_planning_documents.py",
+      "bytes": 1569,
+      "sha256": "0549522e72865b000e4235e313a750c3b0ccd9d617282070f29bfc7b4ac4b70e"
+    },
+    {
+      "path": "app/backend/migrations/versions/0029_plan_commitments.py",
+      "bytes": 719,
+      "sha256": "ae6ca229f0b3c698ad3f7e4377e6f6ecfe9a6130a2f102fe3d9776aaacde1039"
+    },
+    {
+      "path": "app/backend/migrations/versions/0030_plan_task_commitment_bindings.py",
+      "bytes": 717,
+      "sha256": "c3adc62058c1effb2681bc2a4dd69559ea388cd9dcecb36bd735bcb704c67483"
+    },
+    {
+      "path": "app/backend/migrations/versions/0031_plan_task_splittable.py",
+      "bytes": 1090,
+      "sha256": "bb77ebdc4ce975ddccaf8f7a0a36d5cff40da611500f5f04217502238b860250"
+    },
+    {
+      "path": "app/backend/migrations/versions/0032_workspace_user_preferences.py",
+      "bytes": 2230,
+      "sha256": "e97986ee725f6adc9502b1acb705793e6b214fd12824c634c98cb1e575f09415"
+    },
+    {
+      "path": "app/backend/migrations/versions/0033_flexible_daily_routine.py",
+      "bytes": 1337,
+      "sha256": "a486ff541f4c45d6e615b498f75b0cbf5e45cf7bb7955dd429819a1c794f9f20"
+    },
+    {
+      "path": "app/backend/migrations/versions/0034_light_arrangements.py",
+      "bytes": 2365,
+      "sha256": "72ddb559a9d3613ad90d47913c2e94a95b0230a8470208c21490e3cf6d6c711a"
+    },
+    {
+      "path": "app/backend/migrations/versions/0035_quick_plans_and_exploration.py",
+      "bytes": 4797,
+      "sha256": "a5a31fc49ac9315e4c16252621ebe40c74b0aeefac1e27472ac11ef0419fd807"
+    },
+    {
+      "path": "app/backend/migrations/versions/0036_schedule_types.py",
+      "bytes": 1644,
+      "sha256": "ab5218e30852b859bf9a9d57f992426a77a3b60461c72a2688ca39364be9dc8f"
+    },
+    {
+      "path": "app/backend/migrations/versions/0037_execution_collaboration.py",
+      "bytes": 5266,
+      "sha256": "afab332db0345a9adbe6c393bf1b9d3d26f12a1ccbad59806f86743304db8128"
+    },
+    {
+      "path": "app/backend/migrations/versions/0038_repair_legacy_schedule_types.py",
+      "bytes": 2078,
+      "sha256": "eec80aaa614ddc71631f9d5845e96eba2852bf4ff538e5b11987af543e0c932c"
+    },
+    {
+      "path": "app/backend/migrations/versions/0039_continuous_execution_memory.py",
+      "bytes": 1491,
+      "sha256": "f77bcf75e8137b35004fe95eb48abe5b74ef12d3da0a4c0701ddf0a35fa1195f"
+    },
+    {
+      "path": "app/backend/migrations/versions/0040_quick_plan_handoff.py",
+      "bytes": 2450,
+      "sha256": "12a33d9188391eff2bdc51e52963c3502b407ff725cee31f78eb7f6ae6630580"
+    },
+    {
+      "path": "app/backend/migrations/versions/0041_generation_orchestration.py",
+      "bytes": 4968,
+      "sha256": "8a684bad4026342a3bc691e97b50d86bbde3170c21c7b5ed3942b7056372013e"
+    },
+    {
+      "path": "app/backend/migrations/versions/0042_flexible_work_item_foundation.py",
+      "bytes": 11370,
+      "sha256": "7384efedaa6b3d25d8068ab05d5d3da00fdc7cffad041c609d774c2682c8d613"
+    },
+    {
+      "path": "app/backend/migrations/versions/0043_work_item_generation_contract.py",
+      "bytes": 19480,
+      "sha256": "164ee199e6e0bf85e2049dda82ca305d2f7d92f5b515c9a051d8a035a65668b9"
+    },
+    {
+      "path": "app/backend/migrations/versions/0044_context_resilience.py",
+      "bytes": 4011,
+      "sha256": "47540dd506bf3bc5fbdd61450db857f2f6b12f5b0ec309286f8f0393ceac23ec"
+    },
+    {
+      "path": "app/backend/migrations/versions/0045_goal_error_memory.py",
+      "bytes": 2667,
+      "sha256": "05df5f4aa3c1174135789603933aa8624ea387ddca41e38d7259c4aabc33eb6d"
+    },
+    {
+      "path": "app/backend/migrations/versions/0046_material_foundation.py",
+      "bytes": 6673,
+      "sha256": "73e9793731282af10bed172c8205e3465d8cf54f361948c735bdb7819532865b"
+    },
+    {
+      "path": "app/backend/migrations/versions/0047_research_persistence.py",
+      "bytes": 3969,
+      "sha256": "5f3873f46d9cf252e90328df55e75b0833dd5170ae1a3ecac0ed7ae2a2ba95f6"
+    },
+    {
+      "path": "app/backend/migrations/versions/0048_research_quality_metadata.py",
+      "bytes": 583,
+      "sha256": "cf80c02229bdd7e0ebf1bb637123b4916238eb7232daa06332aef6a98680be17"
+    },
+    {
+      "path": "app/backend/migrations/versions/0049_research_resume_stage.py",
+      "bytes": 547,
+      "sha256": "851ba1bb563b7884b8b274bf73a099f0eb4a6d698fc62d7a24cba57aa571fe48"
+    },
+    {
+      "path": "app/backend/migrations/versions/0050_material_chunks.py",
+      "bytes": 1487,
+      "sha256": "88c4bd7dc33febf6d13ab728f21b5412a9e910d2701bf74c81fcb5611198570e"
+    },
+    {
+      "path": "app/backend/migrations/versions/0051_material_jobs_fts.py",
+      "bytes": 4023,
+      "sha256": "4bb972ae621fcbf5f95b3378f4c1c964ef94eed47ab42d407df339a004b31c85"
+    },
+    {
+      "path": "app/backend/migrations/versions/0052_material_locators_and_worker_metrics.py",
+      "bytes": 1792,
+      "sha256": "28fd32b4c18b48e8543c529cfbbfbd0a507d6792c5d8615d0a1ffadb4d079747"
+    },
+    {
+      "path": "app/backend/migrations/versions/0053_research_run_leases.py",
+      "bytes": 2536,
+      "sha256": "39d37b25c35002a86208bbc2c3fcac84bc5f13f6b29ea81a9b2a9bb6f11ea3bf"
+    },
+    {
+      "path": "app/backend/migrations/versions/0054_reminder_governance.py",
+      "bytes": 1557,
+      "sha256": "19b3451a829197931507aad48d7d057b3911bea743520f50ba03020fc01b1a6a"
+    },
+    {
+      "path": "app/backend/migrations/versions/0055_reminder_history.py",
+      "bytes": 2717,
+      "sha256": "b2b2738cf6d5450ab3b99b9754d8ff43ddac6e6e32c94394f789b089a9b677ac"
+    },
+    {
+      "path": "app/backend/migrations/versions/0056_normalize_legacy_json_values.py",
+      "bytes": 2001,
+      "sha256": "2f9318a95b8c5b2740a696eec747907537b652499d0a5233f09849afcfc17cc1"
+    },
+    {
+      "path": "app/backend/migrations/versions/0057_rollout_priority_and_migration_audit.py",
+      "bytes": 2123,
+      "sha256": "c629a451249b0f2d5603d70fff0e1ad8b4e226063a018dd574f00fec10105dab"
+    },
+    {
+      "path": "app/backend/migrations/versions/0058_material_analysis.py",
+      "bytes": 1742,
+      "sha256": "61cc6199edfc24aa20924c5371a04634d4ef7e8f412bd7d80e7505f22dd39b13"
+    },
+    {
+      "path": "app/backend/migrations/versions/0059_material_full_fts.py",
+      "bytes": 1658,
+      "sha256": "67b8016b1630d8ac27af62986a84460af2039ba035ff581b97809bd6a0c19334"
+    },
+    {
+      "path": "app/backend/migrations/versions/0060_material_embeddings.py",
+      "bytes": 1061,
+      "sha256": "e040f29ac71028e27d6039f3f7e63c4d8b92f9fb2839f54ae1a1bd22daa5147e"
+    },
+    {
+      "path": "app/backend/migrations/versions/0061_research_response_requests.py",
+      "bytes": 1902,
+      "sha256": "29ad370c579d77dcc92cbf5d368313ac268055d6cf8f0b4ab0f838a0982b4c81"
+    },
+    {
+      "path": "app/backend/migrations/versions/0062_research_response_active_goal.py",
+      "bytes": 1067,
+      "sha256": "8b2f58e9e695bf53cc13ea6eedf663e504f0a9218b1d2d581ecb4094fa8fa869"
+    },
+    {
+      "path": "app/backend/migrations/versions/0063_fixed_activity_move_previews.py",
+      "bytes": 997,
+      "sha256": "e23477cdac2eefa61cce2b61286f6ee5c9427649561e0c7022ea6e2cec21aa24"
+    },
+    {
+      "path": "app/backend/migrations/versions/0064_shared_knowledge.py",
+      "bytes": 3547,
+      "sha256": "0fc23db7822772fd277cadb130ade5652b483013dc9064736826aff484f519af"
+    },
+    {
+      "path": "app/backend/migrations/versions/0065_knowledge_milvus_sync.py",
+      "bytes": 1315,
+      "sha256": "c5e858c9db0c2176517fc66431dddf3290c6b986735f04ba0e79558b9229c48d"
+    },
+    {
+      "path": "app/backend/migrations/versions/0066_goal_long_term_memory.py",
+      "bytes": 1167,
+      "sha256": "89ad7d1279079dddcd69d46ccab20c400c4ba100e2dd150887016a35d69219ae"
+    },
+    {
+      "path": "app/backend/pyproject.toml",
+      "bytes": 1345,
+      "sha256": "8b7e4cc0b4e1f51441ca099faccc31901ceca372465dec7fa22ccdcfb87e4160"
+    },
+    {
+      "path": "app/backend/src/planner_api/__init__.py",
+      "bytes": 35,
+      "sha256": "9d863272fb68b53f68d8d3bec3aa4f31196046564bf9e0527e2a467621a1c556"
+    },
+    {
+      "path": "app/backend/src/planner_api/ai.py",
+      "bytes": 40477,
+      "sha256": "7d3fb74fa227e41e9e04932d55ac86cf2d4528ab615f8a9be6f2cbc7becc0de1"
+    },
+    {
+      "path": "app/backend/src/planner_api/analysis_claim.py",
+      "bytes": 2100,
+      "sha256": "751887f98f0b9bad35d061cdd57cb844bbef8cad8b195a22b103a43fce605785"
+    },
+    {
+      "path": "app/backend/src/planner_api/api.py",
+      "bytes": 54798,
+      "sha256": "cffdd99376d6f2c4464a1656f88afd2939e11ec5c0682e33881e675f09c5786d"
+    },
+    {
+      "path": "app/backend/src/planner_api/bounded_cache.py",
+      "bytes": 2969,
+      "sha256": "a898e647f62e1f0994eff32113cb706bd070cb478f28bbff8cf76b6b86410f68"
+    },
+    {
+      "path": "app/backend/src/planner_api/browser_sandbox.py",
+      "bytes": 1922,
+      "sha256": "765ec127624ac78bbb52e958000d318c5687ab831cbb63a0a3d099d8aeb9106f"
+    },
+    {
+      "path": "app/backend/src/planner_api/clarification_worker.py",
+      "bytes": 1283,
+      "sha256": "190e69342d66d6ae420d621033a0da5b8f254f2b69e3dbdac1039bf5cf5c5960"
+    },
+    {
+      "path": "app/backend/src/planner_api/config.py",
+      "bytes": 15997,
+      "sha256": "886f6774ec1a0b1bdc4a2392b7d61e41df75097b6ecd8a825e501cc3384b59dc"
+    },
+    {
+      "path": "app/backend/src/planner_api/context_batches.py",
+      "bytes": 15279,
+      "sha256": "aba137ac2c1723c2a5c70667b439d8d214cd1783ce7c942ed97e5a2736cc310b"
+    },
+    {
+      "path": "app/backend/src/planner_api/context_compiler.py",
+      "bytes": 17972,
+      "sha256": "a4fee8b9346063c4b6277f3e47e0b93ac9bf7d7a1e9d53dba20f1fae31e67128"
+    },
+    {
+      "path": "app/backend/src/planner_api/conversation_memory.py",
+      "bytes": 8537,
+      "sha256": "76bce84cf5385d0bc3e75ab2b1b417835c47c036f67f1162f880b4a7c1eb4051"
+    },
+    {
+      "path": "app/backend/src/planner_api/database.py",
+      "bytes": 1380,
+      "sha256": "722a1c937ca2d95d060a5c1bddb752f88f7449db44ea8708a45506eccd7a5dbc"
+    },
+    {
+      "path": "app/backend/src/planner_api/day_allocation.py",
+      "bytes": 26705,
+      "sha256": "2046bd1a884b3f7b498997b4ff09dfcc5ffe2b5d586d3b8f6928e133161c8159"
+    },
+    {
+      "path": "app/backend/src/planner_api/day_schedule_ai.py",
+      "bytes": 12623,
+      "sha256": "bf05cd2f909748699ef0a2dd6d5f460aee8a5eeeaa37dd8d9c1e2bd16f233968"
+    },
+    {
+      "path": "app/backend/src/planner_api/day_schedule_service.py",
+      "bytes": 6775,
+      "sha256": "5a9992106ccfc680d86fab6f5a9960d18cd383a9812843c9c6fde770998ed5a7"
+    },
+    {
+      "path": "app/backend/src/planner_api/dependency_resolver.py",
+      "bytes": 11291,
+      "sha256": "3639ceacbb4d7c1a4d3a51e1dc0090e3dfa55ea29c60141b6d9c30f51f012cb1"
+    },
+    {
+      "path": "app/backend/src/planner_api/evidence_windows.py",
+      "bytes": 5047,
+      "sha256": "d9940be015f067cfc823df606b5f58b4d8fdeffa968522d45b4ac0a74b9559cd"
+    },
+    {
+      "path": "app/backend/src/planner_api/execution_calendar_ai.py",
+      "bytes": 10779,
+      "sha256": "2f1b88ada17cf22b554c4cb1c8c009fe51470ce16cebb7d4283b4b019c912201"
+    },
+    {
+      "path": "app/backend/src/planner_api/execution_calendar_service.py",
+      "bytes": 45389,
+      "sha256": "7a0194a72e3a8e8f5ae5cc98966fe26baa992d39b4648bafb12f66a7bdca4342"
+    },
+    {
+      "path": "app/backend/src/planner_api/execution_discussion_prompts.py",
+      "bytes": 7535,
+      "sha256": "87dbbfe1de306eeb8188528e3b067d1b8dafc9b6b58152ddd624ff039b2b43a2"
+    },
+    {
+      "path": "app/backend/src/planner_api/execution_discussion_service.py",
+      "bytes": 40452,
+      "sha256": "8d0ce2d0f6124a960b37aee3c53be1b5a6a37f00632f51fa98ff95106894600d"
+    },
+    {
+      "path": "app/backend/src/planner_api/execution_projection.py",
+      "bytes": 1981,
+      "sha256": "46de6a86cee5a3fff94d28d9bda502cd8f12b20a4e54e177380254e3a6111cfa"
+    },
+    {
+      "path": "app/backend/src/planner_api/execution_service.py",
+      "bytes": 353754,
+      "sha256": "8fde093a82446fa98f9bb152e3f0c988d525151013f6a7b4955c1b08c914b37d"
+    },
+    {
+      "path": "app/backend/src/planner_api/fixed_activity_service.py",
+      "bytes": 13394,
+      "sha256": "793caf29d9e5fdb5b12f8b65a8e0ddf267dfe23f2a969b9817e74d21f93bcf82"
+    },
+    {
+      "path": "app/backend/src/planner_api/generation_orchestration.py",
+      "bytes": 54217,
+      "sha256": "6a88c60629b9282a4bef772eecfc925107d7732a65df014555bb1c28470357d2"
+    },
+    {
+      "path": "app/backend/src/planner_api/goal_error_memory.py",
+      "bytes": 4734,
+      "sha256": "74d5ce11aaf59b3992a87e65816cc6e38af721c500d3559228cb8da104f2c884"
+    },
+    {
+      "path": "app/backend/src/planner_api/goal_memory.py",
+      "bytes": 8078,
+      "sha256": "be917830606ffc563bca8de4add652f963916d1c807847b0e72a7ed4edd485c4"
+    },
+    {
+      "path": "app/backend/src/planner_api/holiday_calendar.py",
+      "bytes": 9509,
+      "sha256": "c78476ce6708e5e35918c928a5b22df2ef54eeb9361bb0a70b4a483ff73e9dff"
+    },
+    {
+      "path": "app/backend/src/planner_api/knowledge/__init__.py",
+      "bytes": 88,
+      "sha256": "fa9612254af6b464e9b1e476e2122900a9e89ec529603a78c373ff4bc2aaad1e"
+    },
+    {
+      "path": "app/backend/src/planner_api/knowledge/api.py",
+      "bytes": 7288,
+      "sha256": "b72ef40c82675f64efc406c9769ad391215a5313fa6b8b5cccc853c2f722bba1"
+    },
+    {
+      "path": "app/backend/src/planner_api/knowledge/integration.py",
+      "bytes": 6353,
+      "sha256": "917b54e6930de3f58d4e44296d310a677aeebf3604ca96ba1b730da0ba456e2e"
+    },
+    {
+      "path": "app/backend/src/planner_api/knowledge/milvus.py",
+      "bytes": 7787,
+      "sha256": "75d7d420e9f0c2a3fafbf48b8467189338d64715f46ffebbba06990a9212f2f6"
+    },
+    {
+      "path": "app/backend/src/planner_api/knowledge/milvus_sync.py",
+      "bytes": 5765,
+      "sha256": "20818362ab823d69877b1582f8aa817f8b2b1041cedd61c19b7454a098fac2c9"
+    },
+    {
+      "path": "app/backend/src/planner_api/knowledge/search.py",
+      "bytes": 14094,
+      "sha256": "4efac16f12e07f070155a0d1d7b3c34cd9067f9445bad0b14061b694d353772f"
+    },
+    {
+      "path": "app/backend/src/planner_api/knowledge/store.py",
+      "bytes": 15546,
+      "sha256": "181ab0c3141936787acfac69c1bae03abfa8dfd5ba9a10a608d23d8c80e042e4"
+    },
+    {
+      "path": "app/backend/src/planner_api/knowledge/vectors.py",
+      "bytes": 2492,
+      "sha256": "4bf1838a5469bfa8768194202a64980410079ce4362250c24aafd42b4a9c3c98"
+    },
+    {
+      "path": "app/backend/src/planner_api/knowledge/worker.py",
+      "bytes": 6178,
+      "sha256": "3747f07ef51f6d6142012da664e95503ebb994f4d48593501504191b26616f90"
+    },
+    {
+      "path": "app/backend/src/planner_api/light_arrangement_ai.py",
+      "bytes": 9380,
+      "sha256": "e2f05b597d67d3dd769ffde92adc8d6077597a854bacbb62106668618d1e19ab"
+    },
+    {
+      "path": "app/backend/src/planner_api/light_arrangement_service.py",
+      "bytes": 16508,
+      "sha256": "abbc409361de3842c3fc0d69ad671225248beeb9a91d8a83705c62bd0790307a"
+    },
+    {
+      "path": "app/backend/src/planner_api/light_schemas.py",
+      "bytes": 3424,
+      "sha256": "2db2e22cb53bffc4985e9cd0fbe3b3b084aaf79892c5f5a890107f04d027f5f9"
+    },
+    {
+      "path": "app/backend/src/planner_api/local_model_dataset.py",
+      "bytes": 7785,
+      "sha256": "ccd4a9f7816aa0a8bcea665c78e549cd345a4f4b23e835aaacc6ba6a9379d303"
+    },
+    {
+      "path": "app/backend/src/planner_api/local_model_shadow.py",
+      "bytes": 6110,
+      "sha256": "c32f47f51323f2779601f3a48d162f9009073a997aac69e3f6d3fa4af957af39"
+    },
+    {
+      "path": "app/backend/src/planner_api/main.py",
+      "bytes": 5058,
+      "sha256": "c4bad353dd54b58b260a4d703c93713e3109dca4e1cbfbd9b21fe8f8cb5288b9"
+    },
+    {
+      "path": "app/backend/src/planner_api/manual_plan_service.py",
+      "bytes": 36755,
+      "sha256": "f6b8c8f0098bd7d6408dd31e5f0e2d4f3c04c2fb4000672f054fc705dbee81c5"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/__init__.py",
+      "bytes": 47,
+      "sha256": "9043ca9f02f996c4bd855f0c8ce584b3596bbaf2165eee89fbfa4ae162f22d1d"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/analysis_ai.py",
+      "bytes": 18698,
+      "sha256": "874692f14db72f80d0384f3b217ada149ffbd7382ae13aac194a92072d8e1c19"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/analysis_service.py",
+      "bytes": 22609,
+      "sha256": "baf79d495f0cfeec4551160fda7346ad2b8bf5f46428e38caf9dc62d22ea2f51"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/api.py",
+      "bytes": 7965,
+      "sha256": "72553ee5e563b6826dd7f4a91f4961c8600f0eccf70ecc0b3ada02f33cffa280"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/chunking.py",
+      "bytes": 6837,
+      "sha256": "76a949b7b70fa82687192a88e8476180c7386c75bbf93c808bafd8937309a3fd"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/mineru_adapter.py",
+      "bytes": 2355,
+      "sha256": "12cf96261c206bdbc98ccdeb4546e8a0c524e8a65772e8bd8a82115fc119f84f"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/mineru_runner.py",
+      "bytes": 1850,
+      "sha256": "8fea3ba26fa7d6a9d162662a6e4ae40caa85715e59aabe852ebe1b7b97d1700b"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/ocr.py",
+      "bytes": 1715,
+      "sha256": "882c161e1caf9cb8a2ce7cbd9fe68e862905a0b614499ac4f4b3797ac3db1909"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/parse_cache.py",
+      "bytes": 10378,
+      "sha256": "7de4430fc8191071daf7a81028a733bd436a704df9bedf55750d743a52501b3b"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/parser_worker.py",
+      "bytes": 1234,
+      "sha256": "9dd024a314869758af46b34937426eb97ec37416c2e450625bd24e44a3ccc745"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/parsers.py",
+      "bytes": 27147,
+      "sha256": "b4b4bc8e89b53541cc90d6fe79d599f5f85ddb4a0c80f553816233e64b69d1c5"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/processing.py",
+      "bytes": 38693,
+      "sha256": "b3666764d7cb66dddcee65eb75d20dbdda6c1b804e0cc5a72b4a3ecfccdf63a6"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/reading.py",
+      "bytes": 7684,
+      "sha256": "a839fff2fc36ce225c5f4a7c3b5ccb13e4338a895a15e7432fd8e5b63602368e"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/rerank_experiment.py",
+      "bytes": 8114,
+      "sha256": "dbcd1542b02ee31bafa059dcf16653d4f3f7bcbfc70785613e2e8735e38835d1"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/reranking.py",
+      "bytes": 7529,
+      "sha256": "2eec12de212d06243201754a624ac096a815712389740179cdf372c951d01729"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/retrieval_cache.py",
+      "bytes": 424,
+      "sha256": "74651c1a7421e9e6759cc0e6d93708a96291142c88a7c20746ee8d4f860f9968"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/sandbox_parser.py",
+      "bytes": 2845,
+      "sha256": "9b7f98e4cf20dbc94e34bb55b806fad2f6868422e55fd776907296acd5b944da"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/schemas.py",
+      "bytes": 7556,
+      "sha256": "aa6e108a7bc1c6a902e55444b2b5f492537bd8ffad200bf08885c9d53075501c"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/semantic.py",
+      "bytes": 10752,
+      "sha256": "d5f0a74bcd556ba2560288ef259863f3b7bc112b65d4b0fc58cee99a752dcc9e"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/service.py",
+      "bytes": 22114,
+      "sha256": "5028f4397f426b8ef4b8e1e53b0bb8885267c4db1a79a215c3b7cf84301de51c"
+    },
+    {
+      "path": "app/backend/src/planner_api/materials/worker.py",
+      "bytes": 11268,
+      "sha256": "0f2db8faae6864f47fa6e2365421934d0a331d4ea9c1beec1a58c6d2c8b6e144"
+    },
+    {
+      "path": "app/backend/src/planner_api/model_telemetry.py",
+      "bytes": 18580,
+      "sha256": "e326f12c8b47583757ab26ef6a2a7104a0626d44f2aa1bdc559107440b4ed3e2"
+    },
+    {
+      "path": "app/backend/src/planner_api/models.py",
+      "bytes": 92714,
+      "sha256": "d0037c9796d963b3e53a75a52fd1170ea8776efec282c16c5e916075b762b4f4"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_adjustment_apply_prompts.py",
+      "bytes": 7902,
+      "sha256": "e2138a9b795fbf5e1f325b2332c7768f32e147e76d12f625e22bb8dfbb0ace06"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_adjustment_prompts.py",
+      "bytes": 10911,
+      "sha256": "59446fde5af52f954d900aceefaee4eb73e0c6bf1b4da4cfcb9a21c0011bf751"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_ai.py",
+      "bytes": 89978,
+      "sha256": "b1a95476a998c88f51d4d6747362966c9980a5a30731a2e95e3e6dcf80804e32"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_calendar.py",
+      "bytes": 1677,
+      "sha256": "9280bcac5ce51f530ba3a17b322dfd1dadcfa6632c7569ccb83c0d5fe59d6c8e"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_capacity.py",
+      "bytes": 9438,
+      "sha256": "a78c96907a636d4b223a1afed9482442da6cd79e2a63359d132c0c5d04e02890"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_compiler_contract.py",
+      "bytes": 5545,
+      "sha256": "98efe37694b0be0e20a4a9cfcd0f49e81a3feddd7c7714a23516deec5fa04736"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_compiler_repair.py",
+      "bytes": 8731,
+      "sha256": "71d9a0e7bc9a97a715441ed38a5de461c040b70cee3d79c1bc5e96c1da24e0fb"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_discussion_ai.py",
+      "bytes": 52362,
+      "sha256": "ffedf7c8371a1a9efdd4b8b2e7cbba84a5643ca969115e6af325ddab200eb375"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_explanation_prompts.py",
+      "bytes": 7132,
+      "sha256": "38700cc22bb9b84368260267d9b445533549a0199a4e197e0b6173f6e4516726"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_generation.py",
+      "bytes": 4509,
+      "sha256": "d0ac29d90d68479412c42f03f945ba4d05256fcd3b8bf87da0bd9f25780182b2"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_prompts.py",
+      "bytes": 59622,
+      "sha256": "f3302348d6da8e0344f8ec05321d5d71d6aece90811c07a062784584f268daad"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_rule_integrity.py",
+      "bytes": 7876,
+      "sha256": "ff82a73839f6ab5abaeac279b21435ce8aa3c3ab0333681a68a220e0045e1d59"
+    },
+    {
+      "path": "app/backend/src/planner_api/plan_service.py",
+      "bytes": 501795,
+      "sha256": "bf1374c71aa062ccca4a147071622ad603480960ea9a76b7adedae80dcd4b4a7"
+    },
+    {
+      "path": "app/backend/src/planner_api/planning_approach.py",
+      "bytes": 4212,
+      "sha256": "518527b04b4402c0c207c6293043c2d91b067b3c228f19a727b2a8cd7524e52f"
+    },
+    {
+      "path": "app/backend/src/planner_api/planning_context.py",
+      "bytes": 22719,
+      "sha256": "cc47b658c0693fc48a871dbc68d659c1258c73e698defe8f1051c70d1c2b914b"
+    },
+    {
+      "path": "app/backend/src/planner_api/prompts.py",
+      "bytes": 12517,
+      "sha256": "87880f65ccb8b6e9f0512fd3edae9c1a5637fe0205bd781452c3d6d451f9289d"
+    },
+    {
+      "path": "app/backend/src/planner_api/quick_plan_handoff.py",
+      "bytes": 1008,
+      "sha256": "7e3a56884c14246e8e6f306620cd35595650bd11abff9c863ab6da7e11fdbcda"
+    },
+    {
+      "path": "app/backend/src/planner_api/recommendation_ai.py",
+      "bytes": 9600,
+      "sha256": "da99cebffb43278b734e4a24c52eab9e0e316df4ed3747cfcffb6342bf1d8156"
+    },
+    {
+      "path": "app/backend/src/planner_api/recommendation_schemas.py",
+      "bytes": 2183,
+      "sha256": "a91c7cfddbd8d91f9a0c3db9f0276d2163852b427582e625cd521dcb77be39b4"
+    },
+    {
+      "path": "app/backend/src/planner_api/recommendation_service.py",
+      "bytes": 31755,
+      "sha256": "2d48b0fa5f3a9013a87381677bd311473815f60d058d8a838cd61fc8741ffe2f"
+    },
+    {
+      "path": "app/backend/src/planner_api/recovery_allocation_prompts.py",
+      "bytes": 2512,
+      "sha256": "65ba7eaa6a1abc45212741d7c9b67bc84ef898149cdaba75119675ffd2d8e1a6"
+    },
+    {
+      "path": "app/backend/src/planner_api/recovery_diagnostics.py",
+      "bytes": 8365,
+      "sha256": "a7d306d055ac9ae5dad89a44aea7fd480a8005f00e7b4c6fa6ceb2f75bcf309a"
+    },
+    {
+      "path": "app/backend/src/planner_api/recovery_scope.py",
+      "bytes": 3985,
+      "sha256": "792f28800cf13f57f27e1844b00c19a62c238783d4171c49b57ee0be6690737a"
+    },
+    {
+      "path": "app/backend/src/planner_api/recovery_split.py",
+      "bytes": 11060,
+      "sha256": "a36422ff028de8d4595b48b7eb81521dd2ad85ed403e5f2383e71df66fcb7bba"
+    },
+    {
+      "path": "app/backend/src/planner_api/recovery_time_preview.py",
+      "bytes": 7973,
+      "sha256": "0ff669ef7a694a8db2c03878eabc217a390ce31425b9d526f180c747a82d3447"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/__init__.py",
+      "bytes": 1728,
+      "sha256": "757ec46bb635c94630076b5ddc14f62a10bd4b7ec6466a90f0da4141871ac0a9"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/answer_verification.py",
+      "bytes": 10201,
+      "sha256": "8d8a38a42572614f80cd7d4c0b35eeb5284b787252070ecad84ec1c5188cb327"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/archive_windows.py",
+      "bytes": 11872,
+      "sha256": "a62b0489f0d70a4ca49708c25b8b8f594b58c85c4c8c32b3c2ea76806792deb2"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/consumer.py",
+      "bytes": 9711,
+      "sha256": "af2d4fe5c583ddb89ec5a8afa1750c9e1b663a596838f84bc5db069a0c27f658"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/context.py",
+      "bytes": 29424,
+      "sha256": "75fb54e23161529e43903c06bf8c9b425f6945a4689716b5bba1b17574355d30"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/engine_router.py",
+      "bytes": 3951,
+      "sha256": "6b3b25ba72783b293d5654fadd88cc0e3f2826e0f558da4cdff3f4433ebb4640"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/evidence.py",
+      "bytes": 27222,
+      "sha256": "878e8c799e7ab928732d558b7d9bb75eb5834106a9f3fcf6865458d09172a92e"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/excerpts.py",
+      "bytes": 1715,
+      "sha256": "08d32f20cb01ccea3ec60dc97553d565fc8a9046ab158fca0e4ed4a90b7c3f79"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/intent.py",
+      "bytes": 51220,
+      "sha256": "517122d1d97e35b1b271094f36a9b6c53a1560ded0a5596aa97c642fd97c91d0"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/laya_provider.py",
+      "bytes": 11063,
+      "sha256": "c4038712ff393463949fd90104719b9b0dc48845daf257af6076a6d86905b6bb"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/memory.py",
+      "bytes": 2365,
+      "sha256": "68955b8991202f284f513a0c171458cb062c8a7be3e41c16389b290801281af5"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/model_contract.py",
+      "bytes": 1681,
+      "sha256": "473e769c19ad6e31a3f2a36829fb5d9363b3097720c2950b73a76222b4ecf75d"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/orchestrator.py",
+      "bytes": 135683,
+      "sha256": "fd15332b87684f52161a6ad9e8b3de9160f20f1033a98ee9c9de8f35a273c6c4"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/page_quality.py",
+      "bytes": 5485,
+      "sha256": "5bc725e54dd83edd2144e74f2a9f77ed766768e77223e784ed7e49931d5710bf"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/passage_retrieval.py",
+      "bytes": 5321,
+      "sha256": "ae4123f56207fc5fad15190d926cc3ee155f25703e680f4f7e4fa91b6d56ed6a"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/persistence.py",
+      "bytes": 25603,
+      "sha256": "0ff990d5e422086a88e2872e0dcc7f63cce2d21a6322bdf9b2cc097e2b3cf909"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/providers.py",
+      "bytes": 4563,
+      "sha256": "1a7eb5523078cc32e6de9f3b2a533dbe3a8d57671dba390d4af5efa5b73cd8a5"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/query_planner.py",
+      "bytes": 22285,
+      "sha256": "fb0ef34f39e158e30123fedbc1f07ea08e0ed1f2e502a5b2abd90cdf79e31694"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/ranking.py",
+      "bytes": 24750,
+      "sha256": "6c94e5e53836d8a9f3b22b93c253687eaf73b678bfca2fccc34b9bfd6d9484ba"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/readiness.py",
+      "bytes": 10258,
+      "sha256": "ffd5b4cd9fa6920bca76041e6d9aace55d1be3384c3eb3a516e3f6ba734fab01"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/reranking.py",
+      "bytes": 6394,
+      "sha256": "2101132d51de5c0ac2b359d1ce65a6c304be428f8ef208499c0a504dc0551926"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/response_api.py",
+      "bytes": 1775,
+      "sha256": "421684b4e44c2843564e8bd928d1b5549a1d3600bb6df846bc6913ce8adda903"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/response_schemas.py",
+      "bytes": 1354,
+      "sha256": "be399bd1363b3f86f10015ca9fb91688484a88293cd1c8704f18dc496cdff12e"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/responses.py",
+      "bytes": 19527,
+      "sha256": "31d740be36f1665810ddc9d6bbc20d15e53ca630671af47c4ea23a88ff2b9b3d"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/schemas.py",
+      "bytes": 23898,
+      "sha256": "ec455e4fbf4fcff4e5c4f7409a19517abba6f8c12d1fece3b5206b3eed8778c9"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/scope_guard.py",
+      "bytes": 8943,
+      "sha256": "32de6a1fde5dcebdbaa7509dce7d96aaa0a39014a61f6c21c680becfb634ca92"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/selection.py",
+      "bytes": 7328,
+      "sha256": "4c0939dd3f32ca5af1e1b04f5a65137ee49e9d6a16c6659ccdf2b32499cb8185"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/service.py",
+      "bytes": 1291,
+      "sha256": "c177eba0d140a4caa53d097746e445f790e5dd956407a7950a5fdd958a67358b"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/sources.py",
+      "bytes": 15894,
+      "sha256": "10d0b34c2ca9af5c7203e0b4142ebea815fa53df7bfcd1bcec15e1dedfa956c4"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/span_context.py",
+      "bytes": 10832,
+      "sha256": "0b4b9fdd24e627e0508929b9d59d17a010293eb32709981233d951c97fc4496b"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/strategy.py",
+      "bytes": 23222,
+      "sha256": "44d2d8955d171ac9d97ef5802874c85af920a0fc0432d38b642ae91cdc55981e"
+    },
+    {
+      "path": "app/backend/src/planner_api/research/worker.py",
+      "bytes": 9492,
+      "sha256": "e3c0f67f8274a7c7637df077d1e1407c3f12f668f3b104e042e7e36a4ea5c286"
+    },
+    {
+      "path": "app/backend/src/planner_api/route_ai.py",
+      "bytes": 26849,
+      "sha256": "4945c7e9e988e581b063975cc2fd61103c5ddae0af830a9f0fc41ee970bd19d6"
+    },
+    {
+      "path": "app/backend/src/planner_api/route_explanation_ai.py",
+      "bytes": 13015,
+      "sha256": "059bdd4948f9a3e739976adfc5f4deb5dbb388800794e5fc7e6acf6567e5fd2c"
+    },
+    {
+      "path": "app/backend/src/planner_api/route_explanation_prompts.py",
+      "bytes": 2097,
+      "sha256": "2df41fef6e44f7292b90019aad4304a80f505e930a961d6900af4998496b13d3"
+    },
+    {
+      "path": "app/backend/src/planner_api/route_prompts.py",
+      "bytes": 7979,
+      "sha256": "615819fadd735722a6f54594c3d4e9f0cb455fcc6f9dd3af8df4e61d1b3a5f71"
+    },
+    {
+      "path": "app/backend/src/planner_api/route_service.py",
+      "bytes": 25543,
+      "sha256": "920b5b7d21f91db1b408ddfcaf07ee0cb42ec41b4ec8aac864774ab11d066965"
+    },
+    {
+      "path": "app/backend/src/planner_api/schedule_constraints.py",
+      "bytes": 5407,
+      "sha256": "04d480045a9722204bca80808c6821f343de4cbdfcaff7664a01773a97c0b1ca"
+    },
+    {
+      "path": "app/backend/src/planner_api/schedule_profile.py",
+      "bytes": 2079,
+      "sha256": "64ca5a2338a7a5fbe8113d0e3a0ff2650ca6fd5fffdffc23148fa6d7de560a78"
+    },
+    {
+      "path": "app/backend/src/planner_api/schedule_reconciliation.py",
+      "bytes": 13094,
+      "sha256": "d6c4d301565ba3ff6d6edf6f315b1aa008e88a2585018aec98a08a9f8a037312"
+    },
+    {
+      "path": "app/backend/src/planner_api/scheduling_approach.py",
+      "bytes": 3021,
+      "sha256": "41cf27fb3c08a6edce2942b93956a0a4a7cc5c078eaf25e94b1cc07b71ec417f"
+    },
+    {
+      "path": "app/backend/src/planner_api/schemas.py",
+      "bytes": 126312,
+      "sha256": "bf54fdecc935821fe0d6883d3f0e4e95d7253e77fd510c93ed3b29f05f09b7e4"
+    },
+    {
+      "path": "app/backend/src/planner_api/service.py",
+      "bytes": 90083,
+      "sha256": "b71e44296db3abe4284e910a169c20fc51e8d40450c8989fd36f495dd703d92a"
+    },
+    {
+      "path": "app/backend/src/planner_api/specialist_context.py",
+      "bytes": 12230,
+      "sha256": "593139cab42f38b84947f1fa4d07e8d20a4aa79cd02be1f6c73e36f1f1f76851"
+    },
+    {
+      "path": "app/backend/src/planner_api/structured_facts.py",
+      "bytes": 3700,
+      "sha256": "7712ff109f63960509db22afc5fc94da3c3e4ee31edbd0d09f8f97fb0f9c744c"
+    },
+    {
+      "path": "app/backend/src/planner_api/temporal_contract.py",
+      "bytes": 6276,
+      "sha256": "a0a82e69d598f35ae33ceaf6e87d3b8220b502a685c5ff625b16354318ff3a3a"
+    },
+    {
+      "path": "app/backend/src/planner_api/today_service.py",
+      "bytes": 23274,
+      "sha256": "5f0fa05836f61c22e6e9e8214956e872acaf018fa86c204dd3bcaacfce0a3a0a"
+    },
+    {
+      "path": "app/backend/src/planner_api/user_settings_service.py",
+      "bytes": 2173,
+      "sha256": "db99041fda95c5472fc9e3dbd0efb20115d8a291e0b5ef77e617120037b94ed4"
+    },
+    {
+      "path": "app/backend/src/planner_api/work_item_domain.py",
+      "bytes": 17354,
+      "sha256": "6d2d722cec4413ea21dad3b57730b7f180488715ec015bcd3c2ea611177ab06e"
+    },
+    {
+      "path": "app/backend/src/planner_api/work_item_materialization.py",
+      "bytes": 49119,
+      "sha256": "86ee997c3384048865f69b0302288f848a1424661db573185f62850642953247"
+    },
+    {
+      "path": "app/backend/src/planner_api/work_item_projection.py",
+      "bytes": 4783,
+      "sha256": "fdeaf7de7ea8eb8a7dd9a79644e9521c4638cb130d8595ddfc4bdaad7085e815"
+    },
+    {
+      "path": "app/backend/src/planner_api/work_item_validation.py",
+      "bytes": 11214,
+      "sha256": "bfd79fe35566e858ce2c49e4d47159ba049ffe969d6570aa2dd2631a91a98134"
+    },
+    {
+      "path": "app/backend/src/planner_api/worker_sandbox.py",
+      "bytes": 11382,
+      "sha256": "8cb406a82d2c444fe0898107c3425aabe5623da2e94b53100b1245675901088e"
+    },
+    {
+      "path": "app/backend/tools/setup_material_models.py",
+      "bytes": 3049,
+      "sha256": "75a799ef892d3be15598e98d6b9f3ab05740b491956736d4f31e7e645a1de671"
+    },
+    {
+      "path": "app/frontend/index.html",
+      "bytes": 740,
+      "sha256": "b799fbd4d2ae4262d3d10d39241cd47aa48f5f0f6cf3f5387c644ed5069a67dc"
+    },
+    {
+      "path": "app/frontend/package.json",
+      "bytes": 850,
+      "sha256": "d0b1a0e21882ff890a7cd62441a83d4b36570dbd7275a5542b3d3bf537027475"
+    },
+    {
+      "path": "app/frontend/pnpm-lock.yaml",
+      "bytes": 84302,
+      "sha256": "7bf897abb747d8fe737d0b7f357222c87b6f422d5f8ee53c4d8593a2b826782f"
+    },
+    {
+      "path": "app/frontend/public/favicon.svg",
+      "bytes": 9522,
+      "sha256": "61bc9a161de58248288e6905425d7180f0624c2865007b97d763fdac12043a66"
+    },
+    {
+      "path": "app/frontend/public/solevia-apple-touch-icon.png",
+      "bytes": 22092,
+      "sha256": "42bc4ad6a9ac9f2f2722943cb95b97bf7d82aafe2311c132a6f210d43ccb537e"
+    },
+    {
+      "path": "app/frontend/public/solevia-icon-32.png",
+      "bytes": 1827,
+      "sha256": "63fed47d3b3a1edab2ca8cc2271e1d7954294a0398cda27a2dbe3efa7ddaa7d7"
+    },
+    {
+      "path": "app/frontend/public/solevia-mark.png",
+      "bytes": 120870,
+      "sha256": "e20912a6952cce09ad2e4df6fddc397d1ee076446fd85fa1c9863c3a0905e9d0"
+    },
+    {
+      "path": "app/frontend/src/AllocationDialog.tsx",
+      "bytes": 9133,
+      "sha256": "ea7d91266c269f17f122631be080f36c2eb8d1b9d3dbe4400e55d6033c2f52ca"
+    },
+    {
+      "path": "app/frontend/src/App.tsx",
+      "bytes": 477,
+      "sha256": "0b97d7211dc8891bdca235bd1f30ae3a157823dcb9f0f5e191fe21d7c8818e30"
+    },
+    {
+      "path": "app/frontend/src/ExecutionDateControls.css",
+      "bytes": 3577,
+      "sha256": "97512348bfa3454dcf19ad92a88fb45a2425d9ecfca1caaafed08322692a9110"
+    },
+    {
+      "path": "app/frontend/src/ExecutionDateControls.tsx",
+      "bytes": 8439,
+      "sha256": "66497d50840efebec32ccbd633c23f99d716db97a4be16da244e89fa210afa1c"
+    },
+    {
+      "path": "app/frontend/src/LightArrangements.css",
+      "bytes": 7636,
+      "sha256": "f4a4317cee5d7a099369680c1af68656847df050523d6608f3614b3ee822663f"
+    },
+    {
+      "path": "app/frontend/src/LightArrangements.tsx",
+      "bytes": 31083,
+      "sha256": "231545077ad05a2cdcae0bcde5e0fbf69c57ae952193cd8595c52182951fe691"
+    },
+    {
+      "path": "app/frontend/src/RecoveryTimeReview.tsx",
+      "bytes": 3036,
+      "sha256": "2f6adabf114cb63d20371e930bbee06da944163fded5451e97ae0a153a4a74ef"
+    },
+    {
+      "path": "app/frontend/src/ScheduleOptions.tsx",
+      "bytes": 5561,
+      "sha256": "b8c739ab352d77b189bf35c4cb618bb4f556edeb57edf783412834e674be4b49"
+    },
+    {
+      "path": "app/frontend/src/UserSettingsPanel.tsx",
+      "bytes": 13033,
+      "sha256": "9a78ad5e8e50fe0a29b50781a8cb034fdb9049979ce559c9f8b1e8b4af392bc0"
+    },
+    {
+      "path": "app/frontend/src/api.ts",
+      "bytes": 436,
+      "sha256": "95bef73309324eba7eabc98209326c57b7d865c4a50ab74ae9806f1a7c3ca380"
+    },
+    {
+      "path": "app/frontend/src/api/client.ts",
+      "bytes": 6745,
+      "sha256": "fb623c799f83e32e8d0edf8e89267223ea7b11ed0f0f1bc810121faa11aa88b6"
+    },
+    {
+      "path": "app/frontend/src/api/contracts.ts",
+      "bytes": 47383,
+      "sha256": "0f132f99ccb82cc867f7918e8ac949e761694c7923911cd393832ad57fa542d7"
+    },
+    {
+      "path": "app/frontend/src/api/execution.ts",
+      "bytes": 15798,
+      "sha256": "ebc4e018dafd07bab40a9e184d4ed0983f70d80c94756342560430d14e352ce5"
+    },
+    {
+      "path": "app/frontend/src/api/goals.ts",
+      "bytes": 5776,
+      "sha256": "cfb68e5ebca3f75cd4ddd1e0be64e93342cbc370fdc0228bed1f3095d948e058"
+    },
+    {
+      "path": "app/frontend/src/api/manualPlans.ts",
+      "bytes": 1777,
+      "sha256": "f359f96ee48207ffa45c7a69931c947f3b6971d49311dba6ee8a3fd56f603523"
+    },
+    {
+      "path": "app/frontend/src/api/materials.ts",
+      "bytes": 4451,
+      "sha256": "7637218d6c299154b0da71bae007acafbd27aa5e1b15788a5aff5cb2b764b2a6"
+    },
+    {
+      "path": "app/frontend/src/api/planning.ts",
+      "bytes": 5365,
+      "sha256": "fe4f4ba8ec23e1b66ae87692fcd1f1a59a79bdb1b05a7826a38901e0193ef621"
+    },
+    {
+      "path": "app/frontend/src/api/recommendations.ts",
+      "bytes": 1218,
+      "sha256": "40401cffda343473b0db29439a0f9d86175683b9aaaa0636257e4c2bf539b6ee"
+    },
+    {
+      "path": "app/frontend/src/api/recovery.ts",
+      "bytes": 3654,
+      "sha256": "642a93da56fb83da8fe63da9da48eee8de5b4df22363c19af9047ddcd58c7933"
+    },
+    {
+      "path": "app/frontend/src/api/research.ts",
+      "bytes": 3736,
+      "sha256": "41153f0d463070d2a4a6a5f444c6b003a7889048e47fe29632e4a6aa11f62ee7"
+    },
+    {
+      "path": "app/frontend/src/api/workspace.ts",
+      "bytes": 2903,
+      "sha256": "87ffcd91cab8779ded08a2beaf3c343a583a7e5213f74d0e19d594bcc708791c"
+    },
+    {
+      "path": "app/frontend/src/app/GoalActionMenu.tsx",
+      "bytes": 1273,
+      "sha256": "0d106b6a8eb2bedd54d5ea6a46920d1c16cd2221d3718bb898938d2f6bf11d5e"
+    },
+    {
+      "path": "app/frontend/src/app/GoalNavigation.tsx",
+      "bytes": 5978,
+      "sha256": "aea14b3a5647ce59114579ef0aa28d7582574298d4925bf8d420728a3c8438ea"
+    },
+    {
+      "path": "app/frontend/src/app/WorkspaceShell.css",
+      "bytes": 7545,
+      "sha256": "f7f8528a76c90e475c9764c692db25efbd1edb73fb1aeaea83b8ca5ecdec3205"
+    },
+    {
+      "path": "app/frontend/src/app/WorkspaceShell.tsx",
+      "bytes": 9915,
+      "sha256": "80a0b8fa23e7a0952df41fbf332201dcf86b6886c272bd9b26881777f3aef313"
+    },
+    {
+      "path": "app/frontend/src/app/goalState.ts",
+      "bytes": 727,
+      "sha256": "ffabcc012202280b147d1356b116f675c9fd5e31e49e44d3bab2843926b9f36d"
+    },
+    {
+      "path": "app/frontend/src/app/routePresentation.ts",
+      "bytes": 139,
+      "sha256": "90801124fd3acb79227cc1fe835c200f2bb6537ec8cd1d078c24734a4f8c8685"
+    },
+    {
+      "path": "app/frontend/src/app/usePageTransition.ts",
+      "bytes": 600,
+      "sha256": "97eeeacf5cb90c1b7fdf882d74e90fa5b013ff7252c4ed827f955c823a1a173b"
+    },
+    {
+      "path": "app/frontend/src/app/useWorkspaceGoals.ts",
+      "bytes": 4336,
+      "sha256": "16ed2f0f7dd1d056620f9201a8162dbdca96db746ad1c26baef4d71596f3a88b"
+    },
+    {
+      "path": "app/frontend/src/assets/fonts/OFL.txt",
+      "bytes": 4456,
+      "sha256": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da"
+    },
+    {
+      "path": "app/frontend/src/assets/fonts/ibm-plex-sans-400.ttf",
+      "bytes": 205252,
+      "sha256": "6dbe082463cf749cfa057d45c3048c90f4df031496498e5b5bdfd0b6babb9d16"
+    },
+    {
+      "path": "app/frontend/src/assets/fonts/ibm-plex-sans-500.ttf",
+      "bytes": 205292,
+      "sha256": "6f7a8c4219e021ff7c9131bc5f1f7af97bcd1436a59578d444a8cb92e9791742"
+    },
+    {
+      "path": "app/frontend/src/assets/fonts/ibm-plex-sans-600.ttf",
+      "bytes": 205284,
+      "sha256": "5311c66fd6d04ae45671236f7eae667b671c06c1dc7e88d52c206e5fadd0fb21"
+    },
+    {
+      "path": "app/frontend/src/assets/fonts/solevia-sans-sc-OFL.txt",
+      "bytes": 4570,
+      "sha256": "73ddc30da0b3334dc7c6810823dfecd8568046a02f40ce7e7fea2e2f9892578a"
+    },
+    {
+      "path": "app/frontend/src/assets/fonts/solevia-sans-sc.woff2",
+      "bytes": 2051740,
+      "sha256": "f7b8a58d334f83f2316a92abdff75f6d2778906048f3f1b5e40e5f26fb15c11d"
+    },
+    {
+      "path": "app/frontend/src/assets/fonts/solevia-serif-sc-OFL.txt",
+      "bytes": 4536,
+      "sha256": "5847cd46c03f6a3b3f8e00093f992ddd096fb603975104c84767056dd4950ddb"
+    },
+    {
+      "path": "app/frontend/src/assets/fonts/solevia-serif-sc.woff2",
+      "bytes": 352528,
+      "sha256": "96ecedd675ca4c675fa2c4b6f412cd544fec20b1b703bcf00f71806654147e62"
+    },
+    {
+      "path": "app/frontend/src/brand/SoleviaMark.tsx",
+      "bytes": 553,
+      "sha256": "a3a023124a3323c68e56d3e6b92cc36c8b3240d8502ecb2aecdbc682c26317ba"
+    },
+    {
+      "path": "app/frontend/src/brand/brand.css",
+      "bytes": 1071,
+      "sha256": "d8d1ad24231c02e360f0faa4775c585c67c45b4cf659a318af700393c6ae80a4"
+    },
+    {
+      "path": "app/frontend/src/brand/identity.ts",
+      "bytes": 341,
+      "sha256": "45e09f2d187fa427433fdfb764bd06b81eaba86207ff0a6658b83ce81778f9f5"
+    },
+    {
+      "path": "app/frontend/src/dashboard/CreatePlanMenu.tsx",
+      "bytes": 2387,
+      "sha256": "9e3c30cad6ff380021f8df176405e66bd1d97a98f48968451573de8eeace2d62"
+    },
+    {
+      "path": "app/frontend/src/dashboard/DashboardRefinement.css",
+      "bytes": 3155,
+      "sha256": "e31ad18471ef4833ff93d778ec19964198d01d5bd70674c5af431967e339aeff"
+    },
+    {
+      "path": "app/frontend/src/dashboard/ScheduleTaskDialog.tsx",
+      "bytes": 3638,
+      "sha256": "d1f1929b3979f542e75b00a681752a01cfbd81d611c2000ffa2517ae0183a6b2"
+    },
+    {
+      "path": "app/frontend/src/dashboard/TodayCalendar.css",
+      "bytes": 2286,
+      "sha256": "43938ab7ebbd9535d17f9a354b6d5a207978ed113d37cb31c15c47b1df9e4933"
+    },
+    {
+      "path": "app/frontend/src/dashboard/TodayCalendar.tsx",
+      "bytes": 1861,
+      "sha256": "141d615549302d23446ac7a67ff5099ac74585d91f51997098026396edd1a715"
+    },
+    {
+      "path": "app/frontend/src/dashboard/TodayDashboard.css",
+      "bytes": 6061,
+      "sha256": "6262f735f038e9c59d3b3c6d7dc13158e26cb54d7cb3df2ea431b0b246571e37"
+    },
+    {
+      "path": "app/frontend/src/dashboard/TodayDashboard.tsx",
+      "bytes": 3453,
+      "sha256": "4670688bcc35420fe618604ff7de266c7825af21e00f1c94bb2ea8e176b1274e"
+    },
+    {
+      "path": "app/frontend/src/dashboard/TodayFocus.css",
+      "bytes": 1744,
+      "sha256": "ea251606789017672302bbef3c48b0b58f871a017a63a4b95871e02bb67cb19e"
+    },
+    {
+      "path": "app/frontend/src/dashboard/TodayFocus.tsx",
+      "bytes": 1584,
+      "sha256": "bfba0f1961dad47feea5d0832c254751a646bb050d87a29f7ec6c97b3325768c"
+    },
+    {
+      "path": "app/frontend/src/dashboard/TodayTaskCard.tsx",
+      "bytes": 2269,
+      "sha256": "97f752ec938ac7b9428c356b2bdfcb062796507e97cda0e025129364180f33b5"
+    },
+    {
+      "path": "app/frontend/src/dashboard/TodayTaskLane.tsx",
+      "bytes": 1723,
+      "sha256": "86beaa6c3a2b964dc28df6490f4735024c3c9970da5e940b84b12e8c6af15ecb"
+    },
+    {
+      "path": "app/frontend/src/dashboard/taskPresentation.ts",
+      "bytes": 422,
+      "sha256": "01a2fa66f8bc22d6d3816475d6a0495db68c9b7f06affab08e4125fb15396ddd"
+    },
+    {
+      "path": "app/frontend/src/dashboard/useTodayDashboard.ts",
+      "bytes": 2838,
+      "sha256": "f86ba793f3b37097b47f8ad1e31e8f75624b57b4a3e596fbef2d682b813d739e"
+    },
+    {
+      "path": "app/frontend/src/execution/ExecutionDiscussionDock.tsx",
+      "bytes": 17247,
+      "sha256": "e0986694a32c73d166be7f81c0ef12d42216cbc17d54b409b8a83660cc433c9e"
+    },
+    {
+      "path": "app/frontend/src/execution/ExecutionIdentity.css",
+      "bytes": 2743,
+      "sha256": "e499bbdac764088cb59a738d69638bd4a3585942ca4f54ba92a63aa10441847a"
+    },
+    {
+      "path": "app/frontend/src/execution/ExecutionObligations.tsx",
+      "bytes": 12881,
+      "sha256": "86f7a69b603f0f828b5a61f20ac8752221d437733c7cf3123148604db1db3704"
+    },
+    {
+      "path": "app/frontend/src/execution/ExecutionRefinement.css",
+      "bytes": 11899,
+      "sha256": "d4d84b886c7e85fad0b58fcdbb4ebb47dab22b64249e8ae842cc33a1bd424e63"
+    },
+    {
+      "path": "app/frontend/src/execution/ExecutionTools.tsx",
+      "bytes": 14378,
+      "sha256": "5686bd1e20e419e3d847b7c8041a68dc059722d674b300bb553e28956cf4895a"
+    },
+    {
+      "path": "app/frontend/src/execution/ExplorationContinuation.css",
+      "bytes": 520,
+      "sha256": "18ce4beff8d7cb7b5e34bfe14cd04e6cf8f5c6907011eb51a254c5f3395d806a"
+    },
+    {
+      "path": "app/frontend/src/execution/ExplorationContinuation.tsx",
+      "bytes": 1481,
+      "sha256": "8b0f9139f2fcfcc26c33c85a7c4e0d899b3bc16bf1cbe85bd13569135f9aa494"
+    },
+    {
+      "path": "app/frontend/src/execution/FeedbackDialog.tsx",
+      "bytes": 5957,
+      "sha256": "91d7b062b15b2fb8e833a86a3f1bfaaa326ffa1ab824c30fc825a2c2dc9b4fe0"
+    },
+    {
+      "path": "app/frontend/src/execution/FixedTasksPage.tsx",
+      "bytes": 15703,
+      "sha256": "c99072e3a99cd6dae5dc07599d9ecd913f735e978a008b3af67048b1493229a4"
+    },
+    {
+      "path": "app/frontend/src/execution/FlexibleTaskDecisionDialog.tsx",
+      "bytes": 6440,
+      "sha256": "dab8ae20350c1f1e6be9ea63e7eab1bd36ea985c29c11032a288aace62478922"
+    },
+    {
+      "path": "app/frontend/src/execution/FocusFullscreen.css",
+      "bytes": 2670,
+      "sha256": "c4867e557b2b92655edca1b48aaed3ccc457194cb8c0f23091e66a43957f4e99"
+    },
+    {
+      "path": "app/frontend/src/execution/FocusFullscreen.tsx",
+      "bytes": 2282,
+      "sha256": "a5b03c5bbcca3169aa589b682815115f9260d67702fd4f9d29f1ace87c90d9d1"
+    },
+    {
+      "path": "app/frontend/src/execution/FocusTimerWidget.tsx",
+      "bytes": 8532,
+      "sha256": "ddb8155ac64c03d41daf6217eac23bfda6d28448964abcaf05e2db50fa88721c"
+    },
+    {
+      "path": "app/frontend/src/execution/GoalCompletionPage.tsx",
+      "bytes": 7190,
+      "sha256": "1353d20d43312030ac9dda8de26ba6f29a4763317a5e52e11ef79ffa6f5243b2"
+    },
+    {
+      "path": "app/frontend/src/execution/PrepareStartPage.tsx",
+      "bytes": 25359,
+      "sha256": "ca690ef8ebe3d056381cbb4403b04ce187c5bd4525c0c341f0f56e795893d778"
+    },
+    {
+      "path": "app/frontend/src/execution/ProgressCompletion.css",
+      "bytes": 1471,
+      "sha256": "abe7aff3091b31bd4e9253ed237a0bbc86ab2fd39e3c8f1dfd3c31a6bec544f1"
+    },
+    {
+      "path": "app/frontend/src/execution/ProgressCompletion.tsx",
+      "bytes": 838,
+      "sha256": "60af1de2bc51d41400d02756d81c55e8b165a9eaf9171fc3574264afdeb7a97d"
+    },
+    {
+      "path": "app/frontend/src/execution/ProgressPage.tsx",
+      "bytes": 31386,
+      "sha256": "fb2ad8c9fdcccff6b733d1ccbf77816ff42f2196e6bc041d602a1e3dee825b8f"
+    },
+    {
+      "path": "app/frontend/src/execution/RecoveryControls.tsx",
+      "bytes": 29743,
+      "sha256": "cdbc736060e04cadc779737f4d19e5d3cab39c6bc99274768357ddbfae017e7e"
+    },
+    {
+      "path": "app/frontend/src/execution/RecoveryScopeSelector.tsx",
+      "bytes": 4028,
+      "sha256": "1fce0979334031f9a7730f2a1bf81c4505bc0368486c5a1766c5692233213833"
+    },
+    {
+      "path": "app/frontend/src/execution/TaskProgressDialog.tsx",
+      "bytes": 3962,
+      "sha256": "6de4d8ba45a1e7c3e45fcbf70ddc08d5091434510dddd985e1aec52cc62b39e7"
+    },
+    {
+      "path": "app/frontend/src/execution/TaskRecommendations.tsx",
+      "bytes": 6146,
+      "sha256": "a74ff3d879228da8cdd714a0e5f575ee1da88e07e3063bdf29b68d65654363d9"
+    },
+    {
+      "path": "app/frontend/src/execution/TodayBrief.tsx",
+      "bytes": 521,
+      "sha256": "d6f92b2101d2ba83d52e778530f6d4bfeba1dee33c831de4a2aced607d144d8f"
+    },
+    {
+      "path": "app/frontend/src/execution/TodayPage.css",
+      "bytes": 22311,
+      "sha256": "4d58256368858fbb57f00b0a7e5480ec12c8d55f6f5f84fb894098da1e984d1a"
+    },
+    {
+      "path": "app/frontend/src/execution/TodayPage.tsx",
+      "bytes": 59671,
+      "sha256": "9a05ba98133833fe7034ba1833055d171cd2e3b22eb6876b2fc5902d5cb03271"
+    },
+    {
+      "path": "app/frontend/src/execution/calendarPreview.ts",
+      "bytes": 1104,
+      "sha256": "0c70a7a848d53a9f6b890ab1557af10898c7819e70697851cf5a1e37d0900769"
+    },
+    {
+      "path": "app/frontend/src/execution/feedbackOptions.ts",
+      "bytes": 4027,
+      "sha256": "7872f70ed3f5661e3c346579bd86703dce723ea3e1477cb14d9f0842ac09d8bb"
+    },
+    {
+      "path": "app/frontend/src/execution/recoveryPreview.ts",
+      "bytes": 1461,
+      "sha256": "04b57d1b1f50fdad468086e843dacb4cfc3bb7bcf8622ae081bb9687f7ffafed"
+    },
+    {
+      "path": "app/frontend/src/index.css",
+      "bytes": 975,
+      "sha256": "b6330a298e761c4d90180e2a6c93bfcd18a944edbd0c692506a8072cdd55dcf1"
+    },
+    {
+      "path": "app/frontend/src/lightApi.ts",
+      "bytes": 3113,
+      "sha256": "2593a6f85fa0f68fa3ed4d77d795f0724dc47afff8ba6724ee067b9e46c8e074"
+    },
+    {
+      "path": "app/frontend/src/main.tsx",
+      "bytes": 230,
+      "sha256": "6e9e5807fcbd48b75a96db5cbef36c996262196be42e6d4760dc86babbe61ad2"
+    },
+    {
+      "path": "app/frontend/src/planner/ClarificationNotebook.tsx",
+      "bytes": 6350,
+      "sha256": "d7190349859236bbff561c24e1c1b4bb18a2bcdbac4e406d6025441c0eff711f"
+    },
+    {
+      "path": "app/frontend/src/planner/ClarificationPage.css",
+      "bytes": 5805,
+      "sha256": "695325be210e8a119be314b31995b387081b735f7190958b5ea73f6c819ad4f2"
+    },
+    {
+      "path": "app/frontend/src/planner/ClarificationPage.tsx",
+      "bytes": 38658,
+      "sha256": "fc242bb1e613757dae94e3d8a83b5b35ec43097b11802304704feb5ddcec0237"
+    },
+    {
+      "path": "app/frontend/src/planner/CreateGoalPage.css",
+      "bytes": 2577,
+      "sha256": "5927c980dd36d45209628d7b73bef792140121aac316d2c266d45592c6bbcce3"
+    },
+    {
+      "path": "app/frontend/src/planner/CreateGoalPage.tsx",
+      "bytes": 3070,
+      "sha256": "e681441ae83a235fede9454afda4ce75f159d98ae7d1494e3bdd9001bb65f84f"
+    },
+    {
+      "path": "app/frontend/src/planner/GoalStartingPoints.tsx",
+      "bytes": 675,
+      "sha256": "68f87be82f262f84b22c4ea31117c0da53c27d82a062dd99703f2821350f22d9"
+    },
+    {
+      "path": "app/frontend/src/planner/PlanIdentity.css",
+      "bytes": 1817,
+      "sha256": "0fcec29cda031aecd10dd6182aa9bd6aac109101c1f7a8549b6e1b9cca7ffd85"
+    },
+    {
+      "path": "app/frontend/src/planner/PlanReviewPage.tsx",
+      "bytes": 62798,
+      "sha256": "96abf00e1ba92608dd163f37c587e57931d89f3237dd8e80dcb9e5250d82755d"
+    },
+    {
+      "path": "app/frontend/src/planner/ReviewPages.css",
+      "bytes": 7996,
+      "sha256": "066571e2f1ca4e3d30ec952bea3dc25b7133d2360899d5144b8d8894b227512c"
+    },
+    {
+      "path": "app/frontend/src/planner/RouteReviewPage.tsx",
+      "bytes": 29143,
+      "sha256": "452769391fa82ed79a37c721eb9f04d0d403f27547f9592ce0b0ddf12b5aef5c"
+    },
+    {
+      "path": "app/frontend/src/planner/RouteStageMap.css",
+      "bytes": 2483,
+      "sha256": "fa7248a624b4f7bc1c91d03ee9548637ae9632584be9a6085c8c3cf2c5bae642"
+    },
+    {
+      "path": "app/frontend/src/planner/RouteStageMap.tsx",
+      "bytes": 826,
+      "sha256": "b14efef22c33185d561b8bfdbf8a709a698bf3dfb0f767f388478fc39e15af69"
+    },
+    {
+      "path": "app/frontend/src/planner/plan-review/CapacityNegotiationPanel.tsx",
+      "bytes": 6571,
+      "sha256": "5b051f9e2a0725e88b7e28f740d3ef08c22f83edb5e239a6ce52e62b720a8f78"
+    },
+    {
+      "path": "app/frontend/src/planner/plan-review/FixedActivityMovePanel.tsx",
+      "bytes": 6070,
+      "sha256": "01bef44735d0d247c9bfa6e27cb2d1d93c0d6936ba88406c3d2cc8a4d4d02231"
+    },
+    {
+      "path": "app/frontend/src/planner/plan-review/HybridPlanReview.tsx",
+      "bytes": 8995,
+      "sha256": "18f262e3ce2372a8a146cf1bfb95369ec816e78c3c944c6622539fd1af1ef102"
+    },
+    {
+      "path": "app/frontend/src/planner/plan-review/PlanDayCard.tsx",
+      "bytes": 3656,
+      "sha256": "b5be1e18d73bcd8ae7c688a9337aedf3f35084df62aee922bd394eb9f4b27505"
+    },
+    {
+      "path": "app/frontend/src/planner/useNotebookDrawer.ts",
+      "bytes": 1492,
+      "sha256": "a5286fa5eb603e4ee8faa089a1583241b1e12b0efc4873f2aadddc77f4e47b53"
+    },
+    {
+      "path": "app/frontend/src/profile/ProfileEditor.tsx",
+      "bytes": 3257,
+      "sha256": "d05d16cf70af116203b0de6b94c79fb2e54b770e6c0c2ee174ceee01805d1475"
+    },
+    {
+      "path": "app/frontend/src/profile/SettingsRefinement.css",
+      "bytes": 4809,
+      "sha256": "a993d240e6235c80d5ec953abc60196c444daf2ccdd6efb9860f809cbec51c32"
+    },
+    {
+      "path": "app/frontend/src/profile/UserAvatar.tsx",
+      "bytes": 592,
+      "sha256": "192ed1c7340630fbfcd40d588aedbea6f92bb46848c469ca2f2e4618f65bff49"
+    },
+    {
+      "path": "app/frontend/src/profile/UserProfile.css",
+      "bytes": 2505,
+      "sha256": "27a72d51da777b9a99fb1f02575cea983837601e2637caeac068448a984f3047"
+    },
+    {
+      "path": "app/frontend/src/profile/avatarImage.ts",
+      "bytes": 1029,
+      "sha256": "5118ea6f27aa67080dcfbdfd9b7d13f4a9116f8bfa6ac43cdedb6638a2181100"
+    },
+    {
+      "path": "app/frontend/src/profile/localProfile.ts",
+      "bytes": 1695,
+      "sha256": "7685fa5e14ba7ad09a2911fc07fab069568f78efb2c204ddd4cf4564d0bb4550"
+    },
+    {
+      "path": "app/frontend/src/quick/QuickPlanIdentity.css",
+      "bytes": 1570,
+      "sha256": "ab3ecc3d8f4a8a8f2eff0bed37f32719c8a488eb12a8088ae3648fa796d305b0"
+    },
+    {
+      "path": "app/frontend/src/quick/QuickPlanIntake.css",
+      "bytes": 3103,
+      "sha256": "73ef553d27e5efa090b2f61d45c53f647988368b55228dddd50bad235290cec2"
+    },
+    {
+      "path": "app/frontend/src/quick/QuickPlanIntake.tsx",
+      "bytes": 2653,
+      "sha256": "fbdcfdb4a58fcb4df8c880e0f1c1c2b6a4ddce5a6ba153857b199931d112b104"
+    },
+    {
+      "path": "app/frontend/src/styles/controls.css",
+      "bytes": 4888,
+      "sha256": "e10c11443a9c2868265e3929f847e138621f3f326c367c2b1a06a06933c6bdc6"
+    },
+    {
+      "path": "app/frontend/src/styles/execution.css",
+      "bytes": 60076,
+      "sha256": "57a4f3cae62ae49f0772410cca62366edbd89c1feffbfaab91a8e9fe604a8fcf"
+    },
+    {
+      "path": "app/frontend/src/styles/fonts.css",
+      "bytes": 1041,
+      "sha256": "6a7d01d9705a65791aef0a86575b53ea9609dee73db5a53bdd963d42e5a8fa65"
+    },
+    {
+      "path": "app/frontend/src/styles/index.css",
+      "bytes": 414,
+      "sha256": "1f42d957ecf777c3414448acc82a898932d63ecaf23249ea4e5dc374bc901786"
+    },
+    {
+      "path": "app/frontend/src/styles/materials.css",
+      "bytes": 11933,
+      "sha256": "2ba7246517eed0ba548cb53c22141b8938403aed60b38339c837aaa7336b219c"
+    },
+    {
+      "path": "app/frontend/src/styles/planner.css",
+      "bytes": 44723,
+      "sha256": "883df316970cfb8f175f1c7b1e1bc7d9c7b3fb133f7615a5b356dd7fcfa87a26"
+    },
+    {
+      "path": "app/frontend/src/styles/refinement.css",
+      "bytes": 4069,
+      "sha256": "90b7c0dc79d45e5598d318a06508099f8087ea76bf33ab818e79de9fadd0593e"
+    },
+    {
+      "path": "app/frontend/src/styles/settings.css",
+      "bytes": 3721,
+      "sha256": "5cf0271aac13187c31c6f666264d42d10a0fe08cebff96b86a893c097562d786"
+    },
+    {
+      "path": "app/frontend/src/styles/shared.css",
+      "bytes": 41383,
+      "sha256": "6e2a925a1dd91bc87c3f2f5d618786afcfd9451595f3bdbd77cf1f81563c2b65"
+    },
+    {
+      "path": "app/frontend/src/styles/tokens.css",
+      "bytes": 1821,
+      "sha256": "242469278b304d1e51e1678c97653154893c529aa87daa1ed0036570d108bccc"
+    },
+    {
+      "path": "app/frontend/src/styles/typography.css",
+      "bytes": 1512,
+      "sha256": "8626da4baf8e95030638dbb7ad22087fe30c52a51ceb102c66d5222889889ed0"
+    },
+    {
+      "path": "app/frontend/src/styles/workspaceInteractions.css",
+      "bytes": 3544,
+      "sha256": "f62673c919f053131facddd7c9a7010dd1a603f5b6d948a0bca827b74fccab63"
+    },
+    {
+      "path": "app/frontend/src/ui/AnswerResearch.tsx",
+      "bytes": 961,
+      "sha256": "0a91b54449fbdb1d3fed9f5e640c086f55b439cce23215f8efeb1878d7f5345e"
+    },
+    {
+      "path": "app/frontend/src/ui/AssistantAnswer.tsx",
+      "bytes": 4237,
+      "sha256": "7fe596ab87d38cf003b10f214adedaf008efd5fadce7e2672728da712a56ff51"
+    },
+    {
+      "path": "app/frontend/src/ui/ConversationPresentation.css",
+      "bytes": 3907,
+      "sha256": "4a65365e7bed1e3a25835030b3cad2756d57600fa210cc8d517d5347c62e9dfb"
+    },
+    {
+      "path": "app/frontend/src/ui/DependencySummary.tsx",
+      "bytes": 762,
+      "sha256": "eb61f97586fb36093318cb5206ae772532ddfe3dbcccd8ddf198ea7a9a41153a"
+    },
+    {
+      "path": "app/frontend/src/ui/DialogBackdrop.tsx",
+      "bytes": 3003,
+      "sha256": "4d69dd9f0e76f60a4458099c7d730b9474b8bfdbc0323e044be6f5b2f05e645e"
+    },
+    {
+      "path": "app/frontend/src/ui/MaterialAttachmentPicker.tsx",
+      "bytes": 7876,
+      "sha256": "67583bf4de4950a05cdff14f01f954c5ad14dcd35d272608a6294738a98fe4d1"
+    },
+    {
+      "path": "app/frontend/src/ui/MaterialReaderPanel.tsx",
+      "bytes": 4816,
+      "sha256": "b2f74f0e1e258da304b5229e4fdcb1dc740b67ffc86196e3b276f22064769b35"
+    },
+    {
+      "path": "app/frontend/src/ui/MaterialWorkspacePanel.tsx",
+      "bytes": 25207,
+      "sha256": "933259ddf4775d88545adc989f56f1b19d856143349606d1e946c2c98133eecc"
+    },
+    {
+      "path": "app/frontend/src/ui/ModalLayer.tsx",
+      "bytes": 276,
+      "sha256": "7106887fc2a6eabad7c1dfe3884aee992bb3cbf1c0f439a763b5a6d22eb9a3e4"
+    },
+    {
+      "path": "app/frontend/src/ui/PlannerStage.tsx",
+      "bytes": 4080,
+      "sha256": "26d2b7f7324e0689f622dc3631f8b28ac94f3517f8e4c28ba43200d6b3ba6d1b"
+    },
+    {
+      "path": "app/frontend/src/ui/PlanningGuide.css",
+      "bytes": 1723,
+      "sha256": "e8eb772fe40e7a9627558a3b8d57f45f0e2f8f16ba0e4207cd83a9622d5ff66c"
+    },
+    {
+      "path": "app/frontend/src/ui/PlanningGuide.tsx",
+      "bytes": 1189,
+      "sha256": "0decb4b2a01c4a2cdc13abc9f42731583af0a367bd02cec4fc28a7b7f332db99"
+    },
+    {
+      "path": "app/frontend/src/ui/ProcessDetails.tsx",
+      "bytes": 3066,
+      "sha256": "99ea5433d3e86c3f42f6d68a1c9380fc372b115bade1e8c56be8f2e376e006aa"
+    },
+    {
+      "path": "app/frontend/src/ui/RecoveryDecisions.tsx",
+      "bytes": 1020,
+      "sha256": "553dfcffb62358053a11c1b28c5ece4a7da58bf6e6424318c89af79a39734a92"
+    },
+    {
+      "path": "app/frontend/src/ui/ResearchConnectionStatus.tsx",
+      "bytes": 1559,
+      "sha256": "5591f6ce1589fd44067a2b2fbb5a35f7951397bac4c8c809db12ce5498e4d7fd"
+    },
+    {
+      "path": "app/frontend/src/ui/ResearchProgress.css",
+      "bytes": 1488,
+      "sha256": "0ad070f9b5f7e5f8b7c36d0f98633bd4ff9bdf899e0aa1903f7138e07e465f54"
+    },
+    {
+      "path": "app/frontend/src/ui/ResearchProgress.tsx",
+      "bytes": 5053,
+      "sha256": "bb015d1ececcd3311ea9e20e802c4e9c510eb940f43bce94c0ab818499390fc9"
+    },
+    {
+      "path": "app/frontend/src/ui/ResearchSources.tsx",
+      "bytes": 2120,
+      "sha256": "8734dda9fbcfb4127280f5b19e563440ed24b97c228f585296b023f8e5d4cdb5"
+    },
+    {
+      "path": "app/frontend/src/ui/TimePicker.css",
+      "bytes": 4317,
+      "sha256": "c137e73d2127b76fa97f4c2fb470657a53139afbd3f2d89774c59ad8f8a3717c"
+    },
+    {
+      "path": "app/frontend/src/ui/TimePicker.tsx",
+      "bytes": 6336,
+      "sha256": "cedf418313ec1024490a1989121fecbc071952e9a3bfe61e3e07a3d9e209ef27"
+    },
+    {
+      "path": "app/frontend/src/ui/plannerPresentation.ts",
+      "bytes": 5321,
+      "sha256": "18e0fef016caeaf7ad878fd9b65fbc3c15455d89d0fa9732d4a5daff9d2c563d"
+    },
+    {
+      "path": "app/frontend/src/ui/submitOnEnter.ts",
+      "bytes": 613,
+      "sha256": "e5bb6bbcaf14a04f35a185ed468a9e19c36b7f59db1eb4b5d6fe7f84afa806ab"
+    },
+    {
+      "path": "app/frontend/src/ui/useConfirmation.tsx",
+      "bytes": 1338,
+      "sha256": "4803de0fe68e78d11d56a2805c1daa266e30f39fbc5a241864a8753c9339e596"
+    },
+    {
+      "path": "app/frontend/src/ui/useProcessingStep.ts",
+      "bytes": 661,
+      "sha256": "760fc539c6c01ce90001e8ee75e81eb837eda53c0df4ab070305ad06bf85a77e"
+    },
+    {
+      "path": "app/frontend/src/ui/useResearchResponse.ts",
+      "bytes": 7863,
+      "sha256": "3b8b1bbe52cc8fbeb8e9af42dd3df6ed9d4c3ef4f8d85df8c3531ca3ec69f7ea"
+    },
+    {
+      "path": "app/frontend/src/ui/useWebResearch.ts",
+      "bytes": 2380,
+      "sha256": "aa3611a9c73ae747b8f06d9ac858395687dc7414e358992f9cbc2b1e793281f7"
+    },
+    {
+      "path": "app/frontend/tsconfig.app.json",
+      "bytes": 655,
+      "sha256": "8e5d12ba330e7d86409edec74b95451e0db22ee09b9426c94b5bf817571eddb0"
+    },
+    {
+      "path": "app/frontend/tsconfig.json",
+      "bytes": 119,
+      "sha256": "770b4140bbb581e2dfd9ea9946ffc9c75a1d86ba7d2db5f77c83e37cbdf9d808"
+    },
+    {
+      "path": "app/frontend/tsconfig.node.json",
+      "bytes": 558,
+      "sha256": "d366cc0827139db39c61815f22491bbfda56c654354a42ad7795143d314e45e8"
+    },
+    {
+      "path": "app/frontend/vite.config.ts",
+      "bytes": 477,
+      "sha256": "c57be761b27883c9bdc1d58cc7bf398b60ca5995dfbfd4c23733b31c9179db8e"
+    },
+    {
+      "path": "app/services/web-research/package-lock.json",
+      "bytes": 93856,
+      "sha256": "34c1d9a7c294e0dc4173e7478f3fb9bcace103edd049e1bcbd26e83465e9e503"
+    },
+    {
+      "path": "app/services/web-research/package.json",
+      "bytes": 468,
+      "sha256": "54a00ecd694cb9d09241c255b3ac641cb51e4bd23b1b80c3fe36c4fa410b7782"
+    },
+    {
+      "path": "app/services/web-research/scripts/patch-open-websearch.mjs",
+      "bytes": 7815,
+      "sha256": "f7bb57dd07389b50f565961a3ff210966d00627980381bbcb13f249ffce0f1f4"
+    },
+    {
+      "path": "app/services/web-research/scripts/verify-sandbox.mjs",
+      "bytes": 5120,
+      "sha256": "862b019df0962b8c2f083aef4c1807c6908a597995a316e1a19c8064d177652c"
+    },
+    {
+      "path": "app/services/web-research/scripts/verify-search-budget-live.mjs",
+      "bytes": 2833,
+      "sha256": "9dcce9c099a7b88f30151578e0d4c53121d4f6af19babd47183d47b1ce031759"
+    },
+    {
+      "path": "app/services/web-research/src/crawl4ai-reader.mjs",
+      "bytes": 4662,
+      "sha256": "83205e8623356921a1d32ccb1e9838b6116e8af4acddcca14714a3e6ef1a8b64"
+    },
+    {
+      "path": "app/services/web-research/src/crawl4ai-reader.py",
+      "bytes": 14202,
+      "sha256": "8a10d2790a76c6f7bb35054159b39388cf1164a7dcb091d222dbb2748fe69a68"
+    },
+    {
+      "path": "app/services/web-research/src/egress-proxy.mjs",
+      "bytes": 7122,
+      "sha256": "30734694068a891f27f7ae8c69564ab7151cc19c91924059ad14f4992d02bc69"
+    },
+    {
+      "path": "app/services/web-research/src/network-policy.mjs",
+      "bytes": 2161,
+      "sha256": "0f2299eb7c7b30a5f314736284ab70ed5546ad6d930f18a2835db892ae08eba0"
+    },
+    {
+      "path": "app/services/web-research/src/page-reader.mjs",
+      "bytes": 9429,
+      "sha256": "a9293f25c033c04b7cadc610db04aed8ce64ef058683cb4e7052cd39ba9f9aeb"
+    },
+    {
+      "path": "app/services/web-research/src/search-failure.mjs",
+      "bytes": 1039,
+      "sha256": "9d19b37c3e317cc429c8bd299f2b6c20ce79066caa67a7fe8512816920237bd2"
+    },
+    {
+      "path": "app/services/web-research/src/server.mjs",
+      "bytes": 30399,
+      "sha256": "b2937bbc682675820b36899566c37286f00a087bc2213f3b99f2a4d8dfec6757"
+    },
+    {
+      "path": "app/services/web-research/src/upstream-worker.mjs",
+      "bytes": 884,
+      "sha256": "b81c966060b091615cd041482ca2ee7985b699869b98c3e11b1cda676f85f9ec"
+    },
+    {
+      "path": "app/services/web-research/src/worker-environment.mjs",
+      "bytes": 453,
+      "sha256": "a8ded535b3cafcfca53c5a8382a5b213dbc5b5b7e0f1ecf041405c952bd1b279"
+    },
+    {
+      "path": "backend.env.example",
+      "bytes": 589,
+      "sha256": "ca7f31cc1002cded5b82e4a1d07c6d6862f81adb269e5fc3897dbcea21813ffb"
+    },
+    {
+      "path": "docs/assets/solevia/adjustment.webp",
+      "bytes": 442370,
+      "sha256": "5de3c7a58c98085cf63ca76035c52dcd7efb2b7abe29db2d1c1cdeee16cd8fa4"
+    },
+    {
+      "path": "docs/assets/solevia/clarification.webp",
+      "bytes": 552726,
+      "sha256": "44736f510b6771afb99202932bf3b611133120d3b9d848cf6b05e4ed81a7797d"
+    },
+    {
+      "path": "docs/assets/solevia/discussion.webp",
+      "bytes": 458642,
+      "sha256": "9b08c731a517c582d4c0aacd1f778b40274582328cb41ba8d4a675a74c4c7e59"
+    },
+    {
+      "path": "docs/assets/solevia/exploration.webp",
+      "bytes": 390688,
+      "sha256": "c60f1dd634dc89084bb75812d34258a658020433c23f286e3e589ee971b7b7a0"
+    },
+    {
+      "path": "docs/assets/solevia/overview.webp",
+      "bytes": 238474,
+      "sha256": "1864f36600b7e40b5444e2f59585939074cc8d45a2d38ac6a7e67e1b917ca3eb"
+    },
+    {
+      "path": "docs/assets/solevia/plan.webp",
+      "bytes": 443192,
+      "sha256": "dbbf2ae1359cc2d64e2678eea0edb058b13a9b2896c797b6d26a7c2951d3e402"
+    },
+    {
+      "path": "docs/assets/solevia/route.webp",
+      "bytes": 674750,
+      "sha256": "af2587dc65fc925318cb17104a7acc673dd413ab6274494aa1bf4d6769f5381c"
+    },
+    {
+      "path": "docs/examples/README.md",
+      "bytes": 3180,
+      "sha256": "a3b215cb8b0746ddf4a693f29188b64c7683c6d0c12287ef63b17c63a88b6fd1"
+    },
+    {
+      "path": "release.json",
+      "bytes": 571,
+      "sha256": "7f15df34cfc6801a5450cf904b92c1b3c4305c0d8d642fd5cde0460892c3ba16"
+    },
+    {
+      "path": "requirements-core.lock",
+      "bytes": 494,
+      "sha256": "fd177cdb27cae4a51bdbcebddd6185b013cd556b53a5eec4cec3c986defe1fba"
+    },
+    {
+      "path": "scripts/common.ps1",
+      "bytes": 2246,
+      "sha256": "6f259b83fd101da61776831fe31d4486b4c8680ca639782c26a4bcc75961eff4"
+    },
+    {
+      "path": "scripts/frontend-server.mjs",
+      "bytes": 2431,
+      "sha256": "69fa9f6411b147016ae13701256104fc50551c442ac9380e6c5542a9808e766c"
+    },
+    {
+      "path": "scripts/install.ps1",
+      "bytes": 7610,
+      "sha256": "610302a9b30795f8540ab8a0190ef80c2332db5544ab9a017996c5741b123360"
+    },
+    {
+      "path": "scripts/launcher.py",
+      "bytes": 11556,
+      "sha256": "7aacec7f37058a7772643db8c597b1ccea7fd08c53e021e1e255b7e414020763"
+    },
+    {
+      "path": "scripts/package_integrity.py",
+      "bytes": 4117,
+      "sha256": "31100615d20eec121d67ba217324c67df470c392a448ff90d26ddc75b343bfd4"
+    },
+    {
+      "path": "scripts/start.ps1",
+      "bytes": 804,
+      "sha256": "416c8dffe764513810dfd79f674376ae555be136d517769614d42d88ea7ee9df"
+    },
+    {
+      "path": "scripts/update.ps1",
+      "bytes": 260,
+      "sha256": "03b99c57d292b9ab6b38d32ca253e812599f9c1186bfba7499a4cd8e80d4a50a"
+    },
+    {
+      "path": "scripts/updater.py",
+      "bytes": 7664,
+      "sha256": "69d7725fdbe06bef17d3bc3a5ee6f6b64c7e334e29b1c4680a9a780b5e6f87ab"
+    }
+  ]
+}

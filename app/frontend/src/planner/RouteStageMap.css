@@ -1,0 +1,20 @@
+.route-stage-map { margin: 26px 0 34px; padding: 22px 0; }
+.route-stage-map > header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.route-stage-map > header strong { font-size: 16px; font-weight: 500; }
+.route-stage-map > header span { color: var(--muted); font-size: 13px; }
+.route-stage-map ol { display: flex; gap: 0; margin: 0; padding: 0 0 8px; list-style: none; overflow-x: auto; }
+.route-stage-map li { position: relative; flex: 1 0 130px; max-width: 240px; }
+.route-stage-map li:not(:last-child)::after { content: ''; position: absolute; left: 28px; right: 0; top: 16px; height: 1px; background: var(--control-line); }
+.route-stage-map button { position: relative; z-index: 1; display: grid; justify-items: start; gap: 12px; width: 100%; padding: 0 18px 0 0; border: 0; background: transparent; color: var(--text); text-align: left; }
+.route-stage-map button > span { display: grid; place-items: center; width: 33px; height: 33px; border-radius: 50%; background: var(--surface-blue); color: var(--accent); font-size: 14px; font-variant-numeric: tabular-nums; }
+.route-stage-map button > strong { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 14px; font-weight: 500; line-height: 1.65; }
+.route-stage-map button:hover > span { background: var(--accent); color: var(--surface); }
+.route-review-page .route-stage-card { position: relative; padding: 24px 0 32px; border-radius: 0; background: transparent; scroll-margin-top: 20px; }
+.route-review-page .route-stage-card:focus { outline: none; }
+.route-review-page .route-stage-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; }
+.route-review-page .route-stage-card .route-number { width: 33px; height: 42px; border-radius: 5px 5px 14px 14px; }
+.route-review-page .route-stage-card h2 { padding-bottom: 10px; }
+.route-review-page .route-stage-card > div > ul { padding: 17px 20px 17px 38px; border-radius: 5px 16px 16px 16px; background: var(--surface-blue); }
+.route-review-page .route-stage-card .chips span { border-radius: 5px; background: var(--surface-subtle); }
+.route-review-page .route-summary { border-radius: 5px 20px 20px 20px; }
+@media (max-width: 540px) { .route-stage-map { margin-block: 20px; padding: 10px 0; } .route-review-page .route-stage-card { grid-template-columns: 33px minmax(0, 1fr); gap: 12px; } .route-stage-map li { flex-basis: 130px; } }

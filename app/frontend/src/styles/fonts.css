@@ -1,0 +1,7 @@
+/* IBM Plex Sans, SIL Open Font License; self-hosted so workspaces also work offline. */
+/* Open-license CJK subsets; rare glyphs retain a complete system fallback. */
+@font-face { font-family: 'Solevia Sans SC'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('../assets/fonts/solevia-sans-sc.woff2') format('woff2'); }
+@font-face { font-family: 'Solevia Serif SC'; font-style: normal; font-weight: 200 900; font-display: swap; src: url('../assets/fonts/solevia-serif-sc.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('../assets/fonts/ibm-plex-sans-400.ttf') format('truetype'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url('../assets/fonts/ibm-plex-sans-500.ttf') format('truetype'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url('../assets/fonts/ibm-plex-sans-600.ttf') format('truetype'); }

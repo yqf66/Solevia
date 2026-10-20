@@ -1,0 +1,13 @@
+/* A time plan reads as a schedule ledger, rather than another stack of notes. */
+.plan-review-page .relative-plan-stats { padding: 22px 12px; border-radius: 8px; border-block: 1px solid color-mix(in srgb, var(--accent) 18%, transparent); background: var(--surface-lavender); }
+.plan-review-page :is(.plan-outline-card,.hybrid-stage-section) { border-radius: 8px 18px 18px 8px; border: 1px solid var(--line); background: var(--surface); }
+.plan-review-page .plan-outline-card > summary > span, .plan-review-page .hybrid-stage-section > summary > div > span { display: grid; place-items: center; align-self: stretch; min-width: 45px; padding: 10px 7px; border-radius: 5px 5px 12px 12px; background: var(--surface-blue); color: var(--accent); font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.plan-review-page :is(.plan-outline-card,.hybrid-stage-section)[open] { background: var(--surface); }
+.plan-review-page :is(.plan-outline-card,.hybrid-stage-section)[open] > summary { border-bottom: 1px solid var(--line); }
+.plan-review-page :is(.plan-outline-detail,.hybrid-work-item-list) { padding: 20px; }
+.plan-review-page .plan-day-card { border-radius: 5px; border: 0; border-bottom: 1px solid var(--line); background: transparent; }
+.plan-review-page .plan-day-card > summary { padding: 18px 12px; }
+.plan-review-page .plan-day-card > summary > span { color: var(--accent); font-variant-numeric: tabular-nums; }
+.plan-review-page .hybrid-work-item { border-radius: 6px; background: var(--surface-subtle); }
+.plan-review-page :is(.plan-day-evidence,.plan-day-dont) { border-radius: 5px 14px 14px 5px; }
+@media (max-width: 540px) { .plan-review-page :is(.plan-outline-detail,.hybrid-work-item-list) { padding: 14px; } .plan-review-page .plan-outline-card > summary { gap: 12px; padding: 16px; } }

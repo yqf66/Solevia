@@ -1,0 +1,82 @@
+.light-page { max-width: 1040px; width: 100%; margin: 0 auto; }
+.light-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--surface-subtle); padding-bottom: 20px; margin-bottom: 24px; }
+.light-header h1 { font-family: var(--font-editorial); font-size: 38px; font-weight: 600; line-height: 1.45; margin: 4px 0 0; overflow-wrap: anywhere; letter-spacing: -.035em; }
+.light-header .back-link { white-space: nowrap; }
+.light-page h2 { font-size: 18px; }
+.light-page label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.light-page input, .light-page select, .light-page textarea { width: 100%; min-width: 0; box-sizing: border-box; border: 1px solid var(--line); border-radius: 5px; padding: 10px; background: var(--surface); color: var(--text); font: inherit; }
+.light-page textarea { resize: vertical; }
+.light-input > textarea { margin-top: 10px; font-size: 16px; line-height: 1.7; }
+.light-range, .light-toolbar { display: flex; align-items: end; gap: 16px; flex-wrap: wrap; margin: 18px 0; }
+.light-range > label, .light-toolbar > label { width: 180px; }
+.light-range > .light-days { width: 90px; }
+.light-segment { display: flex; gap: 0; border: 0; padding: 0; margin: 0; }
+.light-segment legend { font-size: 13px; margin-bottom: 6px; }
+.light-segment button { min-width: 64px; min-height: 40px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
+.light-segment button + button { border-left: 0; }
+.light-segment button[aria-pressed="true"] { background: var(--surface-subtle); color: var(--accent); }
+.light-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin: 24px 0 10px; }
+.light-draft-meta { display: flex; gap: 16px; flex-wrap: wrap; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+.light-notice { padding: 12px 16px; border-left: 3px solid var(--warm); background: var(--warm-soft); color: var(--warm); font-size: 14px; line-height: 1.6; }
+.light-title-label { max-width: 560px; margin-bottom: 20px; }
+.light-task-list { display: grid; gap: 12px; margin-bottom: 16px; }
+.light-task-editor { border: 1px solid var(--line); border-radius: 6px; padding: 16px; background: var(--surface); }
+.light-task-heading { display: grid; grid-template-columns: 26px minmax(0, 1fr) 36px; gap: 10px; align-items: center; }
+.light-task-heading > span { color: var(--muted); font-size: 12px; }
+.light-page .icon-button { width: 36px; height: 36px; flex: 0 0 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--muted); font-size: 20px; cursor: pointer; }
+.light-task-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 14px; align-items: end; }
+.light-task-editor details { margin-top: 14px; }
+.light-page summary { cursor: pointer; font-size: 13px; color: var(--muted); padding: 8px 0; }
+.light-weekdays { display: flex; gap: 14px; border: 0; padding: 10px 0 0; }
+.light-weekdays legend { font-size: 13px; }
+.light-weekdays label { flex-direction: row; align-items: center; }
+.light-weekdays input { width: 16px; }
+.light-assumptions { margin-top: 18px; border-top: 1px solid var(--surface-subtle); padding-top: 8px; font-size: 14px; }
+.light-plan-list a { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--surface-subtle); color: var(--accent); text-decoration: none; }
+.light-plan-list strong { overflow-wrap: anywhere; }
+.light-plan-list span { font-size: 13px; color: var(--muted); flex-shrink: 0; }
+.light-execution-list { border-top: 1px solid var(--surface-subtle); }
+.light-execution-task { display: flex; align-items: flex-start; gap: 14px; padding: 20px 0; border-bottom: 1px solid var(--surface-subtle); }
+.light-check { flex: 0 0 32px; width: 32px; height: 32px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--accent); font-size: 20px; cursor: pointer; }
+.light-check { display: inline-flex; align-items: center; justify-content: center; }
+.light-page .button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.light-raw { white-space: pre-wrap; overflow-wrap: anywhere; }
+.light-window-editor { display: grid; grid-template-columns: 1.1fr .7fr .7fr 1.5fr 36px; align-items: end; gap: 10px; margin-bottom: 10px; }
+.light-execution-content { flex: 1; min-width: 0; }
+.light-execution-content strong { font-size: 16px; overflow-wrap: anywhere; }
+.light-execution-content p { font-size: 14px; margin: 6px 0; color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere; }
+.light-execution-content small { font-size: 12px; color: var(--muted); }
+.light-execution-task.completed .light-execution-content strong { text-decoration: line-through; color: var(--muted); }
+.light-row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.light-future-task { display: block; padding: 10px 0; border: 0; background: none; color: var(--text); cursor: pointer; text-align: left; }
+.light-exclusions { margin-top: 18px; }
+.light-exclusions > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; font-size: 14px; }
+.light-page .inline-dialog { max-height: 90vh; overflow-y: auto; }
+.light-page .inline-dialog > header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.light-draft-row { display: flex; align-items: center; gap: 12px; }
+.light-draft-row a { flex: 1; min-width: 0; }
+.light-secondary-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.light-page button:disabled { opacity: .55; cursor: default; }
+@media (max-width: 700px) {
+  .light-header { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .light-header h1 { font-size: 23px; }
+  .light-task-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .light-task-editor { padding: 12px; }
+  .light-weekdays { gap: 10px; flex-wrap: wrap; }
+  .light-execution-task { flex-wrap: wrap; }
+  .light-row-actions { width: 100%; padding-left: 46px; }
+  .light-plan-list a { align-items: flex-start; flex-direction: column; gap: 6px; }
+  .light-window-editor { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.light-page .light-plan-list > a, .light-page .light-draft-row { margin-top: 12px; padding: 22px; border: 0; border-radius: 20px; background: var(--surface-blue); transition: transform 180ms, box-shadow 180ms; }
+.light-page .light-plan-list > a:nth-of-type(even) { background: var(--surface-lavender); }
+.light-page .light-plan-list > a:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.light-page .light-plan-list strong { color: var(--text); font-size: 18px; font-weight: 500; }
+.light-page .light-plan-list span { font-size: 14px; }
+.light-page .light-execution-content h3 { font-size: 18px; }
+.light-page .light-execution-content :is(p,small) { font-size: 15px; }
+.light-page .light-toolbar label { font-size: 15px; }
+@media (max-width: 540px) { .light-page .light-header h1 { font-size: 29px; } .light-page .light-plan-list > a { align-items: start; flex-direction: column; gap: 10px; padding: 20px; } }
+@media (prefers-reduced-motion: reduce) { .light-page .light-plan-list > a:hover { transform: none; } }
+.light-page .light-draft-row > a { padding: 0; border: 0; }

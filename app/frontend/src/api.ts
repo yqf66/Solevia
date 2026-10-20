@@ -1,0 +1,12 @@
+// Public compatibility entry point. Implementations belong to their API domain.
+export type * from './api/contracts'
+export * from './api/execution'
+export * from './api/workspace'
+export * from './api/client'
+export * from './api/goals'
+export * from './api/planning'
+export * from './api/research'
+export * from './api/materials'
+export * from './api/recovery'
+export * from './api/manualPlans'
+export * from './api/recommendations'

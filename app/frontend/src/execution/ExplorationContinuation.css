@@ -1,0 +1,5 @@
+.exploration-continuation { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 20px; margin: 0 0 20px; border: 1px solid var(--border, var(--line)); border-radius: 14px; background: var(--surface, var(--surface-subtle)); }
+.exploration-continuation > div { flex: 1 1 280px; }
+.exploration-continuation h2 { margin: 6px 0; font-size: 20px; }
+.exploration-continuation p { margin: 6px 0; line-height: 1.6; }
+.exploration-continuation > button { flex-shrink: 0; }

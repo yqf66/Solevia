@@ -1,0 +1,35 @@
+/* At 1100px: 7 columns of focus + 5 columns of summary; lanes share those outer edges. */
+.today-dashboard { width: min(1180px, 100%); }
+.today-dashboard .today-dashboard-header { align-items: end; margin-bottom: 28px; }
+.today-dashboard .today-dashboard-header h1 { font-family: var(--font-editorial); font-size: 40px; font-weight: 600; line-height: 1.4; margin-bottom: 10px; letter-spacing: -.04em; }
+.today-dashboard .today-dashboard-header .muted { font-size: 16px; }
+.today-opening { display: grid; grid-template-columns: minmax(0, 7fr) minmax(270px, 5fr); gap: 20px; margin-bottom: 32px; }
+.today-reading-line { color: var(--text); margin: 0 0 18px; font-size: 15px; }
+.today-dashboard .today-dashboard-grid, .today-dashboard .today-dashboard-grid.main-lane-empty { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.today-dashboard .today-dashboard-column { padding: 0; background: transparent; }
+.today-dashboard .today-dashboard-column > header { align-items: center; padding: 0 0 16px; margin: 0; border-bottom: 1px solid var(--line); }
+.today-dashboard .today-dashboard-column h2 { font-size: 22px; font-weight: 600; }
+.today-dashboard .today-dashboard-column > header p { margin-top: 5px; font-size: 14px; }
+.today-dashboard .today-dashboard-column > header > small { font-size: 14px; }
+.today-dashboard .today-task-card { margin-top: 12px; border-radius: 20px; }
+.today-dashboard .today-task-card-main { padding: 22px; gap: 12px; }
+.today-dashboard .today-task-card-main > strong { font-size: 18px; font-weight: 500; line-height: 1.55; }
+.today-dashboard .today-task-card-main > small { font-size: 14px; line-height: 1.65; }
+.today-dashboard :is(.today-task-lane,.today-dashboard-task-time) { font-size: 13px; }
+.today-dashboard .today-task-schedule { font-size: 14px; padding: 10px 13px; }
+.today-dashboard .today-task-card.completed { background: var(--surface-subtle); }
+.today-dashboard .today-dashboard-empty { gap: 12px; min-height: 190px; padding: 26px; margin-top: 12px; border-radius: 20px; background: var(--surface-subtle); }
+.today-dashboard .today-dashboard-empty strong { color: var(--text); font-size: 18px; }
+.today-dashboard .today-dashboard-empty p { font-size: 15px; }
+.today-dashboard .today-dashboard-empty .text-button { margin-top: 8px; }
+@media (max-width: 1250px) and (min-width: 1101px), (max-width: 700px) {
+  .today-opening { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 850px) { .today-dashboard .today-dashboard-header { flex-direction: column; align-items: start; gap: 20px; } .today-dashboard .today-dashboard-grid, .today-dashboard .today-dashboard-grid.main-lane-empty { grid-template-columns: minmax(0, 1fr); } .today-dashboard-grid.main-lane-empty .today-lane-branch { order: -1; } }
+@media (max-width: 540px) {
+  .today-dashboard .today-dashboard-header h1 { font-size: 31px; }
+  .today-dashboard .today-dashboard-header .muted { font-size: 15px; }
+  .today-opening { gap: 12px; margin-bottom: 28px; }
+  .today-dashboard .today-task-card-main { padding: 20px; }
+  .today-dashboard .today-task-card-main > strong { font-size: 17px; }
+}

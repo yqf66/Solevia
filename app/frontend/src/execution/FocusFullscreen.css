@@ -1,0 +1,22 @@
+.focus-fullscreen-backdrop { position: fixed; z-index: 1200; inset: 0; background: rgb(235 240 253 / 72%); backdrop-filter: blur(28px) saturate(120%); -webkit-backdrop-filter: blur(28px) saturate(120%); }
+.focus-fullscreen { display: flex; flex-direction: column; align-items: stretch; width: 100%; height: 100dvh; min-height: 100%; overflow: auto; color: var(--text); font-family: var(--font); }
+.focus-fullscreen > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 28px 40px; }
+.focus-fullscreen-brand { display: flex; align-items: center; gap: 12px; }
+.focus-fullscreen > header .button { gap: 10px; font-size: 14px; }
+.focus-fullscreen kbd { color: var(--muted); font: inherit; font-size: 12px; }
+.focus-fullscreen-center { flex: 1; width: min(820px, calc(100% - 40px)); align-self: center; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 0; text-align: center; }
+.focus-fullscreen-kicker { font-size: 15px; color: var(--accent); margin: 0 0 16px; }
+.focus-fullscreen h2 { font-family: var(--font-editorial); font-size: clamp(22px, 3vw, 34px); font-weight: 600; line-height: 1.55; margin: 0 0 28px; text-wrap: balance; overflow-wrap: anywhere; }
+.focus-fullscreen .focus-clock { display: grid; place-items: center; width: clamp(250px, 34vw, 360px); height: clamp(250px, 34vw, 360px); margin: 0 0 28px; background: none; }
+.focus-fullscreen .focus-clock::before { display: none; }
+.focus-fullscreen .focus-clock-ring { width: 100%; height: 100%; }
+.focus-fullscreen .focus-clock > div { grid-area: 1 / 1; display: grid; gap: 8px; }
+.focus-fullscreen .focus-clock time { font-family: var(--font); font-size: clamp(58px, 7vw, 86px); font-weight: 400; letter-spacing: -.04em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.focus-fullscreen .focus-clock span { font-size: 15px; color: var(--muted); }
+.focus-fullscreen-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
+.focus-fullscreen-actions .button { min-height: 48px; padding: 12px 24px; font-size: 16px; }
+.focus-fullscreen-note { font-size: 14px; color: var(--muted); margin: 24px 0 0; }
+.focus-fullscreen > footer { text-align: center; padding: 20px 0 28px; font-family: var(--font-editorial); color: var(--muted); font-size: 15px; }
+.focus-view-button { justify-self: center; font-size: 13px; }
+@media (max-width: 540px) { .focus-fullscreen > header { padding: 20px; } .focus-fullscreen > header .button { padding: 9px 12px; } .focus-fullscreen kbd { display: none; } }
+@media (prefers-color-scheme: dark) { .focus-fullscreen-backdrop { background: rgb(24 30 47 / 78%); } }

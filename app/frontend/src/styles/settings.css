@@ -1,0 +1,46 @@
+/* Settings styles. Tokens live in tokens.css. */
+.user-settings-backdrop {position:fixed;inset:0;z-index:45;background:rgba(24,34,29,.18)}
+.user-settings-panel {position:absolute;left:calc(clamp(244px,18vw,292px) + 12px);bottom:12px;width:min(610px,calc(100vw - clamp(244px,18vw,292px) - 24px));max-height:calc(100vh - 24px);display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:0 20px 60px rgba(22,33,27,.22);overflow:hidden}
+.user-settings-panel>header {display:flex;align-items:center;justify-content:space-between;padding:20px 22px 14px}
+.user-settings-panel h2 {margin:3px 0 0;font-size:24px}
+.user-settings-panel>nav {display:flex;gap:4px;padding:0 22px;border-bottom:1px solid var(--line)}
+.user-settings-panel>nav button {padding:10px 12px;border:0;border-bottom:2px solid transparent;color:var(--muted);background:transparent;cursor:pointer}
+.user-settings-panel>nav button.active {border-color:var(--accent);color:var(--accent);font-weight:700}
+.user-settings-body {min-height:260px;padding:20px 22px 24px;overflow-y:auto}
+.settings-form {display:grid;gap:16px}
+.settings-form label {display:grid;gap:6px}
+.settings-form label>span {font-size:13px;font-weight:700}
+.settings-form input,.settings-form select,.settings-form textarea {width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:7px;color:var(--text);background:var(--surface);font:inherit}
+.settings-form small,.settings-intro p,.settings-source-note {margin:0;color:var(--muted);font-size:11px;line-height:1.55}
+.routine-grid {display:grid;grid-template-columns:repeat(5,minmax(90px,1fr));gap:10px}
+.settings-intro {padding:12px 14px;border-radius:8px;background:var(--surface-subtle)}
+.settings-intro p {margin-top:4px}
+.settings-source-note {padding:10px 12px;border-left:3px solid var(--line);background:var(--surface-subtle)}
+.settings-success {margin:14px 0 0;color:var(--accent);font-size:12px}
+@media(max-width:720px) {
+.user-settings-panel {left:8px;right:8px;bottom:8px;width:auto;max-height:calc(100vh - 16px)}
+.routine-grid {grid-template-columns:1fr 1fr}
+}
+.routine-boundary-grid {display:grid;grid-template-columns:repeat(3,minmax(100px,1fr));gap:10px}
+.routine-section-heading {display:flex;align-items:end;justify-content:space-between;gap:14px;padding-top:4px}
+.routine-section-heading>div {display:grid;gap:3px}
+.routine-section-heading small {color:var(--muted);font-size:11px}
+.routine-block-list {display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.routine-block-row {display:grid;grid-template-columns:82px 1fr 1fr;align-items:end;gap:8px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-subtle)}
+.routine-block-row.disabled {opacity:.58}
+.routine-toggle {align-self:center;display:flex!important;grid-column:auto!important;align-items:center;gap:7px!important}
+.routine-toggle input {width:16px;height:16px}
+.routine-block-row label:not(.routine-toggle) {gap:3px}
+.routine-block-row label:not(.routine-toggle)>span {font-size: 11px;color:var(--muted)}
+.routine-extra-list {display:grid;gap:7px}
+.routine-extra-list>p {margin:0}
+.routine-extra-row {display:grid;grid-template-columns:18px minmax(130px,1fr) 105px 105px 32px;align-items:center;gap:7px}
+.routine-extra-row>input[type=checkbox] {width:16px;height:16px}
+.routine-extra-row.disabled {opacity:.58}
+@media(max-width:720px) {
+.routine-boundary-grid,.routine-block-list {grid-template-columns:1fr}
+.routine-extra-row {grid-template-columns:18px minmax(100px,1fr) 1fr 1fr 32px}
+}
+.routine-settings-form {min-width:0}
+.user-settings-body {overflow-x:hidden}
+.routine-block-list {grid-template-columns:1fr}

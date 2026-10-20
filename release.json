@@ -1,0 +1,18 @@
+{
+  "product": "Solevia",
+  "version": "0.1.0",
+  "repository": "yqf66/Solevia",
+  "platform": "windows-x64",
+  "python": "3.12",
+  "node": {
+    "version": "24.22.0",
+    "url": "https://nodejs.org/dist/v24.22.0/node-v24.22.0-win-x64.zip",
+    "sha256": "f9683a19877e12a9b167305c8db71040d812876359de21f0d2e97c3f321f80c3"
+  },
+  "uv": {
+    "version": "0.13.3",
+    "url": "https://github.com/astral-sh/uv/releases/download/0.13.3/uv-x86_64-pc-windows-msvc.zip",
+    "sha256": "bb701bd35b586c45966654ea2703c9bd116a6a4fc0a8ca755bd644c2c41c5ebe"
+  },
+  "pnpm": "11.25.0"
+}

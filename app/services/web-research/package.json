@@ -1,0 +1,19 @@
+{
+  "name": "plan-a-web-research",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local web search boundary for Plan-A, backed by Open-WebSearch.",
+  "scripts": {
+    "postinstall": "node scripts/patch-open-websearch.mjs",
+    "start": "node src/server.mjs",
+    "check": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "open-websearch": "2.1.11",
+    "playwright-core": "1.63.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
