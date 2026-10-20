@@ -1,6 +1,6 @@
 {
   "product": "Solevia",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "files": [
     {
       "path": ".gitattributes",
@@ -29,13 +29,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 9799,
-      "sha256": "cdc76caa4bdb6a8f4ddab96f30f79f97ae8a993c63159c4d98937319ffcdab94"
+      "bytes": 11213,
+      "sha256": "71ee5cfb03b5b1e525fd889589ddd57bad93abcec6f37436a899c51217dfd3aa"
     },
     {
       "path": "START_HERE.md",
-      "bytes": 3346,
-      "sha256": "3bb269e92fe9344b63dc1801237fe8695a9bc9dd28821e49d540a4710b079c0e"
+      "bytes": 3907,
+      "sha256": "637f08b5adca4ec9227f46a7526114e96b118208ae471c7f160aeac7dbc95b85"
     },
     {
       "path": "Start.cmd",
@@ -1448,6 +1448,11 @@
       "sha256": "e499bbdac764088cb59a738d69638bd4a3585942ca4f54ba92a63aa10441847a"
     },
     {
+      "path": "app/frontend/src/execution/ExecutionNoticeBar.tsx",
+      "bytes": 7280,
+      "sha256": "a1a5a736d8812b23c407d8e420d73efcf29d188ad4bb2575ef24828c4b5735d2"
+    },
+    {
       "path": "app/frontend/src/execution/ExecutionObligations.tsx",
       "bytes": 12881,
       "sha256": "86f7a69b603f0f828b5a61f20ac8752221d437733c7cf3123148604db1db3704"
@@ -1456,6 +1461,16 @@
       "path": "app/frontend/src/execution/ExecutionRefinement.css",
       "bytes": 11899,
       "sha256": "d4d84b886c7e85fad0b58fcdbb4ebb47dab22b64249e8ae842cc33a1bd424e63"
+    },
+    {
+      "path": "app/frontend/src/execution/ExecutionTaskCard.css",
+      "bytes": 9053,
+      "sha256": "16487eaf779ad59c0e92db49a92efd5d91032d8245512b7b3730eaa506abf007"
+    },
+    {
+      "path": "app/frontend/src/execution/ExecutionTaskCard.tsx",
+      "bytes": 8600,
+      "sha256": "bd69d6382812e560446ce2c49cfc7ae1c0684d8bc3e26e977cc71d75b429c46d"
     },
     {
       "path": "app/frontend/src/execution/ExecutionTools.tsx",
@@ -1549,8 +1564,8 @@
     },
     {
       "path": "app/frontend/src/execution/TodayBrief.tsx",
-      "bytes": 521,
-      "sha256": "d6f92b2101d2ba83d52e778530f6d4bfeba1dee33c831de4a2aced607d144d8f"
+      "bytes": 710,
+      "sha256": "3fd0f54f884242de67373a9e6a923c2d2da0d49702df909a6ffc6d76532ba714"
     },
     {
       "path": "app/frontend/src/execution/TodayPage.css",
@@ -1559,8 +1574,8 @@
     },
     {
       "path": "app/frontend/src/execution/TodayPage.tsx",
-      "bytes": 59671,
-      "sha256": "9a05ba98133833fe7034ba1833055d171cd2e3b22eb6876b2fc5902d5cb03271"
+      "bytes": 48867,
+      "sha256": "d98cdcdeca06899ddc7a1c23ab1cf1fab7a996feff3d29ba7d474aa6a0924f19"
     },
     {
       "path": "app/frontend/src/execution/calendarPreview.ts",
@@ -2013,19 +2028,34 @@
       "sha256": "5de3c7a58c98085cf63ca76035c52dcd7efb2b7abe29db2d1c1cdeee16cd8fa4"
     },
     {
+      "path": "docs/assets/solevia/calendar.webp",
+      "bytes": 25830,
+      "sha256": "792b63285c4a5be0b68a4be45d0cf9581d98918f7d3f0809a285b63131a4fd6c"
+    },
+    {
       "path": "docs/assets/solevia/clarification.webp",
       "bytes": 552726,
       "sha256": "44736f510b6771afb99202932bf3b611133120d3b9d848cf6b05e4ed81a7797d"
     },
     {
       "path": "docs/assets/solevia/discussion.webp",
-      "bytes": 458642,
-      "sha256": "9b08c731a517c582d4c0aacd1f778b40274582328cb41ba8d4a675a74c4c7e59"
+      "bytes": 181958,
+      "sha256": "bca4f8f9da23cc3117fb9db615b275ee972a8a6e76f82b12b723b2dc6b114174"
+    },
+    {
+      "path": "docs/assets/solevia/execution.webp",
+      "bytes": 142552,
+      "sha256": "edf5dec5b881eaa8eca9249b5e075367a331582a90c1c16eb8dacfccb03ef1dc"
     },
     {
       "path": "docs/assets/solevia/exploration.webp",
-      "bytes": 390688,
-      "sha256": "c60f1dd634dc89084bb75812d34258a658020433c23f286e3e589ee971b7b7a0"
+      "bytes": 166270,
+      "sha256": "f8cfa143d63c86d51b01491da0c0d258b517081e79e6927e9b237c60a2ef8cc8"
+    },
+    {
+      "path": "docs/assets/solevia/focus.webp",
+      "bytes": 110814,
+      "sha256": "1af32d673bc4a01d7980bf05fa2f1cbed3c7a6406ea245b184b3a1489b2e36ea"
     },
     {
       "path": "docs/assets/solevia/overview.webp",
@@ -2044,13 +2074,13 @@
     },
     {
       "path": "docs/examples/README.md",
-      "bytes": 3180,
-      "sha256": "a3b215cb8b0746ddf4a693f29188b64c7683c6d0c12287ef63b17c63a88b6fd1"
+      "bytes": 3491,
+      "sha256": "be9271641abc873f7b37272a446d6e320068da9a39c2d2cbcb72975c8f614f81"
     },
     {
       "path": "release.json",
       "bytes": 571,
-      "sha256": "7f15df34cfc6801a5450cf904b92c1b3c4305c0d8d642fd5cde0460892c3ba16"
+      "sha256": "150ed0ae8909830584701009d6ed5a459af4a12d22938c0942c1de71a4133a03"
     },
     {
       "path": "requirements-core.lock",

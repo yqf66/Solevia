@@ -48,7 +48,7 @@ import { AssistantAnswer } from '../ui/AssistantAnswer'
 import { OperationProgress } from '../ui/ProcessDetails'
 import { StageTransition } from '../ui/PlannerStage'
 import { previewInactivity } from './recoveryPreview'
-import { DeferredRecoveryReminder, RecoveryShiftDialog, PauseGoalDialog } from './RecoveryControls'
+import { RecoveryShiftDialog, PauseGoalDialog } from './RecoveryControls'
 import { dateInputValue, friendlyDate, ASSISTANT_NAME } from '../ui/plannerPresentation'
 import { ExecutionCalendarWidget, CollapsibleTool, FocusTimerWidget, QuickCaptureWidget, ExecutionInsightWidget } from './ExecutionTools'
 import { ModalLayer } from '../ui/ModalLayer'
@@ -58,61 +58,9 @@ import { FlexibleTaskDecisionDialog, type FlexibleDecisionTarget } from './Flexi
 import { TaskProgressDialog, type TaskProgressTarget } from './TaskProgressDialog'
 import { ExplorationContinuation } from './ExplorationContinuation'
 import './TodayPage.css'
-
-const schedulingPolicyLabels: Record<string, string> = {
-  EXACT_DAY: '按计划日',
-  DATE_WINDOW: '期限窗口',
-  CADENCE: '节奏建议',
-  QUOTA: '总量要求',
-  TASK_POOL: '候选任务',
-  CHECKPOINT: '阶段验收',
-  TRIGGERED: '条件触发',
-  FLOATING: '弹性待安排',
-}
-
-const commitmentRiskLabels: Record<string, string> = {
-  COMPLETE: '已达标',
-  ON_TRACK: '进行中',
-  DUE_SOON: '临近检查',
-  AT_RISK: '需要处理',
-  NO_DEADLINE: '待安排',
-}
-
-const commitmentCadenceLabels: Record<string, string> = {
-  TOTAL: '总量',
-  PER_WEEK: '每周',
-  PER_EXECUTION_DAY: '每个执行日',
-}
-
-function schedulingPolicyDescription(policy: string, data: Record<string, unknown> = {}) {
-  const label = schedulingPolicyLabels[policy] ?? '时间规则'
-  if (policy === 'CADENCE') {
-    const period = typeof data.period === 'string' ? data.period : ''
-    const target = typeof data.target_count === 'number' ? `，目标 ${data.target_count} 次` : ''
-    return `${label}${period ? ` · ${period}` : ''}${target}`
-  }
-  if (policy === 'DATE_WINDOW') {
-    const window = typeof data.window === 'string' ? data.window : ''
-    return `${label}${window ? ` · ${window}` : ''}`
-  }
-  if (policy === 'QUOTA') {
-    const target = typeof data.target_count === 'number' ? ` · 目标 ${data.target_count}` : ''
-    return `${label}${target}`
-  }
-  return label
-}
-
-function schedulingPolicyHelp(policy: string) {
-  if (policy === 'EXACT_DAY') return '当天执行，不建议自行移出该日期。'
-  if (policy === 'CHECKPOINT') return '阶段检查点，需在对应节点完成验收。'
-  if (policy === 'CADENCE') return '本周次数必须达成，当前日期是系统建议的执行日。'
-  if (policy === 'DATE_WINDOW') return '可在期限窗口内调整日期，窗口结束前完成即可。'
-  if (policy === 'FLOATING') return '日期尚未锁定，可根据前置结果和当天余量安排。'
-  if (policy === 'QUOTA') return '总量要求必须达成，具体日期可以灵活安排。'
-  if (policy === 'TASK_POOL') return '候选任务，可从任务池中选择合适内容执行。'
-  if (policy === 'TRIGGERED') return '满足触发条件后再安排，不要求今天执行。'
-  return '具体时间可以根据当天情况安排。'
-}
+import { ExecutionTaskCard } from './ExecutionTaskCard'
+import { ExecutionNoticeBar } from './ExecutionNoticeBar'
+import './ExecutionTaskCard.css'
 
 export function TodayPage() {
   const { goalId } = useParams()
@@ -122,14 +70,6 @@ export function TodayPage() {
     if (typeof window === 'undefined') return true
     try {
       return window.localStorage.getItem('plan-a.today-tools-collapsed') !== '1'
-    } catch {
-      return true
-    }
-  })
-  const [commitmentProgressOpen, setCommitmentProgressOpen] = useState(() => {
-    if (typeof window === 'undefined') return true
-    try {
-      return window.localStorage.getItem('plan-a.commitment-progress-collapsed') !== '1'
     } catch {
       return true
     }
@@ -181,18 +121,6 @@ export function TodayPage() {
         window.localStorage.setItem('plan-a.today-tools-collapsed', next ? '0' : '1')
       } catch {
         // The sidebar still works when storage is unavailable (for example in private mode).
-      }
-      return next
-    })
-  }
-
-  const toggleCommitmentProgress = () => {
-    setCommitmentProgressOpen((current) => {
-      const next = !current
-      try {
-        window.localStorage.setItem('plan-a.commitment-progress-collapsed', next ? '0' : '1')
-      } catch {
-        // The card still works when storage is unavailable.
       }
       return next
     })
@@ -628,45 +556,18 @@ export function TodayPage() {
     if (!leftStart && rightStart) return 1
     return left.order - right.order
   })
-  const commitmentProgress = workspace.commitment_progress ?? []
-  const commitmentTarget = commitmentProgress.reduce((sum, item) => sum + Math.max(0, item.target_occurrences), 0)
-  const commitmentCompleted = commitmentProgress.reduce((sum, item) => sum + Math.min(item.target_occurrences, Math.max(0, item.completed_occurrences)), 0)
-  const commitmentRemaining = commitmentProgress.reduce((sum, item) => sum + Math.max(0, item.remaining_occurrences), 0)
-  const commitmentPercentage = commitmentTarget > 0 ? Math.min(100, Math.round(commitmentCompleted / commitmentTarget * 100)) : 100
+  const taskTitles = new Map([
+    ...(calendar?.days.flatMap((item) => item.tasks.map((task) => [task.id, task.title] as const)) ?? []),
+    ...orderedDayTasks.map((task) => [task.id, task.title] as const),
+  ])
   function renderTask(task: NonNullable<TodayWorkspace['day']>['tasks'][number]) {
-    const latestFeedback = workspace?.feedbacks?.filter((item) => item.task_id === task.id).at(-1)
-    const scheduleTask = scheduledAgentTasks.get(task.id)
-    const schedulingPolicy = task.scheduling_policy ?? 'EXACT_DAY'
-    return (
-      <article className={`task-card task-card-${((task.order - 1) % 6) + 1} ${task.status.toLowerCase()}`} key={task.id}>
-        <div className="task-status-mark">{task.status === 'COMPLETED' ? '✓' : task.order}</div>
-        <div>
-          <header><strong>{task.title}</strong><small>建议 {task.estimate_minutes} 分钟</small></header>
-          <div className={`task-rule-row task-rule-${schedulingPolicy.toLowerCase()}`}>
-            <span className="task-rule-badge">{schedulingPolicyDescription(schedulingPolicy, task.scheduling_policy_data)}</span>
-            {schedulingPolicy !== 'EXACT_DAY' && <small className="task-rule-help">{schedulingPolicyHelp(schedulingPolicy)}</small>}
-          </div>
-          <p>{task.description}</p>
-          {task.depends_on.length > 0 && <div className="plan-task-dependency"><strong>前置任务</strong><span>{task.depends_on.join('；')}</span></div>}
-          {task.blocked_reason && <p className="plan-task-dependency" role="status">{task.blocked_reason}</p>}
-          {task.evidence.length > 0 && <span>产出或收获：{task.evidence.join('；')}</span>}
-          {task.skip_guidance && task.skip_guidance.length > 0 && schedulingPolicy !== 'EXACT_DAY' && <small className="task-skip-guidance">跳过后：{task.skip_guidance.join(' · ')}</small>}
-          {latestFeedback && <div className="task-feedback-note"><strong>已记录：</strong>{feedbackLabel(latestFeedback.reason_code)} · {latestFeedback.intent_code ? intentLabels[latestFeedback.intent_code] : '等待处理'}</div>}
-          <footer>
-            {!viewingToday && <span className="historical-task-note">日志回看 · 返回今天后可操作</span>}
-            {scheduleTask?.is_fixed && <span className="task-time-chip">安排 {scheduleTask.start_local}–{scheduleTask.end_local}</span>}
-            {canEditToday && task.status !== 'COMPLETED' && scheduleTask && <button type="button" onClick={() => { setScheduleTarget(scheduleTask); setScheduleStart(scheduleTask.start_local ?? '19:00'); setScheduleEnd(scheduleTask.end_local ?? '19:30'); setScheduleConflict(false) }}>{scheduleTask.is_fixed ? '调整时间' : '安排时间'}</button>}
-            {canEditToday && task.status === 'NOT_STARTED' && <button type="button" onClick={() => void updateTask(task.id, 'START')} disabled={Boolean(busyTaskId) || Boolean(task.blocked_reason)}>开始</button>}
-            {canEditToday && task.status !== 'COMPLETED' && <button className="primary-mini" type="button" onClick={() => void updateTask(task.id, 'COMPLETE')} disabled={Boolean(busyTaskId) || Boolean(task.blocked_reason)}>标记完成</button>}
-            {canEditToday && task.status !== 'COMPLETED' && schedulingPolicy !== 'EXACT_DAY' && <button type="button" onClick={() => setTaskProgressTarget({ ...task, action: 'PARTIAL' })} disabled={Boolean(busyTaskId) || Boolean(task.blocked_reason)}>记录部分完成</button>}
-            {canEditToday && task.status !== 'COMPLETED' && schedulingPolicy !== 'EXACT_DAY' && <button type="button" onClick={() => setTaskProgressTarget({ ...task, action: 'DEFER' })} disabled={Boolean(busyTaskId)}>今天不做</button>}
-            {canEditToday && task.status !== 'COMPLETED' && schedulingPolicy !== 'EXACT_DAY' && schedulingPolicy !== 'CHECKPOINT' && schedulingPolicy !== 'TRIGGERED' && <button type="button" onClick={() => openFlexibleReschedule({ id: task.id, title: task.title, scheduled_date: workspace?.today ?? actualToday, estimate_minutes: task.estimate_minutes })} disabled={Boolean(busyTaskId)}>改到某日</button>}
-            {canEditToday && task.status !== 'COMPLETED' && schedulingPolicy !== 'EXACT_DAY' && <button type="button" onClick={() => setTaskProgressTarget({ ...task, action: 'SKIP' })} disabled={Boolean(busyTaskId)}>本周期不做</button>}
-            {canEditToday && task.status !== 'COMPLETED' && <button type="button" onClick={() => setFeedbackTarget({ kind: 'TASK', taskId: task.id, title: task.title, status: task.status, estimateMinutes: task.estimate_minutes })}>暂时做不完</button>}
-          </footer>
-        </div>
-      </article>
-    )
+    const position = orderedDayTasks.findIndex((item) => item.id === task.id) + 1
+    return <ExecutionTaskCard key={task.id} task={task} position={position} tone={(position - 1) % 4}
+      taskTitles={taskTitles} latestFeedback={workspace?.feedbacks?.filter((item) => item.task_id === task.id).at(-1)}
+      scheduleTask={scheduledAgentTasks.get(task.id)} viewingToday={viewingToday} canEditToday={canEditToday} busyTaskId={busyTaskId}
+      onSchedule={(item) => { setScheduleTarget(item); setScheduleStart(item.start_local ?? '19:00'); setScheduleEnd(item.end_local ?? '19:30'); setScheduleConflict(false) }}
+      onUpdate={(id, action) => { void updateTask(id, action) }} onProgress={setTaskProgressTarget} onFeedback={setFeedbackTarget}
+      onReschedule={() => openFlexibleReschedule({ id: task.id, title: task.title, scheduled_date: workspace?.today ?? actualToday, estimate_minutes: task.estimate_minutes })} />
   }
 
   return (
@@ -693,19 +594,11 @@ export function TodayPage() {
           {goalId && viewingToday && <ExplorationContinuation goalId={goalId} state={workspace.exploration} />}
           {viewingToday && flexibleArrangeNotice && <p className="flexible-arrange-notice" role="status">{flexibleArrangeNotice}</p>}
           {workspace.status === 'PAUSED' && <section className="paused-notice"><div><p className="eyebrow">计划已暂停</p><h2>这段时间不会累积任务</h2><p>你可以随时恢复；未完成安排会从恢复当天重新接续。</p></div><button className="button primary" type="button" disabled={Boolean(busyTaskId)} onClick={() => void resumeExecution()}>{busyTaskId === 'RESUME' ? '正在恢复…' : '现在恢复'}</button></section>}
-          {viewingToday && inactivity && inactivity.missed_execution_days > 0 && <DeferredRecoveryReminder inactivity={inactivity} onReview={() => navigate(`/goals/${goalId}/progress?recovery=1`)} />}
-          {workspace.commitment_alerts && workspace.commitment_alerts.length > 0 && <section className="commitment-alerts-card" aria-label="计划提醒"><header><div><p className="eyebrow">需要留意</p><h2>有些完成要求正在接近窗口</h2></div><small>系统不会自动修改你的安排</small></header><div className="commitment-alert-list">{workspace.commitment_alerts.map((alert) => <article className={`commitment-alert commitment-alert-${alert.severity.toLowerCase()}`} key={alert.event_id || alert.dedupe_key || `${alert.label}-${alert.risk}`}><div><strong>{alert.title}</strong><p>{alert.message}</p>{alert.status === 'READ' && <small>已读 · 状态仍在跟踪</small>}</div><button className="button" type="button" onClick={() => navigate(`/goals/${goalId}/progress?discussion=1&commitment=${encodeURIComponent(alert.label)}`)}>{alert.action === 'REVIEW_PLAN' ? '讨论并调整计划' : '去执行讨论'}</button>{alert.event_id && alert.status !== 'READ' && <button className="button quiet" type="button" disabled={reminderEventBusyId === alert.event_id} onClick={() => void acknowledgeReminder(alert.event_id!, 'READ')}>{reminderEventBusyId === alert.event_id ? '保存中…' : '标记已读'}</button>}{alert.event_id && <button className="button quiet" type="button" disabled={reminderEventBusyId === alert.event_id} onClick={() => void acknowledgeReminder(alert.event_id!, 'DISMISS')}>{reminderEventBusyId === alert.event_id ? '保存中…' : '关闭这次提醒'}</button>}<button className="button quiet" type="button" disabled={reminderBusyLabel === alert.label} onClick={() => void stopCommitmentReminder(alert.label)}>{reminderBusyLabel === alert.label ? '保存中…' : '停止此项提醒'}</button></article>)}</div></section>}
-          {commitmentProgress.length > 0 && <section className={`commitment-progress-card${commitmentProgressOpen ? '' : ' commitment-progress-collapsed'}`} aria-label="计划承诺进度">
-            <header>
-              <button className="commitment-progress-toggle" type="button" aria-expanded={commitmentProgressOpen} aria-label={commitmentProgressOpen ? '收起本周期完成要求' : '展开本周期完成要求'} onClick={toggleCommitmentProgress}>
-                <span><p className="eyebrow">非固定任务监督</p><strong>本周期完成要求</strong></span>
-                <i aria-hidden="true">{commitmentProgressOpen ? '⌃' : '⌄'}</i>
-              </button>
-              <small>完成任务会自动计入对应承诺</small>
-            </header>
-            {!commitmentProgressOpen && <div className="commitment-progress-compact-summary"><div><span>总体进度</span><strong>{commitmentCompleted} / {commitmentTarget} 次</strong><em>{commitmentPercentage}%</em></div><div className="commitment-progress-bar"><i style={{ width: `${commitmentPercentage}%` }} /></div><small>{commitmentRemaining > 0 ? `还需 ${commitmentRemaining} 次` : '已满足全部完成要求'}</small></div>}
-            {commitmentProgressOpen && <div className="commitment-progress-list">{commitmentProgress.map((item) => { const percentage = item.target_occurrences > 0 ? Math.min(100, Math.round(item.completed_occurrences / item.target_occurrences * 100)) : 100; const period = item.period_start && item.period_end ? `${friendlyDate(item.period_start)}–${friendlyDate(item.period_end)}` : '尚未生成执行日期'; return <article className={`commitment-progress-item commitment-risk-${item.risk.toLowerCase()}`} key={`${item.label}-${item.cadence}`}><div className="commitment-progress-heading"><strong>{item.label}</strong><span>{commitmentCadenceLabels[item.cadence] ?? item.cadence}</span><em>{commitmentRiskLabels[item.risk] ?? item.risk}</em></div><div className="commitment-progress-bar"><i style={{ width: `${percentage}%` }} /></div><div className="commitment-progress-meta"><span>{item.completed_occurrences} / {item.target_occurrences} 次</span><span>{item.remaining_occurrences > 0 ? `还需 ${item.remaining_occurrences} 次` : '已满足最低要求'}</span><small>{item.completed_minutes > 0 || item.partial_minutes > 0 ? `已投入 ${item.completed_minutes + item.partial_minutes} 分钟${item.remaining_minutes > 0 ? ` · 预计还需 ${item.remaining_minutes} 分钟` : ''}` : period}</small></div>{(item.completed_minutes > 0 || item.partial_minutes > 0) && <small className="commitment-progress-period">{period}</small>}</article> })}</div>}
-          </section>}
+          <ExecutionNoticeBar key={goalId} workspace={workspace} viewingToday={viewingToday} inactivity={inactivity}
+            reminderBusyLabel={reminderBusyLabel} reminderEventBusyId={reminderEventBusyId}
+            onRecovery={() => navigate(`/goals/${goalId}/progress?recovery=1`)}
+            onDiscuss={(label) => navigate(`/goals/${goalId}/progress?discussion=1&commitment=${encodeURIComponent(label)}`)}
+            onAcknowledge={(id, action) => { void acknowledgeReminder(id, action) }} onStopReminder={(label) => { void stopCommitmentReminder(label) }} />
           {!day ? <section className="rest-day-card"><p className="eyebrow">{friendlyDate(workspace.today)}</p><h2>今天没有安排必做任务</h2><p>{workspace.next_execution_date ? `下一个执行日是 ${friendlyDate(workspace.next_execution_date)}。` : '当前计划的执行日已经全部走完。'} 今天想继续时，可以从下一执行日选择具体任务。</p>{canEditToday && workspace.carry_forward_tasks?.length > 0 && <button className="button primary" type="button" onClick={openCarryForward}>今天不休息了，选择后续任务</button>}</section> : <>
             <div className="task-groups">
               <section><h2>今天需要完成</h2><div className="task-list">{orderedDayTasks.filter((task) => task.is_required).map(renderTask)}</div></section>
