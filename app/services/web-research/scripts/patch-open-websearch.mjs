@@ -103,3 +103,23 @@ if (!search.includes('emptyConfirmedEngines')) {
   }
   writeFileSync(searchPath, search);
 }
+
+// Protect the underlying loopback daemon as well as our public adapter.
+const daemonPath = fileURLToPath(new URL('../node_modules/open-websearch/build/adapters/http/localDaemon.js', import.meta.url));
+let daemon = readFileSync(daemonPath, 'utf8');
+if (!daemon.includes('SOLEVIA_LOCAL_HTTP_BOUNDARY')) {
+  daemon = daemon.replace('const app = express();', `const app = express();
+    // SOLEVIA_LOCAL_HTTP_BOUNDARY
+    app.use((req, res, next) => {
+        const port = req.socket.localPort;
+        if (!['127.0.0.1:' + port, 'localhost:' + port].includes(req.headers.host)) {
+            return res.status(400).json({ error: 'Invalid local Host' });
+        }
+        if (req.headers.origin !== undefined || req.headers['sec-fetch-site'] !== undefined) {
+            return res.status(403).json({ error: 'Browser access is not allowed' });
+        }
+        next();
+    });`);
+  if (!daemon.includes('SOLEVIA_LOCAL_HTTP_BOUNDARY')) throw new Error('Local daemon boundary patch did not match');
+  writeFileSync(daemonPath, daemon);
+}

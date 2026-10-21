@@ -1,4 +1,4 @@
-// client: extracted without changing request or response semantics.
+import { clearLocalSession, localSession } from './localSession'
 
 
 export async function request<T>(path: string, options?: RequestInit, timeoutMs?: number): Promise<T> {
@@ -24,15 +24,25 @@ export async function request<T>(path: string, options?: RequestInit, timeoutMs?
 }
 
 async function requestWithoutDeadline<T>(path: string, options?: RequestInit): Promise<T> {
+  if (!path.startsWith('/api/') || path.startsWith('//') || /[\\\r\n]/.test(path)) {
+    throw new Error('只允许访问当前工作台的本地接口。')
+  }
+  const headers = new Headers(options?.headers)
+  if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+  headers.set('X-Solevia-Token', await localSession(options?.signal ?? undefined))
   const response = await fetch(path, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
+    credentials: 'same-origin',
+    redirect: 'error',
+    headers,
   })
 
   if (!response.ok) {
+    if (response.status === 401) {
+      clearLocalSession()
+      // Never replay a mutation after a service restart.
+      throw new Error('本地服务会话已更新，请刷新工作台后继续。已提交的操作请先确认结果。')
+    }
     let detail: unknown
     try {
       const payload = await response.json() as { detail?: unknown }

@@ -1,3 +1,4 @@
+from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 ROUTE_EXPLANATION_PROMPT_VERSION = "route-explanation-v1"
 
 ROUTE_EXPLANATION_INSTRUCTIONS = """你是 Solevia，正在帮助用户理解当前的整体路线。
@@ -29,5 +30,4 @@ Requirements、当前路线和用户的问题。
 """
 
 
-from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 ROUTE_EXPLANATION_INSTRUCTIONS += MEMORY_INSTRUCTIONS

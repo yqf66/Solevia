@@ -23,7 +23,7 @@ namespace Solevia.Desktop {
         public static string SafePath(string root,string relative) {
             string[] parts=relative.Split('/');
             string[] forbidden={".git",".runtime","user-data","data","uploads","node_modules",".venv",".env","models","checkpoints"};
-            string[] types={".exe",".dll",".db",".sqlite",".key",".pem",".safetensors",".pt",".zip"};
+            string[] types={".exe",".dll",".db",".sqlite",".key",".pem",".safetensors",".pt",".zip",".dpapi"};
             if(String.IsNullOrWhiteSpace(relative)||relative.Contains("\\")||relative.Contains(":")||relative.StartsWith("/")||
                 parts.Any(p=>p==".."||p=="."||p.Length==0||p.EndsWith(".")||p.EndsWith(" ")||p.Any(c=>c<32)||forbidden.Contains(p.ToLowerInvariant()))||
                 types.Contains(Path.GetExtension(relative).ToLowerInvariant()))throw new InvalidDataException("无效安装路径");

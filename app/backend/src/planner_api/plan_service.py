@@ -1873,13 +1873,13 @@ class PlanService:
                 if isinstance(item, dict) and item.get("task_id") in unassigned
             ]
             blocked = set(recovery_context.get("dependency_blocked_task_ids", []))
-            questions.append((
+            questions.append(
                 f"仍有 {len(unassigned)} 项未安排：{'、'.join(titles[:3])}。"
                 + ("前置依赖尚未解析或不在所选恢复范围内，需要先核对前置任务；" if blocked else
                    "请缩小恢复范围、补充可用时间，或说明是否允许提高近期负荷；")
                 +
                 "未安排项和已有进度会保留。"
-            ))
+            )
         if recovery_context.get("requires_direct_extension") and not recovery_context.get("direct_extension_confirmed"):
             if recovery_context.get("direct_extension_rejected"):
                 questions.append("已记录保持原期限。当前安排超出原期限，请补充可用时间或调整恢复范围后再试算。")
@@ -4781,12 +4781,6 @@ class PlanService:
                     "这份调整建议没有明确需要改动的周，当前安排保持不变。"
                 )
 
-            latest_recovery_id = self.session.scalar(
-                select(PlanningBrief.id)
-                .where(PlanningBrief.goal_id == goal_id, PlanningBrief.brief_kind == "RECOVERY")
-                .order_by(PlanningBrief.version.desc())
-                .limit(1)
-            )
             recovery_batches = list(
                 self.session.scalars(
                     select(GenerationBatch)

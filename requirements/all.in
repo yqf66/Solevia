@@ -1,0 +1,4 @@
+-r web.in
+-r documents.in
+-r ocr.in
+-r semantic.in

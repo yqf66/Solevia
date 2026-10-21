@@ -1,3 +1,4 @@
+from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 PLAN_ADJUSTMENT_PROMPT_VERSION = "plan-adjustment-proposal-v3-preserve-execution"
 
 PLAN_ADJUSTMENT_INSTRUCTIONS = """你是 Solevia，正在根据用户反馈准备一份时间安排调整建议。
@@ -112,5 +113,4 @@ capacity_segments 中 start_week/end_week 连续覆盖新周期，未改阶段�
 """
 
 
-from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 PLAN_ADJUSTMENT_INSTRUCTIONS += MEMORY_INSTRUCTIONS

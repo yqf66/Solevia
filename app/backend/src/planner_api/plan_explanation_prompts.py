@@ -1,3 +1,4 @@
+from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 PLAN_EXPLANATION_PROMPT_VERSION = "plan-explanation-v11-original-evidence-contract"
 
 PLAN_EXPLANATION_INSTRUCTIONS = """你是 Solevia。根据用户本轮问题和输入证据给出准确、自包含的回答。
@@ -73,5 +74,4 @@ current_relative_plan 为空时，不输出任何关于计划的文字，包括�
 """
 
 
-from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 PLAN_EXPLANATION_INSTRUCTIONS += MEMORY_INSTRUCTIONS

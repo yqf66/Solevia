@@ -117,10 +117,11 @@ Push-Location $backend
 try {
     Invoke-Checked $uv @('pip','install','--python',$python,'-r',(Join-Path $SoleviaRoot 'requirements-core.lock'))
     Invoke-Checked $uv @('pip','install','--python',$python,'--no-deps','-e','.')
-    if ($features.web) { Invoke-Checked $uv @('pip','install','--python',$python,'-e','.[web]') }
-    if ($features.documents) { Invoke-Checked $uv @('pip','install','--python',$python,'markitdown[docx,pdf,pptx,xls,xlsx]>=0.1.8,<0.2','pdfplumber>=0.11.10,<1') }
-    if ($features.ocr) { Invoke-Checked $uv @('pip','install','--python',$python,'-e','.[ocr]') }
-    if ($features.semantic) { Invoke-Checked $uv @('pip','install','--python',$python,'-e','.[semantic]') }
+    $dependencyArgs=@('pip','install','--python',$python,'-c',(Join-Path $SoleviaRoot 'requirements-core.lock'))
+    foreach($capability in @('web','documents','ocr','semantic')) {
+        if($features[$capability]) {$dependencyArgs+=@('-r',(Join-Path $SoleviaRoot ('requirements\'+$capability+'.lock')))}
+    }
+    if($dependencyArgs.Count -gt 6) {Invoke-Checked $uv $dependencyArgs}
 } finally { Pop-Location }
 $npm = Join-Path $Runtime 'node\npm.cmd'
 $pnpm = Join-Path $Runtime 'pnpm\node_modules\pnpm\bin\pnpm.cjs'

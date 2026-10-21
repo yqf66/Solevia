@@ -149,7 +149,7 @@ Solevia 可以结合目标、计划和实际进度继续交流，帮助你理解
 
 **下载、安装、连接模型，就可以开启第一步。**
 
-1. 在[下载页面](https://github.com/yqf66/Solevia/releases/latest)选择 **Solevia-Setup-0.1.2-windows-x64.exe**，双击打开中文安装向导。
+1. 在[下载页面](https://github.com/yqf66/Solevia/releases/latest)选择 **Solevia-Setup-0.1.3-windows-x64.exe**，双击打开中文安装向导。
 2. 选择安装位置和需要的能力，看清用途与占用后确认安装。向导会自动准备运行环境、依赖和工作区，无需预先安装 Python 或 Node.js。
 3. 点击桌面上的 **Solevia**，工作台自动在浏览器中打开。在「模型连接」中填写自己的服务地址、模型名称与 API 密钥，就能开始讨论目标。
 
@@ -177,10 +177,31 @@ Solevia 采用本地优先的工作方式，让规划、资料与执行记录在
 
 - [提交问题与建议](https://github.com/yqf66/Solevia/issues)
 - [下载最新版本](https://github.com/yqf66/Solevia/releases/latest)
-- [参与代码贡献](https://github.com/yqf66/Solevia/pulls)
+- [参与代码贡献](CONTRIBUTING.md)
 
 ## 许可证
 
 [MIT](LICENSE)
 
 <p align="center"><strong>Solevia · 足下</strong><br />千里之行，始于足下。</p>
+
+
+## 系统要求与按需安装
+
+Windows 10 / 11 64 位（x64），使用当前版本 Edge、Chrome 或 Firefox。首次安装需要联网，安装器自动准备运行环境。建议至少 4 GiB 内存；同时启用图片识别或语义查找时建议 8 GiB 以上，并按下面的增量预留空间。
+
+| 能力 | 预计下载 | 磁盘增量（含缓存） | 使用时额外内存 |
+|---|---|---|---|
+| 基础工作台 | 150–350 MiB | 700 MiB–1.5 GiB | 约 0.3–1 GiB |
+| 联网查资料 | 150–450 MiB | 500 MiB–1.4 GiB | 约 0.5–1.5 GiB |
+| PDF / Office 文档 | 40–150 MiB | 150–500 MiB | 约 0.1–0.5 GiB |
+| 图片与扫描文字识别 | 80–300 MiB | 200–800 MiB | 约 0.3–1 GiB |
+| 语义查找 | 600 MiB–3 GiB | 2–8 GiB | 约 1–3 GiB |
+
+容量是安装前估算，受已有缓存、依赖和资料影响；建议再留 2 GiB 临时解压空间。内存与磁盘大小是不同指标，安装向导会随选择汇总容量。在线对话使用你连接的模型服务，无需在本机运行对话大模型。
+
+## 数据与隐私
+
+规划与资料保存在安装目录的 `user-data/`。使用在线模型时，问题与相关对话、规划或资料片段会发送给你选择的模型服务商；联网检索会向搜索引擎提交查询并访问目标网页。Windows 模型密钥使用当前用户加密保存。详见 [隐私与数据流向](PRIVACY.md)。
+
+[参与代码贡献与源码运行](CONTRIBUTING.md) · [安全反馈、下载校验与 Windows 提示](SECURITY.md)

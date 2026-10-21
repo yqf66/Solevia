@@ -2,6 +2,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
+from starlette.middleware.trustedhost import TrustedHostMiddleware
+from planner_api.local_security import LocalAPISecurity
 
 from planner_api.api import router
 from planner_api.config import get_settings
@@ -86,7 +88,7 @@ def create_app(
 
     application = FastAPI(
         title="Solevia API",
-        version="0.1.0",
+        version="0.1.3",
         description="Solevia · 足下 — 千里之行，始于足下。",
         lifespan=lifespan,
     )
@@ -119,6 +121,10 @@ def create_app(
     application.include_router(materials_router)
     application.include_router(research_response_router)
     application.include_router(knowledge_router)
+
+    application.add_middleware(LocalAPISecurity)
+    # Starlette strips the port before matching: hostnames, not wildcard ports.
+    application.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"], www_redirect=False)
 
     return application
 

@@ -27,7 +27,7 @@ def safe_path(name):
                 part.endswith((' ','.')) or part.split('.')[0].upper() in reserved
                 or any(ord(char)<32 for char in part) for part in path.parts)):
         raise ValueError('Forbidden release path: '+name)
-    if path.suffix.lower() in {'.db','.sqlite','.sqlite3','.log','.pem','.key','.pyc','.zip','.7z','.exe','.dll','.bin','.safetensors','.pt','.pth'}:
+    if path.suffix.lower() in {'.db','.sqlite','.sqlite3','.log','.pem','.key','.pyc','.zip','.7z','.exe','.dll','.bin','.safetensors','.pt','.pth','.dpapi'}:
         raise ValueError('Forbidden release file type: '+name)
     return path
 

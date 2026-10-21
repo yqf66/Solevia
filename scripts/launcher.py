@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import secrets
 import socket
 import subprocess
 import sys
@@ -164,6 +165,8 @@ def main():
         migrate(features)
         names=['backend','frontend','web','search'];ports=dict(zip(names,available_ports(4)))
         env=runtime_environment(features,ports)
+        env['SOLEVIA_SESSION_TOKEN']=secrets.token_urlsafe(32)
+        env['SOLEVIA_FRONTEND_ORIGINS']=','.join(f'http://{host}:{ports["frontend"]}' for host in ['127.0.0.1','localhost'])
         logs=DATA/'logs';logs.mkdir(parents=True,exist_ok=True)
         # The job closes descendants even if the console window is closed.
         if os.name=='nt':

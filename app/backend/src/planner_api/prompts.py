@@ -1,3 +1,4 @@
+from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 # Keep the public prompt identifier stable for stored conversations and clients;
 # the semantic contract below is backward-compatible with older model adapters.
 CLARIFICATION_PROMPT_VERSION = "clarification-v5-natural-memory"
@@ -50,7 +51,6 @@ error_avoidance_memory 是用户已经明确指出的错误或不合理模式，
 不得声称已读完全文、整份文件确定不存在某项内容，不能用常识替代对文件正文的核实。
 """
 
-from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 
 REQUIREMENT_ANALYSIS_INSTRUCTIONS = MEMORY_INSTRUCTIONS + """你是 Solevia 的后台需求记忆分析器。你不和用户说话，
 只分析刚刚完成的一轮用户—助手对话，并输出结构化、可追溯的记忆更新。

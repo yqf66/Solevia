@@ -261,4 +261,14 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings(_env_file=settings_env_file())
+    return load_user_settings(settings_env_file(), migrate=True)
+
+
+def load_user_settings(path: Path, *, migrate=False) -> Settings:
+    from planner_api.credential_store import read_key
+
+    settings = Settings(_env_file=path)
+    legacy = settings.llm_api_key.get_secret_value()
+    # Explicit process secrets remain process-scoped; never persist them.
+    key = read_key(path, legacy, migrate=migrate and not os.environ.get("LLM_API_KEY"))
+    return settings.model_copy(update={"llm_api_key": SecretStr(key)})

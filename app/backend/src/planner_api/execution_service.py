@@ -1104,7 +1104,6 @@ class ExecutionService:
         current_day = days.get(current_schedule.plan_day_id) if current_schedule else None
         current_stage_order = current_day.stage_order if current_day else None
         current_stage = milestones.get(current_stage_order) if current_stage_order else None
-        current_day_tasks = tasks_by_day.get(current_day.id, []) if current_day else []
         stage_tasks = self._tasks_for_stage(tasks, current_stage_order)
 
         elapsed = [item for item in schedules if item.scheduled_date <= today]

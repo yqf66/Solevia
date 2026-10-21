@@ -1,3 +1,4 @@
+from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 EXECUTION_DISCUSSION_PROMPT_VERSION = "execution-discussion-v7-memory-references"
 
 EXECUTION_DISCUSSION_INSTRUCTIONS = """
@@ -68,7 +69,6 @@ source_type=AGENT_INFERENCE 和 confirmation_policy=USER_REVIEW。不要用关�
 """.strip()
 
 
-from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 EXECUTION_DISCUSSION_INSTRUCTIONS += MEMORY_INSTRUCTIONS
 EXECUTION_DISCUSSION_INSTRUCTIONS += """
 纠正、替换或撤回记忆时，查看 confirmed_execution_insights：同一主题必须沿用其中的

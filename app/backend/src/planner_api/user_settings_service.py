@@ -2,7 +2,8 @@ from pathlib import Path
 
 from dotenv import set_key
 
-from planner_api.config import Settings, get_settings, settings_env_file
+from planner_api.config import Settings, get_settings, load_user_settings, settings_env_file
+from planner_api.credential_store import write_key
 from planner_api.schemas import ModelConnectionRead, ModelConnectionUpdate
 
 
@@ -13,7 +14,7 @@ class UserSettingsService:
     def _settings(self) -> Settings:
         if self.env_path.resolve() == settings_env_file():
             return get_settings()
-        return Settings(_env_file=self.env_path)
+        return load_user_settings(self.env_path)
 
     def _read(self) -> ModelConnectionRead:
         settings = self._settings()
@@ -43,14 +44,9 @@ class UserSettingsService:
         for key, value in values.items():
             set_key(str(self.env_path), key, value, quote_mode="auto")
         if payload.clear_api_key:
-            set_key(str(self.env_path), "LLM_API_KEY", "", quote_mode="auto")
+            write_key(self.env_path, "")
         elif payload.api_key is not None and payload.api_key.get_secret_value().strip():
-            set_key(
-                str(self.env_path),
-                "LLM_API_KEY",
-                payload.api_key.get_secret_value().strip(),
-                quote_mode="auto",
-            )
+            write_key(self.env_path, payload.api_key.get_secret_value().strip())
         if self.env_path.resolve() == settings_env_file():
             get_settings.cache_clear()
         return self._read()

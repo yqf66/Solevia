@@ -1,13 +1,13 @@
 {
-  "name": "plan-a-web-research",
-  "version": "0.1.0",
+  "name": "solevia-web-research",
+  "version": "0.1.3",
   "private": true,
   "type": "module",
-  "description": "Local web search boundary for Plan-A, backed by Open-WebSearch.",
+  "description": "Solevia local web search and page reading service.",
   "scripts": {
     "postinstall": "node scripts/patch-open-websearch.mjs",
     "start": "node src/server.mjs",
-    "check": "node --test test/*.test.mjs"
+    "check": "node --test --test-concurrency=1 test/*.test.mjs"
   },
   "dependencies": {
     "open-websearch": "2.1.11",

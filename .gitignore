@@ -2,6 +2,7 @@
 user-data/
 **/.env
 **/.env.local
+*.dpapi
 **/.venv/
 **/node_modules/
 **/dist/

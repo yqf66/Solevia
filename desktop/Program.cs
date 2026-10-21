@@ -9,7 +9,7 @@ using System.Windows.Forms;
 [assembly:AssemblyProduct("Solevia · 足下")]
 [assembly:AssemblyCompany("Solevia")]
 [assembly:AssemblyCopyright("Solevia contributors")]
-[assembly:AssemblyVersion("0.1.2.0")]
+[assembly:AssemblyVersion("0.1.3.0")]
 namespace Solevia.Desktop {
     static class Program {
         [DllImport("user32.dll")]static extern bool SetProcessDPIAware();

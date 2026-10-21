@@ -8,6 +8,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
+      host: '127.0.0.1',
+      allowedHosts: ['127.0.0.1', 'localhost'],
       proxy: {
         '/api': env.VITE_BACKEND_URL || 'http://127.0.0.1:8000',
       },

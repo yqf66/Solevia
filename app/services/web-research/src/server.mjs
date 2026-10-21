@@ -509,6 +509,14 @@ async function handleFetch(body) {
 }
 
 async function handle(req, res) {
+  const host = req.headers.host;
+  if (![`${config.host}:${config.port}`, `127.0.0.1:${config.port}`, `localhost:${config.port}`].includes(host)) {
+    return json(res, 400, { error: { message: 'Invalid local Host' } });
+  }
+  // This sidecar is server-to-server only, never a browser API.
+  if (req.headers.origin !== undefined || req.headers['sec-fetch-site'] !== undefined) {
+    return json(res, 403, { error: { message: 'Browser access is not allowed' } });
+  }
   const url = new URL(req.url, `http://${config.host}:${config.port}`);
   const work = req.method === 'POST' && ['/v1/search', '/v1/fetch'].includes(url.pathname);
   if (work) activeWork += 1;
@@ -647,7 +655,7 @@ export function startServer() {
   const server = createServer(handle);
   void startUpstream().catch(error => console.error('Upstream start failed:', error.code || error.name));
   server.listen(config.port, config.host, () => {
-    console.log(`Plan-A web research listening at http://${config.host}:${config.port}`);
+    console.log(`Solevia web research listening at http://${config.host}:${config.port}`);
   });
   return server;
 }

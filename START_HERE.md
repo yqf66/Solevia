@@ -4,7 +4,7 @@
 
 ## 安装与启动
 
-1. 在[官方下载页面](https://github.com/yqf66/Solevia/releases/latest)下载 **Solevia-Setup-0.1.2-windows-x64.exe**。
+1. 在[官方下载页面](https://github.com/yqf66/Solevia/releases/latest)下载 **Solevia-Setup-0.1.3-windows-x64.exe**。
 2. 双击安装程序，在中文向导中选择安装位置和所需能力，查看下载与占用估算，确认后安装。准备过程中可查看进度和详细日志。
 3. 安装完成后点击 **打开 Solevia**，或使用桌面、开始菜单中的 **Solevia** 图标。后台服务自动启动，工作台在默认浏览器中打开。
 4. 在「模型连接」中填写自己的服务地址、模型名称与 API 密钥，开始你的第一个目标。
@@ -13,7 +13,7 @@
 
 ![Solevia 中文安装向导：按能力选择组件并查看容量](docs/assets/solevia/installer.webp)
 
-也可以下载 **Solevia-0.1.2-windows-x64.zip** 或从[公开源码仓库](https://github.com/yqf66/Solevia)下载源码，完整解压后运行 Install.cmd。脚本安装完成同样会生成 **Solevia.exe**；保留 CMD 入口便于命令行使用。
+也可以下载 **Solevia-0.1.3-windows-x64.zip** 或从[公开源码仓库](https://github.com/yqf66/Solevia)下载源码，完整解压后运行 Install.cmd。脚本安装完成同样会生成 **Solevia.exe**；保留 CMD 入口便于命令行使用。
 
 ## 按需安装功能
 
@@ -85,3 +85,6 @@
 ## 了解产品
 
 [产品介绍](README.md) · [学习、生活与技术场景](docs/examples/README.md) · [MIT 许可证](LICENSE)
+
+
+隐私与数据流向见 [PRIVACY.md](PRIVACY.md)，系统要求与容量见 [README](README.md#系统要求与按需安装)，Windows SmartScreen 与下载校验见 [SECURITY.md](SECURITY.md)。

@@ -1,0 +1,62 @@
+name: Solevia checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  source-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/project_checks.py versions
+      - run: python scripts/project_checks.py manifest
+  backend:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: app/backend
+    env:
+      PYTHONUTF8: '1'
+      MATERIAL_RERANK_MODE: 'OFF'
+      RESEARCH_RERANK_MODE: 'OFF'
+      MATERIAL_SEMANTIC_ENABLED: 'false'
+      WEB_SEARCH_PROVIDER: disabled
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test environment
+        run: |
+          python -m pip install -r requirements.lock
+          python -m pip install -r ../../requirements-core.lock
+          python -m pip install -r ../../requirements/web.lock -c ../../requirements-core.lock
+          python -m pip install psutil==7.2.2 python-docx==1.2.0 python-pptx==1.0.2 openpyxl==3.1.5 numpy==2.5.4
+          python -m pip install --no-deps -e .
+      - run: python -m ruff check src
+      - run: python -m pytest
+  frontend-and-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --global pnpm@11.25.0
+      - run: pnpm install --frozen-lockfile
+        working-directory: app/frontend
+      - run: pnpm lint
+        working-directory: app/frontend
+      - run: pnpm test --maxWorkers=3
+        working-directory: app/frontend
+      - run: pnpm build
+        working-directory: app/frontend
+      - run: npm ci
+        working-directory: app/services/web-research
+      - run: npm run check
+        working-directory: app/services/web-research
+      - run: node --test test/*.test.mjs

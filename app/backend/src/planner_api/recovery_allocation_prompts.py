@@ -1,3 +1,4 @@
+from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 RECOVERY_ALLOCATION_PROMPT_VERSION = "recovery-allocation-v3-dependency-dates"
 
 RECOVERY_ALLOCATION_INSTRUCTIONS = """你是 Solevia 的中断恢复分配器。
@@ -29,5 +30,4 @@ RECOVERY_ALLOCATION_INSTRUCTIONS = """你是 Solevia 的中断恢复分配器。
 """
 
 
-from planner_api.goal_memory import MEMORY_INSTRUCTIONS
 RECOVERY_ALLOCATION_INSTRUCTIONS += MEMORY_INSTRUCTIONS
