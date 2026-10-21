@@ -1,6 +1,6 @@
 {
   "product": "Solevia",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "files": [
     {
       "path": ".gitattributes",
@@ -9,13 +9,13 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 212,
-      "sha256": "5231e6c6ecbd6c424d1807594dd6201faf075af1d7b4c307dddca6c3466c746a"
+      "bytes": 239,
+      "sha256": "1f80fe59b973b9ca621d6c364e0af2b57901bfb8e65b74a0204a3b68cbce753b"
     },
     {
       "path": "Install.cmd",
-      "bytes": 235,
-      "sha256": "a3a2793c5cb1132a8eb5f67fa4ae51032e19c55f4b7b5a1ef16c67b1ad422025"
+      "bytes": 282,
+      "sha256": "ac6b10a58fd4dcde63a15afba6bf9bfdb0cff7dac3910dbf7ef76b780023f367"
     },
     {
       "path": "LICENSE",
@@ -29,13 +29,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 11213,
-      "sha256": "71ee5cfb03b5b1e525fd889589ddd57bad93abcec6f37436a899c51217dfd3aa"
+      "bytes": 11723,
+      "sha256": "66c4c16925a823cc3ef55c682b986518464cfc4d1efada4d6df8a8dce19e4948"
     },
     {
       "path": "START_HERE.md",
-      "bytes": 3907,
-      "sha256": "637f08b5adca4ec9227f46a7526114e96b118208ae471c7f160aeac7dbc95b85"
+      "bytes": 7422,
+      "sha256": "0e028d1fbd02ce6dcfd356ab4009374efcbdc6395d12e1d39071b02196671247"
     },
     {
       "path": "Start.cmd",
@@ -2023,6 +2023,56 @@
       "sha256": "ca7f31cc1002cded5b82e4a1d07c6d6862f81adb269e5fc3897dbcea21813ffb"
     },
     {
+      "path": "desktop/Host.cs",
+      "bytes": 11872,
+      "sha256": "d34101b80848f8f890eceae02eaf985857aae831cb54e4128b522b1d6c045352"
+    },
+    {
+      "path": "desktop/InstallerForm.cs",
+      "bytes": 13274,
+      "sha256": "12a9345b3eb35cadde35c5be9c71681d8a8412c0a6830c1435b316c7c40d95a1"
+    },
+    {
+      "path": "desktop/Package.cs",
+      "bytes": 7321,
+      "sha256": "bf74ffc812b5ebd4744cd062f14ae82f1ec6144bf21c0728a2b1d0eaae7fc3db"
+    },
+    {
+      "path": "desktop/ProcessRunner.cs",
+      "bytes": 2180,
+      "sha256": "d80e5c2729bbc9065bd68b4972186fa22d629f48c7a4f8d298be72dc13ef1503"
+    },
+    {
+      "path": "desktop/Product.cs",
+      "bytes": 3450,
+      "sha256": "289f2e2c268f98f3dd808fe532144090cfb862114c9afea2cd35a0af0f0449d2"
+    },
+    {
+      "path": "desktop/Program.cs",
+      "bytes": 3244,
+      "sha256": "a474a9752f0860314606dab397bfecec10aa678afa545d92b60ad68f828b7e5e"
+    },
+    {
+      "path": "desktop/Theme.cs",
+      "bytes": 3156,
+      "sha256": "799d36540bfb8da2a55fabf384daa9a11fc406d90d251316ba72a29d4b5042c8"
+    },
+    {
+      "path": "desktop/app.manifest",
+      "bytes": 566,
+      "sha256": "709111160403f7cc92a853abb31fea265f8fe8689616f3190b33232f6de21c0d"
+    },
+    {
+      "path": "desktop/solevia-mark.png",
+      "bytes": 120870,
+      "sha256": "e20912a6952cce09ad2e4df6fddc397d1ee076446fd85fa1c9863c3a0905e9d0"
+    },
+    {
+      "path": "desktop/solevia.ico",
+      "bytes": 42782,
+      "sha256": "20ebf29960c8966e3751f7d8c3a6e418b23855cda38680adadc7a341a3c811d4"
+    },
+    {
       "path": "docs/assets/solevia/adjustment.webp",
       "bytes": 442370,
       "sha256": "5de3c7a58c98085cf63ca76035c52dcd7efb2b7abe29db2d1c1cdeee16cd8fa4"
@@ -2058,6 +2108,11 @@
       "sha256": "1af32d673bc4a01d7980bf05fa2f1cbed3c7a6406ea245b184b3a1489b2e36ea"
     },
     {
+      "path": "docs/assets/solevia/installer.webp",
+      "bytes": 39198,
+      "sha256": "17f2629264d48276da8a3abcefaee14b2f749e95e1a48394fa3b15b3810ba9ac"
+    },
+    {
       "path": "docs/assets/solevia/overview.webp",
       "bytes": 238474,
       "sha256": "1864f36600b7e40b5444e2f59585939074cc8d45a2d38ac6a7e67e1b917ca3eb"
@@ -2080,7 +2135,7 @@
     {
       "path": "release.json",
       "bytes": 571,
-      "sha256": "150ed0ae8909830584701009d6ed5a459af4a12d22938c0942c1de71a4133a03"
+      "sha256": "0502aa0e13e6315fc9023cee5f1e3db317141847d7a5009d78f2f0b73a996f02"
     },
     {
       "path": "requirements-core.lock",
@@ -2088,9 +2143,24 @@
       "sha256": "fd177cdb27cae4a51bdbcebddd6185b013cd556b53a5eec4cec3c986defe1fba"
     },
     {
+      "path": "scripts/build-desktop.ps1",
+      "bytes": 1944,
+      "sha256": "d8faae6249a1aabe27185c629eb74afab724c553ed94523cef0581c871093545"
+    },
+    {
       "path": "scripts/common.ps1",
-      "bytes": 2246,
-      "sha256": "6f259b83fd101da61776831fe31d4486b4c8680ca639782c26a4bcc75961eff4"
+      "bytes": 2317,
+      "sha256": "1b6cfd06c88eac849124fec78056872be04c0172cca28d384f8bc7bd24814bfa"
+    },
+    {
+      "path": "scripts/desktop-update.ps1",
+      "bytes": 4619,
+      "sha256": "cbf7d4c3b4d84ff765a272aef8e6aa5149672fc55189569623eafe54d8e344a1"
+    },
+    {
+      "path": "scripts/desktop_worker.py",
+      "bytes": 2015,
+      "sha256": "c398f8f6ebc0ae191ee8e39fcc02329b1d21caac83d045a60497e5afad8abd32"
     },
     {
       "path": "scripts/frontend-server.mjs",
@@ -2098,14 +2168,19 @@
       "sha256": "69fa9f6411b147016ae13701256104fc50551c442ac9380e6c5542a9808e766c"
     },
     {
+      "path": "scripts/install-options.ps1",
+      "bytes": 4033,
+      "sha256": "fa19180d9a7101b5f3589917f647c7c005f243e06d06173c6f78ee53d7ca1d43"
+    },
+    {
       "path": "scripts/install.ps1",
-      "bytes": 7610,
-      "sha256": "610302a9b30795f8540ab8a0190ef80c2332db5544ab9a017996c5741b123360"
+      "bytes": 11725,
+      "sha256": "de3e6a8b70081435348450b82367b2f3ff4f6388d71aec760bd71c8237bd9e3d"
     },
     {
       "path": "scripts/launcher.py",
-      "bytes": 11556,
-      "sha256": "7aacec7f37058a7772643db8c597b1ccea7fd08c53e021e1e255b7e414020763"
+      "bytes": 11694,
+      "sha256": "af57d03164a1a00f4ab8b9991c3dfa0eccde8eb3d394d9c4f8b2345be4a18fe2"
     },
     {
       "path": "scripts/package_integrity.py",
@@ -2124,8 +2199,8 @@
     },
     {
       "path": "scripts/updater.py",
-      "bytes": 7664,
-      "sha256": "69d7725fdbe06bef17d3bc3a5ee6f6b64c7e334e29b1c4680a9a780b5e6f87ab"
+      "bytes": 8109,
+      "sha256": "61e4420255ed817e43611d4c7a2a4c5db1dad2009b7cc2e810cf6f4a118eca00"
     }
   ]
 }

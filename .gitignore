@@ -17,5 +17,7 @@ user-data/
 *.pyc
 *.zip
 *.7z
+Solevia.exe
+*.building.exe
 .DS_Store
 Thumbs.db

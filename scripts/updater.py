@@ -81,6 +81,8 @@ def install_package(package, *, root=None, run_installer=None):
         marker.write_text(str(os.getpid()),encoding='utf8')
         folder=Path(tempfile.mkdtemp(prefix='update-',dir=target/'.runtime'))
         original=folder/'original';original.mkdir()
+        desktop_exe=target/'Solevia.exe'
+        desktop_backup=desktop_exe.read_bytes() if desktop_exe.exists() else None
         old_data=target/'user-data';database=old_data/'planner.db'
         backups=old_data/'backups';backups.mkdir(parents=True,exist_ok=True)
         from datetime import datetime,timezone
@@ -121,13 +123,17 @@ def install_package(package, *, root=None, run_installer=None):
             for suffix in ('-wal','-shm'):(old_data/('planner.db'+suffix)).unlink(missing_ok=True)
             shutil.copy2(database_backup,database)
         if previous_state is not None:installed_state.write_bytes(previous_state)
+        # This entry is generated locally from reviewed source, outside the source-only manifest.
+        # Restore it too if an update's build or database preparation fails.
+        if desktop_backup is not None:desktop_exe.write_bytes(desktop_backup)
+        else:desktop_exe.unlink(missing_ok=True)
         # Reconcile the old release's dependencies after restoring its source.
         if run_installer is None:installer()
         raise RuntimeError('Update failed. Previous program and database were restored; rerun Install.cmd if dependencies need repair.')
     finally:
         if lock:lock.close()
         marker.unlink(missing_ok=True)
-    print('Updated to '+incoming['version']+'. Double-click Start.cmd.')
+    print('已更新至 '+incoming['version']+'。可以打开 Solevia.exe 继续使用。')
 
 
 def main():

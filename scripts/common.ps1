@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $script:SoleviaRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
@@ -9,7 +9,7 @@ $script:Release = Get-Content -LiteralPath (Join-Path $script:SoleviaRoot 'relea
 function Invoke-Checked {
     param([string]$File, [string[]]$Arguments)
     & $File @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "Command failed ($LASTEXITCODE): $([IO.Path]::GetFileName($File)). Run Install.cmd again to retry." }
+    if ($LASTEXITCODE -ne 0) { throw "步骤执行失败（退出码 $LASTEXITCODE）：$([IO.Path]::GetFileName($File))。请保留当前目录，重新运行 Install.cmd 重试。" }
 }
 
 function Get-SoleviaFileHash {
@@ -22,11 +22,11 @@ function Get-SoleviaFileHash {
 
 function Get-VerifiedDownload {
     param([string]$Url, [string]$Destination, [string]$Sha256)
-    if ($Url -notmatch '^https://') { throw 'Download requires HTTPS.' }
+    if ($Url -notmatch '^https://') { throw '下载地址必须使用 HTTPS。' }
     if ((Test-Path -LiteralPath $Destination) -and (Get-SoleviaFileHash $Destination) -eq $Sha256) { return }
     $partial = $Destination + '.partial'
     Invoke-WebRequest -UseBasicParsing -Uri $Url -OutFile $partial -TimeoutSec 600
-    if ((Get-SoleviaFileHash $partial) -ne $Sha256) { throw 'Download checksum mismatch. Nothing was installed.' }
+    if ((Get-SoleviaFileHash $partial) -ne $Sha256) { throw '下载文件校验失败，本文件尚未安装。请重试。' }
     Move-Item -LiteralPath $partial -Destination $Destination -Force
 }
 

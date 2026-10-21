@@ -135,8 +135,8 @@ def main():
     parser.add_argument('--state-file')
     args=parser.parse_args()
     if args.stop:request_stop();return 0
-    if not args.migrate_only and (RUNTIME/'update.in-progress').exists():
-        raise RuntimeError('An update is in progress. Wait for it to finish before starting.')
+    if not args.migrate_only and any((RUNTIME / name).exists() for name in ['update.in-progress', 'install.in-progress']):
+        raise RuntimeError('Installation or update is in progress. Wait for it to finish before starting.')
     features=load_features(args.state_file)
     if args.check_only:
         required=[ROOT/'app/frontend/dist/index.html',RUNTIME/'node/node.exe',DATA/'.env']
@@ -203,7 +203,7 @@ def main():
             halt=True
         signal.signal(signal.SIGINT,shutdown);signal.signal(signal.SIGTERM,shutdown)
         opened=False;begin=time.monotonic()
-        print('Solevia is starting. Keep this window open. Stop.cmd or Ctrl+C stops all services.',flush=True)
+        print('正在准备 Solevia 本地服务。使用桌面入口时可关闭管理窗口留在托盘；使用 Start.cmd 时请保留终端。',flush=True)
         while not halt:
             if STOP.exists() and STOP.read_text(encoding='utf8')==token:break
             now=time.monotonic()
@@ -215,9 +215,9 @@ def main():
                     service['restarts']=[stamp for stamp in service['restarts'] if now-stamp<120]
                     if len(service['restarts'])>=3:raise RuntimeError(service['name']+' stopped repeatedly. See user-data/logs and run Install.cmd to repair.')
                     stop_service(service);service['restarts'].append(now);spawn(service)
-                    print('Restarting '+service['name']+'...',flush=True)
+                    print('正在重新启动服务：'+service['name']+'…',flush=True)
             if not opened and all(ping(service['health']) for service in services[:2]):
-                print('Ready: '+url,flush=True)
+                print('服务已就绪：'+url,flush=True)
                 if not args.no_browser:webbrowser.open(url)
                 opened=True
             if not opened and now-begin>180:raise RuntimeError('Startup timed out. See user-data/logs.')
