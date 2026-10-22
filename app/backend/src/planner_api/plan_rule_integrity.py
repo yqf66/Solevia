@@ -47,6 +47,18 @@ def _identity(text):
             if re.fullmatch(r"[\u4e00-\u9fff]{2}", text[i:i + 2])}
 
 
+def _weekly_activity(text):
+    """Isolate an explicitly named activity from its surrounding constraint list."""
+    clauses = [part for part in re.split(r"[，,、：:]|(?:以及|与|和)(?=每(?:一)?周)", text)
+               if _weekly_count(part) is not None]
+    if len(clauses) != 1:
+        return ""
+    value = _WEEKLY.sub("", clauses[0])
+    value = re.sub(r"(?:每次)?\s*\d+\s*(?:分钟|小时)|仍保留|保持|不变|至少|最少|不少于", "", value)
+    value = re.sub(r"[^\u4e00-\u9fff]", "", value)
+    return value if 2 <= len(value) <= 12 else ""
+
+
 def validate_recurrence_contracts(result, requirements):
     """Check explicit weekly quantifiers against their source, including scope.
 
@@ -66,7 +78,11 @@ def validate_recurrence_contracts(result, requirements):
         for text, count in confirmed:
             other = _identity(text)
             score = len(identity & other) / max(1, min(len(identity), len(other)))
-            if len(identity & other) >= 3 and score >= 0.6:
+            activity = _weekly_activity(text)
+            named_match = bool(activity and activity in source + item.label)
+            if named_match or (len(identity & other) >= 3 and score >= 0.6):
+                if named_match:
+                    score = 1.0
                 candidates.append((score, count, text))
         if candidates:
             best = max(score for score, _, _ in candidates)
@@ -99,7 +115,9 @@ def validate_recurrence_contracts(result, requirements):
         for item in getattr(result, "commitments", []):
             other = _identity((item.source_text or "") + " " + item.label)
             overlap = len(identity & other)
-            if overlap >= 3 and overlap / max(1, min(len(identity), len(other))) >= 0.6:
+            activity = _weekly_activity(text)
+            named_match = bool(activity and activity in (item.source_text or "") + item.label)
+            if named_match or (overlap >= 3 and overlap / max(1, min(len(identity), len(other))) >= 0.6):
                 represented = item.cadence == "PER_WEEK"
                 if represented:
                     break

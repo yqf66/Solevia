@@ -10,7 +10,7 @@ export function TodayTaskCard({ task, lane, index, onOpen, onSchedule }: Props) 
   return (
     <article className={`today-task-card today-task-card-${(index % 4) + 1} ${task.status === 'COMPLETED' ? 'completed' : ''}`} >
       <button className="today-task-card-main" type="button" onClick={() => onOpen(task)}>
-        <div className="today-task-card-top"><span className="today-task-lane">{lane === 'main' ? '主线任务' : '支线任务'}</span><span className="today-dashboard-task-time">{task.is_fixed ? `${task.start_local}–${task.end_local}` : task.schedule_review_required ? '时间需复核' : schedulingPolicyLabels[task.scheduling_policy ?? 'FLOATING'] ?? '弹性待安排'}</span><span className={`task-status-dot ${task.status === 'COMPLETED' ? 'done' : ''}`} aria-hidden="true">{task.status === 'COMPLETED' ? <Check size={14} /> : '·'}</span></div>
+        <div className="today-task-card-top"><span className="today-task-lane">{lane === 'main' ? '定时安排' : '灵活推进'}</span><span className="today-dashboard-task-time">{task.is_fixed ? `${task.start_local}–${task.end_local}` : task.schedule_review_required ? '时间需复核' : schedulingPolicyLabels[task.scheduling_policy ?? 'FLOATING'] ?? '弹性待安排'}</span><span className={`task-status-dot ${task.status === 'COMPLETED' ? 'done' : ''}`} aria-hidden="true">{task.status === 'COMPLETED' ? <Check size={14} /> : '·'}</span></div>
         <strong>{task.title}</strong>
         <small>{task.plan_title} · {task.estimate_minutes} 分钟 · {schedulingPolicyLabels[task.scheduling_policy ?? 'FLOATING'] ?? '弹性待安排'}{task.schedule_review_required ? ` · ${task.schedule_change_reason ?? '计划已调整'}` : ''}</small>
         <DependencySummary dependencies={task.dependencies} />

@@ -389,11 +389,15 @@ class WorkItemMaterializer:
                 by_date[scheduled_date].append((draft, occurrence))
 
         days_per_week: dict[int, int] = defaultdict(int)
-        task_by_item: dict[str, list[PlanTask]] = defaultdict(list)
+        dependencies = list(self.session.scalars(select(WorkItemDependency).where(
+            WorkItemDependency.plan_version_id == plan.id)))
+        dependency_order = {item.id: index for index, item in enumerate(
+            self._topological(list(items.values()), dependencies))}
         for scheduled_date in sorted(by_date):
             entries = sorted(
                 by_date[scheduled_date],
-                key=lambda pair: (items[pair[0].work_item_id].priority, pair[0].item_key),
+                key=lambda pair: (dependency_order[pair[0].work_item_id],
+                                  items[pair[0].work_item_id].priority, pair[0].item_key),
             )
             week_index = max(1, plan_week_index(plan, payload.requested_start_date, scheduled_date))
             days_per_week[week_index] += 1
@@ -455,21 +459,15 @@ class WorkItemMaterializer:
                         "eligible_from": draft.eligible_from.isoformat(),
                         "eligible_to": draft.eligible_to.isoformat(),
                         "work_item_key": item.item_key,
+                        "dependency_period_key": draft.period_key if draft.period_key != "once" else f"week:{week_index}",
                     },
                     status="NOT_STARTED",
                 )
                 self.session.add(task)
                 self.session.flush()
-                task_by_item[item.id].append(task)
                 item.status = "ACTIVE"
 
-        for edge in self.session.scalars(
-            select(WorkItemDependency).where(WorkItemDependency.plan_version_id == plan.id)
-        ):
-            predecessor_tasks = task_by_item.get(edge.predecessor_work_item_id, [])
-            predecessor_ids = [item.id for item in predecessor_tasks]
-            for task in task_by_item.get(edge.successor_work_item_id, []):
-                task.depends_on_json = predecessor_ids
+        self._bind_dependencies(plan, activation)
 
         operation.status = "APPLIED"
         operation.applied_at = utc_now()
@@ -523,7 +521,9 @@ class WorkItemMaterializer:
             if primary.id not in selected or primary.binding_mode == 'TRIGGERED':
                 template = {'title': task.title, 'description': task.description,
                             'estimate_minutes': task.estimate_minutes,
-                            'evidence': task.evidence_json, 'work_item_keys': keys}
+                             'evidence': task.evidence_json, 'work_item_keys': keys,
+                             'occurrence_key': metadata.get('occurrence_key'),
+                             'dependency_period_key': metadata.get('dependency_period_key') or f'week:{self.session.get(PlanDay, task.plan_day_id).week_index}'}
                 if candidates:
                     window = candidates[0]
                     window.resolution_json = {**window.resolution_json,
@@ -560,13 +560,24 @@ class WorkItemMaterializer:
             task.materialization_key = f'authored:{activation.id}:{task.id}'
             task.materialized_at = utc_now()
             task.scheduling_policy_json = {**metadata, 'eligible_from': window.eligible_from.isoformat(),
-                                          'eligible_to': window.eligible_to.isoformat()}
+                                          'eligible_to': window.eligible_to.isoformat(),
+                                          'dependency_period_key': metadata.get('dependency_period_key') or f'week:{self.session.get(PlanDay, task.plan_day_id).week_index}'}
             primary.status = 'ACTIVE'
             remaining.append(task)
         for task in remaining:
             task.depends_on_json = [value for value in task.depends_on_json or []
                                     if value not in removed_ids]
         self.session.flush()
+        self._bind_dependencies(plan, activation)
+
+    def _bind_dependencies(self, plan, activation):
+        from planner_api.work_item_dependencies import DependencyBindingError, WorkItemDependencyGraph
+        try:
+            graph = WorkItemDependencyGraph(self.session, plan.id)
+            graph.validate_dates(self.session, activation.id)
+            graph.bind()
+        except DependencyBindingError as error:
+            raise HTTPException(409, {"code": "DEPENDENCY_BINDING_INVALID", "message": str(error)}) from error
 
     def _resolve(
         self,
@@ -639,7 +650,19 @@ class WorkItemMaterializer:
                     continue
                 earliest = start
                 for edge in predecessor_edges.get(item.id, []):
+                    from planner_api.dependency_matching import matching_mode
+                    mode = matching_mode(edge)
+                    if mode == "MATCH_OCCURRENCE":
+                        # Authored actions carry object identity; ordinal
+                        # recurrence counts do not. Never invent their pairing.
+                        if strict:
+                            raise HTTPException(409, "同次依赖需要带稳定实例标识的具体任务，请先生成每日任务。")
+                        continue
                     predecessor_dates = selected_by_item.get(edge.predecessor_work_item_id, [])
+                    if mode == "MATCH_PERIOD":
+                        predecessor_dates = [value for value in predecessor_dates if start <= value <= end]
+                        if strict and not predecessor_dates:
+                            raise HTTPException(409, "当前周期缺少对应前置任务，请先补齐周期安排。")
                     if predecessor_dates:
                         earliest = max(
                             earliest,
@@ -657,6 +680,14 @@ class WorkItemMaterializer:
                     ),
                     fixed=binding == "FIXED",
                 )
+                for edge in predecessor_edges.get(item.id, []):
+                    if edge.maximum_lag_days is None or matching_mode(edge) == "MATCH_OCCURRENCE":
+                        continue
+                    dates = selected_by_item.get(edge.predecessor_work_item_id, [])
+                    if matching_mode(edge) == "MATCH_PERIOD":
+                        dates = [value for value in dates if start <= value <= end]
+                    if dates and chosen and max(chosen) > max(dates) + timedelta(days=edge.maximum_lag_days) and strict:
+                        raise HTTPException(409, "依赖间隔超过允许上限，请调整窗口或具体任务安排。")
                 if len(chosen) < count and strict:
                     raise HTTPException(
                         409,
@@ -765,13 +796,12 @@ class WorkItemMaterializer:
         if period == "WEEK":
             ranges = []
             cursor = start
-            index = 1
             while cursor <= end:
                 boundary = min(end, cursor + timedelta(days=6 - cursor.weekday())
                                if calendar_weeks(plan) else cursor + timedelta(days=6))
-                ranges.append((f"week:{index}", cursor, boundary, count))
+                week = max(1, plan_week_index(plan, payload.requested_start_date, cursor))
+                ranges.append((f"week:{week}", cursor, boundary, count))
                 cursor = boundary + timedelta(days=1)
-                index += 1
             return ranges
         if period == "DAY":
             return [
@@ -1026,7 +1056,8 @@ class WorkItemMaterializer:
                 for item in items
             ],
             "edges": [
-                [edge.predecessor_work_item_id, edge.successor_work_item_id, edge.minimum_lag_days]
+                [edge.predecessor_work_item_id, edge.successor_work_item_id, edge.dependency_type,
+                 edge.matching_mode, edge.minimum_lag_days, edge.maximum_lag_days, edge.condition_json]
                 for edge in edges
             ],
         }

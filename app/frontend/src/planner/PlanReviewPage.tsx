@@ -1,3 +1,4 @@
+import { RequirementSummary } from '../ui/RequirementSummary'
 import { TimePicker } from '../ui/TimePicker'
 import { submitOnEnter } from '../ui/submitOnEnter'
 import './ReviewPages.css'
@@ -12,7 +13,7 @@ import { ResearchProgress } from '../ui/ResearchProgress'
 import { useWebResearch } from '../ui/useWebResearch'
 import { ResearchConnectionStatus } from '../ui/ResearchConnectionStatus'
 import { StageTransition, PlannerStepper } from '../ui/PlannerStage'
-import { scheduleTypeLabels, ASSISTANT_NAME, displayMessageContent, factLabels } from '../ui/plannerPresentation'
+import { scheduleTypeLabels, ASSISTANT_NAME, displayMessageContent } from '../ui/plannerPresentation'
 import { AnswerResearch } from '../ui/AnswerResearch'
 import { AssistantAnswer, useFreshAnswers } from '../ui/AssistantAnswer'
 import { OperationProgress, ProcessDetails } from '../ui/ProcessDetails'
@@ -599,7 +600,7 @@ export function PlanReviewPage() {
               <span>{workspace.latest_generation_run.status === 'DEGRADED' ? '部分辅助分析未完成，最终结果已继续使用原始上下文和本地校验。' : '需求、约束与执行历史已经分别整理，并通过本地规则校验。'}</span>
             </div>}
             {workspace.pending_adjustment && <section className="pending-adjustment-notice" ref={pendingAdjustmentNoticeRef}>
-              <div><p className="eyebrow">来自执行讨论 · {workspace.pending_adjustment.needs_clarification ? '有待处理事项' : '等你确认'}</p><h3>调整建议已经整理好，但尚未改变当前计划</h3><p>页面下方仍展示正在执行的原版本。确认调整后的日期与时间预览并发布后，新安排才会生效；已经完成的内容会保留。</p></div>
+              <div><p className="eyebrow">规划调整 · {workspace.pending_adjustment.needs_clarification ? '有待处理事项' : '等你确认'}</p><h3>调整建议已经整理好，但尚未改变当前计划</h3><p>页面下方展示当前采用的版本。调整预览通过校验并由你确认后，新安排才会生效；已经完成的内容会保留。</p></div>
               <button className="button primary" type="button" onClick={revealPendingAdjustment}>查看并确认调整</button>
             </section>}
             {plan.planning_mode === 'EXPLORATORY' && <section className="rolling-plan-panel">
@@ -613,7 +614,7 @@ export function PlanReviewPage() {
             </section>}
             {!explorationDraft && (plan.change_summary ?? []).length > 0 && (
               <div className="plan-change-summary" ref={planChangeSummaryRef}>
-                <header><div><p className="eyebrow">刚刚完成的修改</p><h3>接下来的安排已经更新</h3></div>{regeneratedWeeks.length > 0 && <div>{regeneratedWeeks.map((week) => <span key={week}>第 {week} 周</span>)}</div>}</header>
+                <header><div><p className="eyebrow">当前版本的修改记录</p><h3>这份安排包含的更新</h3></div>{regeneratedWeeks.length > 0 && <div>{regeneratedWeeks.map((week) => <span key={week}>第 {week} 周</span>)}</div>}</header>
                 <ul>{(plan.change_summary ?? []).map((item) => <li key={item}>{item}</li>)}</ul>
                 <p>没有列出的周保持原样；需要时仍可以在右侧找回之前的安排。</p>
               </div>
@@ -812,11 +813,7 @@ export function PlanReviewPage() {
       <aside className="stage-context-column memory-column" aria-label="计划依据">
         <div className="panel route-context">
           <div className="confirmed-summary-heading"><h2>这份安排基于</h2><span>已确认路线</span></div>
-          {['available_capacity', 'deadline', 'success_criteria'].map((key) => {
-            const value = workspace.requirement_snapshot[key]
-            if (value == null || value === '') return null
-            return <div className="confirmed-row" key={key}><strong>{factLabels[key]}</strong><p>{Array.isArray(value) ? value.join('、') : String(value)}</p></div>
-          })}
+          <RequirementSummary snapshot={workspace.requirement_snapshot} fields={['available_capacity', 'deadline', 'success_criteria']} />
           <div className="plan-side-notes"><h3>{executionStarted ? '原路线的缓冲约定' : '缓冲策略'}</h3>{plan.buffer_strategy.map((item) => <p key={item}>{item}</p>)}</div>
           {plan.assumptions.length > 0 && <div className="plan-side-notes"><h3>{executionStarted ? '原规划时的假设' : '当前假设'}</h3>{plan.assumptions.map((item) => <p key={item}>{item}</p>)}</div>}
           {plan.open_questions.length > 0 && <div className="plan-side-notes warning"><h3>{executionStarted ? '原规划时记录的问题' : '确认前需处理'}</h3>{plan.open_questions.map((item) => <p key={item}>{item}</p>)}</div>}

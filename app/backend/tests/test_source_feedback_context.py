@@ -104,6 +104,27 @@ def test_actual_input_builders_use_independent_switch_and_restore_same_contract(
         def build(enabled):
             return _discussion_input(context, "test-version", "apply_request", source_feedback_enabled=enabled)
     off, on = (json.loads(build(enabled)) for enabled in (False, True))
-    assert resolve_snapshot_references(on) == resolve_snapshot_references(off)
+    restored_on, restored_off = resolve_snapshot_references(on), resolve_snapshot_references(off)
+    restored_on.pop("_context_manifest")
+    restored_off.pop("_context_manifest")
+    assert restored_on == restored_off
     assert on["_context_manifest"]["lossy"] is False
     assert on["planning_context"]["recent_messages"][-1]["content"] == "纠正：不要增加时间，不要延长期限"
+
+
+def test_plan_budget_measures_lossless_wire_payload_instead_of_duplicate_drafts(monkeypatch):
+    from planner_api.config import get_settings
+    config = get_settings().model_copy(update={"context_max_input_chars": 60000})
+    monkeypatch.setattr("planner_api.config.get_settings", lambda: config)
+    p = scenario()
+    source = "完整保留约束、次数和依赖" * 3000
+    p["planning_context"]["generation_validation_feedback"]["previous_source_document"] = source
+    ctx = PlanContext(requirements=p["confirmed_requirements"], route=p["confirmed_route"],
+                      planning_context=p["planning_context"], source_document=source)
+    wire = json.loads(_plan_input(ctx, source_feedback_enabled=True))
+    manifest = wire["_context_manifest"]
+    assert manifest["compiled_chars"] < 60000 and not manifest["budget_exceeded"]
+    assert len(_plan_input(ctx, source_feedback_enabled=False)) > 60000
+    restored = resolve_snapshot_references(wire)
+    assert restored["source_document"] == source
+    assert restored["planning_context"]["generation_validation_feedback"]["previous_source_document"] == source

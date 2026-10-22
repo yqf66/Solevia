@@ -78,7 +78,7 @@ def _small_catchup_case(client, session_factory, monkeypatch, *, advance_minutes
     # This test checks recovery scope, not wall-clock races at minute boundaries.
     # Today's allocator excludes elapsed minutes; test that expiry separately.
     class Clock:
-        value = datetime.now(ZoneInfo("Asia/Shanghai")).replace(second=30, microsecond=0)
+        value = datetime.now(ZoneInfo("Asia/Shanghai")).replace(hour=10, minute=0, second=30, microsecond=0)
 
         @classmethod
         def now(cls, tz=None):

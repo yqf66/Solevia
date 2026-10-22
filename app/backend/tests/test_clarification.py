@@ -910,6 +910,52 @@ def test_capacity_addition_without_correction_does_not_discard_existing_quota() 
     assert "每周6小时" in value and "每次60分钟" in value
 
 
+def test_quantity_correction_in_same_sentence_keeps_course_constraints() -> None:
+    evidence = "保留原课程时间和每日自主学习上限，以刚才更正的4套为准。"
+    assert not ClarificationService._explicit_replacement_for_field("constraints", evidence)
+    assert not ClarificationService._explicit_replacement_for_field(
+        "constraints", "不能覆盖原规则，以新训练数量为准。")
+    assert ClarificationService._explicit_replacement_for_field(
+        "constraints", "原规则作废，约束整体改为周二无课。")
+
+
+def test_reordered_full_fact_merge_deduplicates_exact_clauses_only() -> None:
+    value = ClarificationService._merge_fact_values(
+        "只用合成资料；每天最多30分钟；不接入真实账号",
+        "不接入真实账号；只用合成资料；每天最多30分钟；每周复盘一次",
+    )
+    assert value == "只用合成资料；每天最多30分钟；不接入真实账号；每周复盘一次"
+    # Similar-looking but different numbers and negations must never be dropped.
+    assert "每天最多20分钟" in ClarificationService._merge_fact_values(value, "每天最多20分钟")
+    assert "允许真实账号" in ClarificationService._merge_fact_values(value, "允许真实账号")
+
+
+def test_quota_change_log_cannot_replace_goal_purpose(session_factory) -> None:
+    with session_factory() as session:
+        goal = Goal(title="北京定选备考", raw_input="准备北京定向选调笔试")
+        session.add(goal)
+        session.flush()
+        conversation = Conversation(goal_id=goal.id, phase="CLARIFICATION")
+        session.add(conversation)
+        session.flush()
+        message = Message(conversation_id=conversation.id, sequence=1, role="USER",
+                          content="整卷由6套改为4套，仍然准备北京定选。")
+        old = RequirementFact(goal_id=goal.id, field_key="objective", category="OBJECTIVE",
+                              value_json="备考北京定向选调笔试", source="USER", status="CONFIRMED")
+        session.add_all([message, old])
+        session.flush()
+        service = ClarificationService(session, FakeClarificationProvider())
+        service._apply_fact_candidate(goal.id, ProposedFact(
+            category="OBJECTIVE", field_key="objective", value="整卷量由最初6套更正为总共4套",
+            source="USER", status="CONFIRMED", confidence=1, operation="REPLACE"), message.id)
+        assert service._confirmed_fact_values(goal.id)["objective"] == "备考北京定向选调笔试"
+        message.content = "最终目标改为阳台绿植观察。"
+        service._apply_fact_candidate(goal.id, ProposedFact(
+            category="OBJECTIVE", field_key="objective", value="阳台绿植观察",
+            source="USER", status="CONFIRMED", confidence=1, operation="REPLACE"), message.id)
+        assert service._confirmed_fact_values(goal.id)["objective"] == "阳台绿植观察"
+
+
 def test_turn_only_instruction_is_not_saved_as_long_term_preference(session_factory) -> None:
     with session_factory() as session:
         goal = Goal(title="临时指令", raw_input="测试临时指令")

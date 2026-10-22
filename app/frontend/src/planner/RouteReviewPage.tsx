@@ -11,7 +11,8 @@ import { ResearchProgress } from '../ui/ResearchProgress'
 import { useWebResearch } from '../ui/useWebResearch'
 import { ResearchConnectionStatus } from '../ui/ResearchConnectionStatus'
 import { StageTransition, PlannerStepper } from '../ui/PlannerStage'
-import { ASSISTANT_NAME, displayMessageContent, factLabels } from '../ui/plannerPresentation'
+import { ASSISTANT_NAME, displayMessageContent } from '../ui/plannerPresentation'
+import { RequirementSummary } from '../ui/RequirementSummary'
 import { AnswerResearch } from '../ui/AnswerResearch'
 import { AssistantAnswer, useFreshAnswers } from '../ui/AssistantAnswer'
 import { OperationProgress } from '../ui/ProcessDetails'
@@ -481,11 +482,7 @@ export function RouteReviewPage() {
       <aside className="stage-context-column memory-column route-context-column" aria-label="路线依据">
         <div className="panel route-context">
           <div className="confirmed-summary-heading"><h2>已经谈好的目标</h2><span>已确认</span></div>
-          {Object.entries(workspace.requirement_snapshot).map(([key, value]) => {
-            const empty = value == null || value === '' || (Array.isArray(value) && value.length === 0)
-            if (empty) return null
-            return <div className="confirmed-row" key={key}><strong>{factLabels[key] ?? key}</strong><p>{Array.isArray(value) ? value.join('、') : String(value)}</p></div>
-          })}
+          <RequirementSummary snapshot={workspace.requirement_snapshot} />
           {(route.open_questions.length > 0 || (route.optional_questions ?? []).length > 0) && <div className="route-open-questions"><h2>可以稍后补充</h2><p className="muted">不回答也可以按当前假设继续，补充后路线会更贴身。</p><ul>{[...route.open_questions, ...(route.optional_questions ?? [])].map((question) => <li key={question}>{question}</li>)}</ul></div>}
         </div>
       </aside>

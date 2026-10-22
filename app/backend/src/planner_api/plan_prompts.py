@@ -495,6 +495,11 @@ D1/D2 是相对建议次序，不是用户固定日期承诺。每周次数用 C
 在description说明参考的历史产物；不能把历史工作项作为主要身份重新兑现旧次数。
 第一项是此动作的主要工作项，其余是同时承接的义务，例如一次推进窗口。不要用阶段编号代替。
 准备、练习、订正若共同构成一次训练，全部使用同一个occurrence_key；不同训练使用不同键。
+occurrence_key必须是全计划稳定且含系列前缀的对象身份（如EXAM.SET.01），改期或跨周仍保留；不能用执行日期或当天序号充当身份。
+dependencies的matching_mode区分：ALL等待全部前置；MATCH_OCCURRENCE只等待相同occurrence_key的前置；MATCH_PERIOD只等待同一dependency_period_key的前置。
+每次练习后对应订正、每篇稿件对应修改，必须使用MATCH_OCCURRENCE；每周记录后本周复盘使用MATCH_PERIOD（dependency_period_key如week:2）；所有成果完成后的总复盘才用ALL。
+MATCH_PERIOD的全部关联动作须显式填写scheduling_policy_data.dependency_period_key，跨周移动仍保留原义务周期。MATCH_OCCURRENCE的全部关联动作须填写occurrence_key。
+“建议先做”不能擅自加成强制依赖；只有用户要求或真实成果前提才添加。有限窗口外的未来重复行动不能阻断当前周期。
 一次窗口里多个步骤共同承接频率工作项时，每一步都引用该窗口工作项，不能只让准备步骤兑现次数。
 候选动作必须关联具体候选工作项，不能同时引用互斥候选；触发动作必须关联触发工作项，不能伪装普通任务。
 work_item_keys关联工作项约束；satisfies_commitments逐字使用plan_outline.commitments中的label。
@@ -624,3 +629,21 @@ _NO_SYSTEM_CHECK_TASKS = """
 """
 HYBRID_PLAN_DETAIL_AUTHOR_INSTRUCTIONS += _NO_SYSTEM_CHECK_TASKS
 HYBRID_PLAN_DETAIL_COMPILER_INSTRUCTIONS += _NO_SYSTEM_CHECK_TASKS
+
+_DEPENDENCY_MATCHING_CONTRACT = """
+依赖matching_mode必须明确：ALL为整组完成，MATCH_OCCURRENCE为同一对象/训练的对应步骤，
+MATCH_PERIOD为同一义务周期（如本周记录后本周复盘）。不填时按ALL处理，不能靠描述改变依赖范围。
+逐套、逐篇、逐次关系须用MATCH_OCCURRENCE，并要求具体动作携带稳定且全计划唯一的occurrence_key；
+周期关系用MATCH_PERIOD，具体动作携带dependency_period_key。不同对象或不同周期不能误配。
+注意两层字段：work_item_dependencies.predecessor_key/successor_key填工作项键；
+days.tasks.depends_on只能填实际已声明动作的M1-W1-D1-T1坐标引用，不能填工作项键、occurrence_key、周期键或自造前置ID。
+已有语义依赖会由程序按matching_mode解析成具体前置，不需要在tasks.depends_on重复填工作项键，留空数组即可。
+task.scheduling_policy仅允许EXACT_DAY、DATE_WINDOW、CADENCE、QUOTA、TASK_POOL、CHECKPOINT、TRIGGERED、FLOATING；
+观察、调研、等待等自然语言不是scheduling_policy枚举，须映射为合法策略并在约束与描述中保留含义。
+长期持续义务不能用全计划ALL阻断每周复盘；真正最终汇总才等待规定范围全部完成。
+建议顺序不自动升级为硬前置；循环反馈应展开为下一轮实例，不能生成互相等待的环。
+"""
+HYBRID_PLAN_OUTLINE_AUTHOR_INSTRUCTIONS += _DEPENDENCY_MATCHING_CONTRACT
+HYBRID_PLAN_OUTLINE_COMPILER_INSTRUCTIONS += _DEPENDENCY_MATCHING_CONTRACT
+HYBRID_PLAN_DETAIL_AUTHOR_INSTRUCTIONS += _DEPENDENCY_MATCHING_CONTRACT
+HYBRID_PLAN_DETAIL_COMPILER_INSTRUCTIONS += _DEPENDENCY_MATCHING_CONTRACT

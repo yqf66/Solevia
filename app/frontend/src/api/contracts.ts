@@ -292,6 +292,7 @@ export type PlanTask = {
   is_required: boolean
   evidence: string[]
   depends_on: string[]
+  dependency_titles?: Record<string, string>
   ai_schedule_requested?: boolean
   is_splittable?: boolean
   scheduling_policy?: 'EXACT_DAY' | 'DATE_WINDOW' | 'CADENCE' | 'QUOTA' | 'TASK_POOL' | 'CHECKPOINT' | 'TRIGGERED' | 'FLOATING'

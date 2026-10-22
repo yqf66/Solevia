@@ -19,9 +19,57 @@ def test_preparation_deadline_is_distinct_from_exam_day():
     assert resolve_deadline(text, date(2026, 10, 20)) == date(2026, 11, 14)
 
 
+@pytest.mark.parametrize("count,valid", [(3, True), (2, False)])
+def test_short_weekly_activity_inside_long_constraint_list_keeps_its_count(count, valid):
+    result = NS(total_weeks=4, commitments=[NS(label="行测专项", source_text=f"行测专项每周{count}次，每次20分钟",
+        cadence="PER_WEEK", start_week=1, end_week=4, minimum_occurrences=count)])
+    requirements = {"constraints": "保持4套90分钟整卷、4次45分钟订正、每周3次20分钟专项、错因清单和申论提纲，所有依赖不变"}
+    if valid:
+        validate_recurrence_contracts(result, requirements)
+    else:
+        with pytest.raises(WorkItemValidationError):
+            validate_recurrence_contracts(result, requirements)
+
+
+@pytest.mark.parametrize("count,valid", [(3, True), (2, False)])
+def test_weekly_activity_after_conjunction_is_not_a_new_composite_obligation(count, valid):
+    result = NS(total_weeks=4, commitments=[NS(label="行测专项", source_text=f"每周{count}次专项练习",
+        cadence="PER_WEEK", start_week=1, end_week=4, minimum_occurrences=count)])
+    requirements = {"constraints": "第4周只做错因清单定稿、申论提纲成形、4套卷纵向对照与每周3次专项，不开新整卷"}
+    if valid:
+        validate_recurrence_contracts(result, requirements)
+    else:
+        with pytest.raises(WorkItemValidationError):
+            validate_recurrence_contracts(result, requirements)
+
+
 @pytest.mark.parametrize("text", ["2026年11月14日", "2026年11月14日晚完成准备", "请在2026-11-14之前完成"])
 def test_explicit_absolute_deadlines(text):
     assert resolve_deadline(text) == date(2026, 11, 14)
+
+
+@pytest.mark.parametrize("text", [
+    "2026 年 12 月 20 日", "2026年 12月20日", "2026\u3000年\u300012\u3000月\u300020\u3000日",
+    "截止日期为 2026 年 12 月 20 日", "2026 / 12 / 20 前完成", "2026 年 12 月 20 日 前完成",
+])
+def test_date_component_whitespace_is_only_formatting(text):
+    assert resolve_deadline(text, date(2026, 10, 21)) == date(2026, 12, 20)
+
+
+@pytest.mark.parametrize("text", [
+    "2026 年 2 月 30 日", "2026 年 2 月 29 日", "2026 年 12 月 20 日或21日前完成",
+    "如果通过考试，2026 年 12 月 20 日前完成", "20 26 年 12 月 20 日",
+])
+def test_spacing_does_not_authorize_invalid_or_ambiguous_deadlines(text):
+    assert resolve_deadline(text) is None
+
+
+def test_source_date_and_stale_metadata_guards_still_apply_with_spaces():
+    assert resolve_deadline("2028 年 2 月 29 日") == date(2028, 2, 29)
+    snapshot = {"deadline": "2026 年 12 月 20 日", "temporal_context": {"deadline": {
+        "source_text": "2026年11月14日", "resolved_date": "2026-11-14",
+    }}}
+    assert snapshot_deadline(snapshot, timezone="Asia/Shanghai", require_resolved=True) == date(2026, 12, 20)
 
 
 @pytest.mark.parametrize("text", ["如果通过初试，2026年11月14日前完成", "2026年11月14日或11月15日前完成", "11月14日前完成"])
@@ -176,7 +224,8 @@ def test_public_preview_rejects_exam_eve_overrun_without_activation(session_fact
         goal, plan = _sunday_plan(session)
         requirement = RequirementVersion(goal_id=goal.id, version=2, status="CONFIRMED", snapshot_json={
             "deadline": "演练假设考试日为2026年11月15日，11月14日晚完成准备；不是已核实的官方考试时间"})
-        session.add(requirement); session.flush()
+        session.add(requirement)
+        session.flush()
         goal.current_requirement_version_id = requirement.id
         service = ExecutionService(session)
         service._today_for = lambda _: date(2026, 10, 20)
@@ -324,7 +373,8 @@ def test_public_preview_maps_last_calendar_week_before_exam_deadline(session_fac
                                  "completion": {"target_value": 1}}
         requirement = RequirementVersion(goal_id=goal.id, version=3, status="CONFIRMED",
             snapshot_json={"deadline": "2026-11-14"})
-        session.add(requirement); session.flush()
+        session.add(requirement)
+        session.flush()
         goal.current_requirement_version_id = requirement.id
         service = ExecutionService(session)
         service._today_for = lambda _: date(2026, 10, 20)

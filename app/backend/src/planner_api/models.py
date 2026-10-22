@@ -530,6 +530,7 @@ class WorkItemDependency(Base):
         ForeignKey("plan_work_items.id", ondelete="CASCADE"), index=True
     )
     dependency_type: Mapped[str] = mapped_column(String(24), default="FINISH_TO_START")
+    matching_mode: Mapped[str] = mapped_column(String(24), default="ALL", server_default="ALL")
     minimum_lag_days: Mapped[int] = mapped_column(Integer, default=0)
     maximum_lag_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
     condition_json: Mapped[dict] = mapped_column(JSON, default=dict)

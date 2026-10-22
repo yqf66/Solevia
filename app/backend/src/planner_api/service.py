@@ -20,6 +20,7 @@ from planner_api.goal_error_memory import (
     explicit_error_memory_candidates,
     persist_explicit_error_memories,
 )
+from planner_api.goal_titles import apply_goal_title, initial_goal_title
 from planner_api.materials.analysis_ai import build_material_analysis_provider
 from planner_api.materials.analysis_service import MaterialAnalysisService
 from planner_api.models import (
@@ -130,7 +131,7 @@ class ClarificationService:
         web_research_enabled: bool = False,
         commit: bool = True,
     ) -> ClarificationWorkspace:
-        title = raw_input.strip().split("。", 1)[0][:60]
+        title = initial_goal_title(raw_input)
         goal = Goal(
             title=title,
             raw_input=raw_input.strip(),
@@ -1277,6 +1278,7 @@ class ClarificationService:
             return
 
         if analysis is not None:
+            apply_goal_title(self.session, goal, analysis.goal_title)
             from planner_api.goal_memory import save_memories
             save_memories(self.session, conversation, analysis.long_term_memories, source_message=evidence_message)
         active_values = self._confirmed_fact_values(goal.id)
@@ -1394,10 +1396,19 @@ class ClarificationService:
             }
 
         candidate_value = candidate.value
+        if (confirmed is not None and candidate.field_key == "objective"
+                and isinstance(candidate_value, str)
+                and re.search(r"(?:数量|总量|整卷量|套数|频次|容量).{0,30}(?:更正|改为|调整为)", candidate_value)
+                and not re.search(r"(?:最终目标|整体目标|目标方向|目标整体).{0,12}(?:改为|换成|调整为)", evidence_content)):
+            # A quota correction is not a replacement for the user's purpose.
+            # Keep the objective and let the separately extracted quota fields
+            # carry the correction; do not turn a change log into the goal.
+            return None
         merge_with_confirmed = (
             confirmed is not None
             and candidate.status == "CONFIRMED"
-            and candidate.field_key in _ADDITIVE_FACT_FIELDS
+            and (candidate.field_key in _ADDITIVE_FACT_FIELDS
+                 or (candidate.field_key == "objective" and candidate.operation == "MERGE"))
             and not self._explicit_replacement_for_field(candidate.field_key, evidence_content)
         )
         if merge_with_confirmed:
@@ -1504,8 +1515,9 @@ class ClarificationService:
         hint = _REPLACEMENT_FIELD_HINTS.get(field_key)
         return any(
             _EXPLICIT_REPLACEMENT_PATTERN.search(part)
+            and not re.search(r"保留|不变|仍然有效|不能(?:覆盖|修改|替换)", part)
             and (not hint or re.search(hint, part) or re.search(r"全部需求|所有事实|全部信息", part))
-            for part in re.split(r"[。；;\n]+", evidence)
+            for part in re.split(r"[。；;，,\n]+", evidence)
         )
 
     @staticmethod
@@ -1527,7 +1539,18 @@ class ClarificationService:
                 return new
             if new_key and new_key in old_key:
                 return old
-            return f"{old.rstrip('；;。 ')}；{new.strip()}"
+            # A model can return a reordered full value for MERGE. Whole-string
+            # containment misses that case and repeats the old clauses each turn.
+            # Remove only exact clauses (ignoring spacing), never semantic variants.
+            parts: list[str] = []
+            seen: set[str] = set()
+            for part in re.split(r"[；;\n]+", old + "；" + new):
+                part = part.strip()
+                key = normalize(part)
+                if key and key not in seen:
+                    seen.add(key)
+                    parts.append(part)
+            return "；".join(parts)
         if isinstance(old, list) and isinstance(new, list):
             merged = list(old)
             for item in new:

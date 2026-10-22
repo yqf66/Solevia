@@ -266,6 +266,7 @@ class RequirementAnalysis(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    goal_title: str | None = None
     proposed_facts: list[ProposedFact] = Field(default_factory=list)
     long_term_memories: list[LongTermMemoryCandidate] = Field(default_factory=list, max_length=6)
     conflicts: list[str] = Field(default_factory=list)
@@ -593,7 +594,10 @@ class PlanTaskDraft(BaseModel):
     task_kind: Literal["PREPARE", "LEARN", "PRACTICE", "BUILD", "REVIEW", "BUFFER"]
     is_required: bool = True
     evidence: list[str] = Field(max_length=4)
-    depends_on: list[str] = Field(default_factory=list, max_length=6)
+    # Semantic group gates may resolve to more than six concrete tasks. Keep
+    # reference existence/order validation; a UI-sized cap must not make an
+    # otherwise valid persisted dependency graph unreadable on the next edit.
+    depends_on: list[str] = Field(default_factory=list)
     satisfies_commitments: list[str] = Field(default_factory=list, max_length=12)
     work_item_keys: list[str] = Field(default_factory=list, max_length=12)
     stage_contributions: list[PlanStageContributionDraft] = Field(default_factory=list, max_length=7)
@@ -1265,6 +1269,7 @@ class PlanTaskRead(BaseModel):
     is_required: bool
     evidence: list[str]
     depends_on: list[str]
+    dependency_titles: dict[str, str] = Field(default_factory=dict)
     satisfies_commitments: list[str] = Field(default_factory=list)
     ai_schedule_requested: bool = False
     is_splittable: bool = True

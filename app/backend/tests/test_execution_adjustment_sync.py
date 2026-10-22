@@ -8,7 +8,7 @@ from planner_api.ai import ProviderUnavailableError
 from planner_api.api import get_plan_service
 from planner_api.execution_discussion_service import ExecutionDiscussionService
 from planner_api.execution_service import ExecutionService
-from planner_api.models import Conversation, Goal, Message, PlanActivation, PlanDay, PlanDaySchedule, PlanTask, ProgressEvent, RouteVersion
+from planner_api.models import Goal, Message, PlanActivation, PlanDay, PlanDaySchedule, PlanTask, ProgressEvent, RouteVersion
 from planner_api.plan_discussion_ai import FakePlanDiscussionProvider
 from planner_api.schemas import PlanRevisionResult
 from test_execution_discussion import _started_goal
@@ -29,7 +29,8 @@ def test_legacy_duplicate_positions_preserve_task_identity_and_still_protect_act
         duplicate = PlanTask(plan_version_id=source.id, plan_day_id=tasks[0].plan_day_id,
             order_in_day=1, title="另一个已完成动作", description="保留这个动作的独立执行记录",
             estimate_minutes=5, priority=1, task_kind="REVIEW", status="COMPLETED")
-        session.add(duplicate); session.flush()
+        session.add(duplicate)
+        session.flush()
         day_tasks.append(duplicate)
         day = session.get(PlanDay, tasks[0].plan_day_id)
         day.suggested_minutes += 5
@@ -38,7 +39,8 @@ def test_legacy_duplicate_positions_preserve_task_identity_and_still_protect_act
             task.status = "COMPLETED"
         event = ProgressEvent(goal_id=goal_id, plan_version_id=source.id,
             plan_day_id=day_tasks[-1].plan_day_id, task_id=day_tasks[-1].id, event_type="TASK_COMPLETED")
-        session.add(event); session.flush()
+        session.add(event)
+        session.flush()
         payload = deepcopy(service._plan_payload(source))
         payload["change_summary"] = ["仅整理任务显示序号，执行动作保持不变"]
         for day in payload["days"]:
@@ -131,7 +133,8 @@ def test_calendar_distinguishes_position_and_task_stages_after_recovery(client, 
         archived = PlanTask(plan_version_id=plan.id, plan_day_id=destination.id,
             origin_stage_order=9, order_in_day=51, title="已移走的旧任务", description="仅保留历史",
             estimate_minutes=5, priority=1, task_kind="REVIEW", status="CARRIED_OVER")
-        session.add_all([recovered, archived]); session.flush()
+        session.add_all([recovered, archived])
+        session.flush()
         destination_id, recovered_id = destination.id, recovered.id
         session.commit()
     response = client.get(f"/api/goals/{goal_id}/execution/calendar")
@@ -150,6 +153,9 @@ def test_committed_goal_finishes_tasks_without_automatically_planning_more(clien
         goal = session.get(Goal, goal_id)
         assert goal.planning_mode == plan.planning_mode == "COMMITTED"
         versions_before = list(session.scalars(select(type(plan).id).where(type(plan).goal_id == goal_id)))
+        from planner_api.models import PlanAdjustmentPreview
+        session.add(PlanAdjustmentPreview(goal_id=goal_id, source_plan_version_id=plan.id,
+            status="APPLIED", fingerprint="completion-summary-regression", preview_json={}))
         tasks = list(session.scalars(select(PlanTask).where(PlanTask.plan_version_id == plan.id)))
         # A passed final date must not silently complete unfinished actions.
         activation = session.scalar(select(PlanActivation).where(PlanActivation.plan_version_id == plan.id))
@@ -166,6 +172,13 @@ def test_committed_goal_finishes_tasks_without_automatically_planning_more(clien
         service._apply_automatic_completions(goal, plan, day)
         assert goal.status == "COMPLETED"
         assert goal.completed_at is not None
+        assert "采用 1 次调整" in goal.completion_summary
+        original_summary = goal.completion_summary.replace("采用 1 次调整", "采用 0 次调整")
+        goal.completion_summary = original_summary
+        assert "采用 1 次调整" in service._lifecycle_read(goal).completion_summary
+        assert goal.completion_summary == original_summary
+        goal.completion_summary = "我选择保留这段个人收获，不改写。"
+        assert service._lifecycle_read(goal).completion_summary == goal.completion_summary
         assert goal.active_plan_version_id == plan.id
         assert list(session.scalars(select(type(plan).id).where(type(plan).goal_id == goal_id))) == versions_before
         session.rollback()

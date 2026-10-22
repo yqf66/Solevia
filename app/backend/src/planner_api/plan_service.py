@@ -898,9 +898,11 @@ class PlanService:
                 "COMPLETED",
             }
             and goal.active_plan_version_id
+            and (active := self.session.get(PlanVersion, goal.active_plan_version_id)) is not None
+            and active.status == "CONFIRMED"
         ):
             return self.get_workspace(goal_id)
-        if goal.status != "PLAN_REVIEW":
+        if goal.status not in {"PLAN_REVIEW", "READY_TO_START"}:
             raise HTTPException(status_code=409, detail="Plan is not awaiting review")
         plan = self._require_review_plan(goal_id)
         if len(self._generated_weeks(plan.id)) < self._generation_target(plan):
@@ -3146,6 +3148,12 @@ class PlanService:
                 )
             )
         self._apply_schedule_type_transition(goal, route, revised, proposal.target_schedule_type)
+        if goal.status == "READY_TO_START":
+            # Applying an explicitly approved preview before first startup
+            # replaces the confirmed revision too, even without an activation.
+            revised.status = "CONFIRMED"
+            revised.confirmed_at = utc_now()
+            goal.active_plan_version_id = revised.id
         if goal.status in {"ACTIVE", "RECOVERY_REQUIRED", "PAUSED"}:
             self._migrate_active_execution(goal, current, revised)
             revised.status = "CONFIRMED"
@@ -3626,6 +3634,17 @@ class PlanService:
             self.session.commit()
             return self._adjustment_preview_read(existing)
 
+    @staticmethod
+    def _merge_locked_adjustment_days(days, locked_days, week):
+        """Validate a complete week while treating recorded days as immutable."""
+        protected = {(day.week_index, day.day_index): day for day in locked_days
+                     if day.week_index == week}
+        return sorted(
+            [day for day in days if (day.week_index, day.day_index) not in protected]
+            + list(protected.values()),
+            key=lambda day: (day.week_index, day.day_index),
+        )
+
     def _preview_hybrid_adjustment(
         self,
         goal: Goal,
@@ -3640,6 +3659,10 @@ class PlanService:
         """Regenerate a complete, validated work-item graph without mutating the draft."""
         context_pack, _brief = self._ensure_planning_brief(goal.id)
         current_payload = self._plan_payload(current)
+        locked_coordinates = (self._locked_execution_coordinates(current)
+                              if goal.status in {"ACTIVE", "RECOVERY_REQUIRED", "PAUSED"} else set())
+        locked_days = [PlanDayDraft.model_validate(day) for day in current_payload["days"]
+                       if (day["week_index"], day["day_index"]) in locked_coordinates]
         current_read = self._plan_read(current)
         current_payload["work_items"] = [
             item.model_dump(mode="json") for item in current_read.work_items
@@ -3740,7 +3763,9 @@ class PlanService:
                     "milestones": [item.model_dump(mode="json") for item in outline.milestones],
                     "rule": "只能引用覆盖本周的阶段；不能把旧阶段延伸到本周，不得改既有阶段窗口。"}
                 outline_payload["generated_task_registry"] = [
-                    {"title": task.title, "reference": f"M{day.stage_order}-W{day.week_index}-D{day.day_index}-T{task.order}"}
+                    {"title": task.title, "reference": f"M{day.stage_order}-W{day.week_index}-D{day.day_index}-T{task.order}",
+                     "work_item_keys": task.work_item_keys, "occurrence_key": task.occurrence_key,
+                     "dependency_period_key": task.scheduling_policy_data.get("dependency_period_key") or f"week:{day.week_index}"}
                     for day in all_days for task in day.tasks
                 ]
                 promises = [item.model_dump(mode="json") for item in outline.commitments]
@@ -3766,6 +3791,10 @@ class PlanService:
                                else self.provider.draft_hybrid_details(
                                    detail_context, outline_payload, week, week, "STANDARD"))
                     try:
+                        # Providers may return only the editable remainder of a
+                        # week. Restore recorded coordinates before *all* range,
+                        # capacity, workload and dependency checks, not afterwards.
+                        details.days = self._merge_locked_adjustment_days(details.days, locked_days, week)
                         details = repair_bookkeeping(details, outline_payload,
                             enabled=get_settings().plan_compiler_bookkeeping_repair_enabled)
                         self._reuse_registered_detail_items(details, all_items)
@@ -3798,6 +3827,10 @@ class PlanService:
                                 details.days, [*all_items, *details.work_items]),
                         )
                         self._validate_week_dependency_targets(PlanDetailResult(days=details.days), outline_payload)
+                        from planner_api.work_item_validation import validate_authored_dependency_order
+                        validate_authored_dependency_order(all_days + details.days,
+                            [dependency.model_dump(mode="json") for dependency in
+                             [*all_dependencies, *details.work_item_dependencies]])
                         self._mark_compiler_bookkeeping_validated(details)
                         break
                     except (WorkItemValidationError, HTTPException) as error:
@@ -3869,6 +3902,7 @@ class PlanService:
                 all_dependencies,
                 outline.milestones,
                 outline.commitments,
+                days=all_days,
             )
             if goal.status not in {"ACTIVE", "RECOVERY_REQUIRED", "PAUSED"}:
                 self._bind_hybrid_actions(SimpleNamespace(id="unpersisted-preview",
@@ -7313,6 +7347,7 @@ class PlanService:
             'predecessor_key': keys[edge.predecessor_work_item_id],
             'successor_key': keys[edge.successor_work_item_id],
             'dependency_type': edge.dependency_type,
+            'matching_mode': edge.matching_mode,
             'minimum_lag_days': edge.minimum_lag_days,
             'maximum_lag_days': edge.maximum_lag_days,
             'condition': {k: v for k, v in (edge.condition_json or {}).items() if k != 'source_refs'},
@@ -7426,6 +7461,7 @@ class PlanService:
                     predecessor_work_item_id=item_by_key[draft.predecessor_key].id,
                     successor_work_item_id=item_by_key[draft.successor_key].id,
                     dependency_type=draft.dependency_type,
+                    matching_mode=draft.matching_mode,
                     minimum_lag_days=draft.minimum_lag_days,
                     maximum_lag_days=draft.maximum_lag_days,
                     condition_json={
@@ -9030,6 +9066,9 @@ class PlanService:
             {
                 "title": task.title,
                 "description": task.description,
+                "work_item_keys": (task.scheduling_policy_json or {}).get("work_item_keys", []),
+                "occurrence_key": (task.scheduling_policy_json or {}).get("occurrence_key"),
+                "dependency_period_key": (task.scheduling_policy_json or {}).get("dependency_period_key") or f"week:{day.week_index}",
                 "reference": (
                     f"M{day.stage_order}-W{day.week_index}-D{day.day_index}-T{task.order_in_day}"
                 ),
@@ -9098,7 +9137,23 @@ class PlanService:
             raise HTTPException(status_code=409, detail="Confirmed requirements are required")
         if route is None or route.status != "CONFIRMED":
             raise HTTPException(status_code=409, detail="Confirmed route is required")
+        # Deterministic input errors must fail before any expensive generation,
+        # rather than spending multiple model repairs on an unresolved deadline.
+        try:
+            snapshot_deadline(requirement.snapshot_json, timezone=goal.timezone, require_resolved=True)
+        except ValueError as error:
+            raise HTTPException(409, detail={
+                "code": "PLAN_DEADLINE_UNRESOLVED", "message": str(error), "retryable": False,
+            }) from error
         return goal, requirement, route
+
+    def _failed_hybrid_draft_can_be_revised(self, goal_id, plan) -> bool:
+        if not plan or plan.execution_model_version != ExecutionModelVersion.HYBRID_WORK_ITEM:
+            return False
+        batches = list(self.session.scalars(select(GenerationBatch).where(
+            GenerationBatch.plan_version_id == plan.id)))
+        return (any(batch.status == "FAILED" for batch in batches)
+                and not any(batch.status in {"PENDING", "RUNNING", "PROCESSING"} for batch in batches))
 
     def _get_review_inputs(self, goal_id: str) -> tuple[Goal, RequirementVersion, RouteVersion]:
         goal, requirement, route = self._get_inputs(goal_id)
@@ -9108,7 +9163,8 @@ class PlanService:
             "ACTIVE",
             "RECOVERY_REQUIRED",
         } and not (goal.status == "PLAN_DRAFTING"
-                   and self._capacity_negotiation(goal_id, self._current_plan(goal_id))):
+                   and (self._capacity_negotiation(goal_id, self._current_plan(goal_id))
+                        or self._failed_hybrid_draft_can_be_revised(goal_id, self._current_plan(goal_id)))):
             raise HTTPException(status_code=409, detail="Plan is not awaiting review")
         return goal, requirement, route
 
@@ -9120,7 +9176,9 @@ class PlanService:
             if goal and goal.status in {"READY_TO_START", "ACTIVE", "RECOVERY_REQUIRED"}
             else {"DRAFT"}
         )
-        if goal and goal.status == "PLAN_DRAFTING" and self._capacity_negotiation(goal_id, plan):
+        if goal and goal.status == "PLAN_DRAFTING" and (
+                self._capacity_negotiation(goal_id, plan)
+                or self._failed_hybrid_draft_can_be_revised(goal_id, plan)):
             allowed_statuses.add("GENERATING")
         if plan is None or plan.status not in allowed_statuses:
             raise HTTPException(status_code=409, detail="No complete plan draft exists")

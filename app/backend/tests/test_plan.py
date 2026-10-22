@@ -118,6 +118,30 @@ def _confirmed_route(client) -> dict:
     return response.json()
 
 
+def test_unresolved_deadline_fails_before_any_plan_model_call(client, session_factory):
+    workspace = _confirmed_route(client)
+    goal_id = workspace["goal_id"]
+
+    class UnexpectedProvider(FakePlanProvider):
+        def draft_hybrid_outline(self, *_args, **_kwargs):
+            raise AssertionError("Invalid input must be rejected before model generation")
+        draft_outline = draft_hybrid_outline
+
+    with session_factory() as session:
+        goal = session.get(Goal, goal_id)
+        requirement = session.get(RequirementVersion, goal.current_requirement_version_id)
+        requirement.snapshot_json = {**requirement.snapshot_json, "deadline": "考试前完成，日期待核实"}
+        session.commit()
+        service = PlanService(session, UnexpectedProvider(), FakePlanDiscussionProvider())
+        with pytest.raises(HTTPException) as failure:
+            service.draft_plan(goal_id)
+        assert failure.value.status_code == 409
+        assert failure.value.detail["code"] == "PLAN_DEADLINE_UNRESOLVED"
+        assert failure.value.detail["retryable"] is False
+        assert session.scalar(select(func.count()).select_from(GenerationBatch).where(
+            GenerationBatch.goal_id == goal_id)) == 0
+
+
 def _completed_plan(client) -> dict:
     route_workspace = _confirmed_route(client)
     goal_id = route_workspace["goal_id"]

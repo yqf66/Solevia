@@ -61,6 +61,11 @@ REQUIREMENT_ANALYSIS_INSTRUCTIONS = MEMORY_INSTRUCTIONS + """你是 Solevia 的�
 - 助手提出的建议、归纳或推断：source=AGENT_INFERENCE，status=PROPOSED，不能代替用户确认。
 - 用户含糊、试探或带有“可能/也许/先看看”的想法，通常记录为 PROPOSED 或不记录。
 - 不重复输出与 confirmed_facts / proposed_facts 中完全相同的事实。
+- objective 始终概括用户最终想做成的事，例如“备考北京定向选调笔试”。训练套数、每周频次、
+  容量等局部更正应更新 desired_outcomes、success_criteria、available_capacity 或 constraints，
+  不能用“整卷从6套改为4套”之类变更记录覆盖最终目标。确需更新 objective 时，返回包含原目标
+  方向和本轮补充的完整目标；只有用户明确改换目标方向才替换原方向。
+- MERGE 返回完整值时，每条独立约束只保留一次；不能把旧值与重排后的同义整段一起拼接。
 
 ## 更新操作
 
@@ -143,6 +148,9 @@ ready_for_review 只是给界面显示“可以进入下一步”的建议，最
 例如“国庆后看看拍摄效果”是 REVIEW_CHECKPOINT，“中秋国庆出去时顺便拍”是 OPPORTUNITY_WINDOW；
 这两者都不能仅凭日期把摄影探索判成 CALENDAR。成果型允许设置弹性时间段和阶段性成果检查点。
 
+goal_title 是供侧边栏与首页展示的简短目标名称，通常8到16个汉字，最多32字符，保留必要的英文技术名。
+例如“Agent开发与实习准备”“阳台绿植养护”。基于用户的实际目标，不添加未确认的方向、期限或成果，
+不使用“我想”“请帮我”等开场语，不要直接复制整段原始输入；信息不足时可以为null。
 summary 是截至本轮的紧凑滚动摘要，包含目标、重要取舍、已确认结论、待定事项和最近变化；不要只
 摘要最后一句。current_topic 是当前讨论焦点。open_questions 写仍待自然讨论的议题，不要求下一轮
 逐项询问。对日期、时间段、数量、否定词和“固定/自由/自己安排”等执行边界尽量保留用户原词，

@@ -5,7 +5,7 @@ from copy import deepcopy
 from sqlalchemy import select
 
 from planner_api.models import (
-    PlanMilestone, PlanTask, PlanWorkItem, PlanWorkItemGroup,
+    PlanDay, PlanMilestone, PlanTask, PlanWorkItem, PlanWorkItemGroup,
     WorkItemDependency, WorkItemWindow,
 )
 
@@ -79,4 +79,8 @@ def clone_work_item_projection(session, source, target, source_activation, targe
         if old and not (task.scheduling_policy_json or {}).get('occurrence_key'):
             identity = (old.scheduling_policy_json or {}).get('occurrence_key') or old.plan_day_id
             task.scheduling_policy_json = {**(task.scheduling_policy_json or {}), 'occurrence_key': identity}
+        if old and not (task.scheduling_policy_json or {}).get('dependency_period_key'):
+            old_day = session.get(PlanDay, old.plan_day_id)
+            period = (old.scheduling_policy_json or {}).get('dependency_period_key') or f'week:{old_day.week_index}'
+            task.scheduling_policy_json = {**(task.scheduling_policy_json or {}), 'dependency_period_key': period}
     session.flush()

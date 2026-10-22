@@ -45,7 +45,9 @@ def _absolute_completion_date(text: str, reference: date | None) -> date | None:
     # Conditional or alternative dates need clarification, not a guess.
     if re.search(r"如果|若(?:是|有|通过|未|能)|视情况|待定|或者|或|可能", text):
         return None
-    pattern = r"(?:(\d{4})(?:年|-|/))?(\d{1,2})(?:月|-|/)(\d{1,2})(?:日|号)?"
+    # Whitespace between complete date components is formatting, not ambiguity.
+    # Do not strip all spaces: that could join separate numbers into a new date.
+    pattern = r"(?<!\d)(?:(\d{4})\s*(?:年|-|/)\s*)?(\d{1,2})\s*(?:月|-|/)\s*(\d{1,2})(?!\d)\s*(?:日|号)?"
     matches = list(re.finditer(pattern, text))
     years = {int(match[1]) for match in matches if match[1]}
     candidates = set()
@@ -55,8 +57,8 @@ def _absolute_completion_date(text: str, reference: date | None) -> date | None:
         year = year or (reference.year if reference else None)
         if year is None:
             continue
-        before = text[max(0, match.start() - 8):match.start()]
-        after = re.split(r"[，,；;。]", text[match.end():], maxsplit=1)[0]
+        before = text[max(0, match.start() - 12):match.start()].rstrip()
+        after = re.split(r"[，,；;。]", text[match.end():], maxsplit=1)[0].lstrip()
         sole = len(matches) == 1 and not text[:match.start()].strip() and not after.strip()
         explicit = bool(re.match(r"(?:晚|晚上|夜间)?(?:之前|以前|前|截止|完成|结束|交付|提交)", after)
                         or re.search(r"(?:截止(?:日期|时间|日)?(?:为|是|到)?|最晚(?:在|于)?)$", before))

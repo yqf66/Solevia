@@ -77,6 +77,52 @@ def context() -> PlanContext:
     )
 
 
+@pytest.mark.parametrize("provider_class", [DeepSeekPlanProvider, OpenAICompatiblePlanProvider])
+def test_semantic_schema_repairs_have_one_owner_and_do_not_multiply_transport_calls(provider_class):
+    class Author:
+        calls = 0
+
+        def draft_hybrid_document(self, *_args):
+            self.calls += 1
+            return "完整设计稿：保留任务、时间、次数与前置条件"
+
+    calls = []
+
+    def transport(*args):
+        calls.append(args)
+        if provider_class is DeepSeekPlanProvider:
+            return {"status": "completed", "output": [{"type": "message", "content": [
+                {"type": "output_text", "text": "{invalid"},
+            ]}]}
+        return {"choices": [{"message": {"content": "{invalid"}}]}
+
+    author = Author()
+    compiler = provider_class(settings(plan_detail_max_retries=3), transport=transport, sleeper=lambda _: None)
+    provider = SemanticPlanProvider(author, author, compiler)
+    outline = FakePlanProvider().draft_hybrid_outline(context()).model_dump(mode="json")
+    with pytest.raises(ProviderUnavailableError):
+        provider.draft_hybrid_details(context(), outline, 1, 1)
+    assert len(calls) == 3  # Three semantic attempts, not 3 x 4 inner attempts.
+    assert author.calls == 2  # Persistent semantic errors may still revise the design.
+    calls.clear()
+    with pytest.raises(ProviderUnavailableError):
+        compiler.draft_hybrid_details(context(), outline, 1, 1)
+    assert len(calls) == 4  # Scope reset: standalone callers keep their retry policy.
+
+
+def test_semantic_retry_owner_keeps_transport_retries():
+    calls = []
+
+    def transport(*args):
+        calls.append(args)
+        raise HTTPError("https://gateway.example", 503, "unavailable", {}, None)
+
+    compiler = OpenAICompatiblePlanProvider(settings(plan_detail_max_retries=1), transport=transport, sleeper=lambda _: None)
+    with pytest.raises(ProviderUnavailableError):
+        SemanticPlanProvider._compile(compiler.draft_hybrid_details, context(), {}, 1, 1)
+    assert len(calls) == 2
+
+
 @pytest.mark.parametrize("provider_class", [
     DeepSeekPlanProvider, OpenAICompatiblePlanProvider, NaturalPlanOutlineAuthor,
 ])

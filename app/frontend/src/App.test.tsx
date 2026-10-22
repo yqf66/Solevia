@@ -88,8 +88,8 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: '今天要做什么' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '＋ 创建规划' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: '主线任务' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: '支线任务' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '定时安排' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '灵活推进' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '＋ 创建规划' }))
     expect(screen.getByRole('menuitem', { name: /快速安排/ })).toBeInTheDocument()
@@ -857,11 +857,11 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: '先预览日期与时间' }))
     expect(await screen.findByText('调整后的时间安排')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '确认并发布调整' }))
-    expect(await screen.findByRole('heading', { name: '接下来的安排已经更新' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '这份安排包含的更新' })).toBeInTheDocument()
     expect(screen.getByText('第一周减少可选任务。')).toBeInTheDocument()
     expect(screen.getByText('第 1 次调整前')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '恢复这份安排' }))
-    expect(await screen.findByRole('heading', { name: '接下来的安排已经更新' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '这份安排包含的更新' })).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/goals/goal-1/plan/versions/plan-1/restore',
       expect.objectContaining({ method: 'POST' }),

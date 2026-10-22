@@ -1,6 +1,6 @@
 {
   "product": "Solevia",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "files": [
     {
       "path": ".gitattributes",
@@ -44,8 +44,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 13425,
-      "sha256": "ac809bd8c420f1f2ae28ca078a8042e97a88c9d4db35b36490fec6e31b4510c6"
+      "bytes": 14042,
+      "sha256": "d739a70620f5c177906d7901d7f228b36bab040aeeaf8edc50004ca7a8f55e18"
     },
     {
       "path": "SECURITY.md",
@@ -55,7 +55,7 @@
     {
       "path": "START_HERE.md",
       "bytes": 7710,
-      "sha256": "3bc9dfd56a8d8fa6703bb362a10e9843e02b753b527f47bb4be196183c50a261"
+      "sha256": "9276f7f06ddbcd2de49ddf1fc57075eb2cea0c97e1f437b67d4a4a20d708f515"
     },
     {
       "path": "Start.cmd",
@@ -423,9 +423,14 @@
       "sha256": "89ad7d1279079dddcd69d46ccab20c400c4ba100e2dd150887016a35d69219ae"
     },
     {
+      "path": "app/backend/migrations/versions/0067_dependency_matching.py",
+      "bytes": 491,
+      "sha256": "930a7fa593eb919cceaa415d521407c8ff191ca8e9433f368f39938d3943843e"
+    },
+    {
       "path": "app/backend/pyproject.toml",
       "bytes": 1387,
-      "sha256": "353f9a569b4344fc11ad33f24f42de3abdadd95cb5bd3bb45af1c1d16f815b86"
+      "sha256": "c34d976887d0bc97ee8f85fcc274a0e2ca66a90332146ac6e62d1fed0f0bb2a6"
     },
     {
       "path": "app/backend/requirements.lock",
@@ -513,6 +518,11 @@
       "sha256": "5a9992106ccfc680d86fab6f5a9960d18cd383a9812843c9c6fde770998ed5a7"
     },
     {
+      "path": "app/backend/src/planner_api/dependency_matching.py",
+      "bytes": 3056,
+      "sha256": "56f44a60c9f9c91940d9e3e945b9ee00b2b597bf1c77d5b46e0277c7ea7fd365"
+    },
+    {
       "path": "app/backend/src/planner_api/dependency_resolver.py",
       "bytes": 11291,
       "sha256": "3639ceacbb4d7c1a4d3a51e1dc0090e3dfa55ea29c60141b6d9c30f51f012cb1"
@@ -549,8 +559,8 @@
     },
     {
       "path": "app/backend/src/planner_api/execution_service.py",
-      "bytes": 353665,
-      "sha256": "b709badf853ffb7f2310d895816a607347eb1db68a5230182694cc7f6dc17dec"
+      "bytes": 362082,
+      "sha256": "770bc0c8bc51cfaba02589a69fdd50c7ae30c4d71197363066f6ccbd16a70dd1"
     },
     {
       "path": "app/backend/src/planner_api/fixed_activity_service.py",
@@ -571,6 +581,11 @@
       "path": "app/backend/src/planner_api/goal_memory.py",
       "bytes": 8078,
       "sha256": "be917830606ffc563bca8de4add652f963916d1c807847b0e72a7ed4edd485c4"
+    },
+    {
+      "path": "app/backend/src/planner_api/goal_titles.py",
+      "bytes": 1958,
+      "sha256": "c6b6e2315f904aa999906b50a64b323b8e4d3db2c50f9892873c7c8a85fd8dd1"
     },
     {
       "path": "app/backend/src/planner_api/holiday_calendar.py",
@@ -655,7 +670,7 @@
     {
       "path": "app/backend/src/planner_api/main.py",
       "bytes": 5559,
-      "sha256": "a48e9c16ed769b8564eb6448efbc43050f46644c350400983f22d077a3a89f97"
+      "sha256": "42d0b83bcbb382ef8735d09e6f745f1b1225b8e8ca173e138c27a71ad01df5b3"
     },
     {
       "path": "app/backend/src/planner_api/manual_plan_service.py",
@@ -774,8 +789,8 @@
     },
     {
       "path": "app/backend/src/planner_api/models.py",
-      "bytes": 92714,
-      "sha256": "d0037c9796d963b3e53a75a52fd1170ea8776efec282c16c5e916075b762b4f4"
+      "bytes": 92811,
+      "sha256": "0b9762a86ef0af592470ecb6bcb9e1ae6188403583367ad8b837a95148e4dd8f"
     },
     {
       "path": "app/backend/src/planner_api/plan_adjustment_apply_prompts.py",
@@ -789,13 +804,13 @@
     },
     {
       "path": "app/backend/src/planner_api/plan_ai.py",
-      "bytes": 89978,
-      "sha256": "b1a95476a998c88f51d4d6747362966c9980a5a30731a2e95e3e6dcf80804e32"
+      "bytes": 91304,
+      "sha256": "3c811da0b1edb92cc54ad96fcdab25a627735a0dc455ff0947afc74246c7bdff"
     },
     {
       "path": "app/backend/src/planner_api/plan_calendar.py",
-      "bytes": 1677,
-      "sha256": "9280bcac5ce51f530ba3a17b322dfd1dadcfa6632c7569ccb83c0d5fe59d6c8e"
+      "bytes": 2125,
+      "sha256": "f31d1c6729dbcb17d2b0946cb94091e7ee18d9c361bf216e46706a51f18e9b90"
     },
     {
       "path": "app/backend/src/planner_api/plan_capacity.py",
@@ -829,18 +844,18 @@
     },
     {
       "path": "app/backend/src/planner_api/plan_prompts.py",
-      "bytes": 59622,
-      "sha256": "f3302348d6da8e0344f8ec05321d5d71d6aece90811c07a062784584f268daad"
+      "bytes": 62280,
+      "sha256": "3906a657f3f1abc00ed00fbe66caf1d221f02060ed60f173470e1f2716115f05"
     },
     {
       "path": "app/backend/src/planner_api/plan_rule_integrity.py",
-      "bytes": 7876,
-      "sha256": "ff82a73839f6ab5abaeac279b21435ce8aa3c3ab0333681a68a220e0045e1d59"
+      "bytes": 8811,
+      "sha256": "6b7a316b2e72192f8d8679a823854a53d936cdd31aadab8b4b913e5f16c1bd67"
     },
     {
       "path": "app/backend/src/planner_api/plan_service.py",
-      "bytes": 501499,
-      "sha256": "aa76344856327db41570bde17eb490044573c36be78f2af82a72eeecb7f4d164"
+      "bytes": 505509,
+      "sha256": "74523f17ee349324d9902bb657b1017bf5992c624e2d6e32f340ac37b0b89863"
     },
     {
       "path": "app/backend/src/planner_api/planning_approach.py",
@@ -854,8 +869,8 @@
     },
     {
       "path": "app/backend/src/planner_api/prompts.py",
-      "bytes": 12517,
-      "sha256": "f312038aa8690e09d0ca5c819c683dbb368fd24ac9aabfbc4812be37d2a5e75c"
+      "bytes": 13522,
+      "sha256": "bdebf1bdcfafe2a595f14bcefbfa58b0dc91ed28c487fa1983025acbc8bf63af"
     },
     {
       "path": "app/backend/src/planner_api/quick_plan_handoff.py",
@@ -1109,13 +1124,13 @@
     },
     {
       "path": "app/backend/src/planner_api/schemas.py",
-      "bytes": 126312,
-      "sha256": "bf54fdecc935821fe0d6883d3f0e4e95d7253e77fd510c93ed3b29f05f09b7e4"
+      "bytes": 126636,
+      "sha256": "8d92fffe14c3366f781aea6f51c43bbf53d9fb0776be743a1f19bcac91c5bf8c"
     },
     {
       "path": "app/backend/src/planner_api/service.py",
-      "bytes": 90083,
-      "sha256": "b71e44296db3abe4284e910a169c20fc51e8d40450c8989fd36f495dd703d92a"
+      "bytes": 91646,
+      "sha256": "57c2d8a6d65e2e9d6774a61ac533e26ff745f08f368b9664049ee7e7f024c124"
     },
     {
       "path": "app/backend/src/planner_api/specialist_context.py",
@@ -1129,8 +1144,8 @@
     },
     {
       "path": "app/backend/src/planner_api/temporal_contract.py",
-      "bytes": 6276,
-      "sha256": "a0a82e69d598f35ae33ceaf6e87d3b8220b502a685c5ff625b16354318ff3a3a"
+      "bytes": 6484,
+      "sha256": "3ae21d03789e7885945c73f63f68645213cab342cdb9953d0819223c74eafdca"
     },
     {
       "path": "app/backend/src/planner_api/today_service.py",
@@ -1143,24 +1158,29 @@
       "sha256": "3a3b5ceb25d1219d259604104d9e74313f6084bb2a1d69017ace9f3c726bec54"
     },
     {
+      "path": "app/backend/src/planner_api/work_item_dependencies.py",
+      "bytes": 7725,
+      "sha256": "5d5cf3b93f21d3133cd0375de2ad52a1883473f95ace370b65935d3e7a601184"
+    },
+    {
       "path": "app/backend/src/planner_api/work_item_domain.py",
-      "bytes": 17354,
-      "sha256": "6d2d722cec4413ea21dad3b57730b7f180488715ec015bcd3c2ea611177ab06e"
+      "bytes": 17432,
+      "sha256": "ecc1bf8c3326117bbc49646f706e6285ab2fd712a453a6fb46401dc4ff519c38"
     },
     {
       "path": "app/backend/src/planner_api/work_item_materialization.py",
-      "bytes": 49119,
-      "sha256": "86ee997c3384048865f69b0302288f848a1424661db573185f62850642953247"
+      "bytes": 51775,
+      "sha256": "04f2d7bbefcc40169f7fcdb2432ece1dfbce8c185b7adc4b1cf02cc6b120888e"
     },
     {
       "path": "app/backend/src/planner_api/work_item_projection.py",
-      "bytes": 4783,
-      "sha256": "fdeaf7de7ea8eb8a7dd9a79644e9521c4638cb130d8595ddfc4bdaad7085e815"
+      "bytes": 5173,
+      "sha256": "abf6ff05cc88a963a378c903502c3d63c776874f6dddd6645710b96a56303cbb"
     },
     {
       "path": "app/backend/src/planner_api/work_item_validation.py",
-      "bytes": 11214,
-      "sha256": "bfd79fe35566e858ce2c49e4d47159ba049ffe969d6570aa2dd2631a91a98134"
+      "bytes": 13648,
+      "sha256": "b7e1863cbc9b94776fbdc8e7751f1cad3c58f7e7df7cb856ac9fae4a24c08dc6"
     },
     {
       "path": "app/backend/src/planner_api/worker_sandbox.py",
@@ -1199,8 +1219,8 @@
     },
     {
       "path": "app/backend/tests/test_clarification.py",
-      "bytes": 39622,
-      "sha256": "e8cfa8fe19d4f84da9d352028e17d60f95257b095bc96d660f539768ecb5b66f"
+      "bytes": 42589,
+      "sha256": "14cf9b8792ef7152af647aa637f56116b6647e16a8113680ec0555a198a99280"
     },
     {
       "path": "app/backend/tests/test_clarification_prompt.py",
@@ -1248,6 +1268,11 @@
       "sha256": "8c0e0e8e2df3040ee8126916a53f5e15f2ca3e7118c0700b004ffce2abde7031"
     },
     {
+      "path": "app/backend/tests/test_dependency_matching.py",
+      "bytes": 26702,
+      "sha256": "db59760f91cc39304d0b3dc58f3b2471e52d5ab1c84f6ecd1e74a6543d508dd2"
+    },
+    {
       "path": "app/backend/tests/test_desktop_distribution.py",
       "bytes": 3387,
       "sha256": "0e0db2e1a87e6ede74afeeb50a4b96ffe80d16ba41010ebf802f9d4a535ffb0c"
@@ -1259,8 +1284,8 @@
     },
     {
       "path": "app/backend/tests/test_execution_adjustment_sync.py",
-      "bytes": 13256,
-      "sha256": "0a469b05b60394c731a534411f505be4d6a6f112ba247a270bc73f15c790bd8e"
+      "bytes": 14048,
+      "sha256": "dbcf08fb984de2fde8f7de0ef4072e7ecbe4cbd218898282880364e55c7e7e70"
     },
     {
       "path": "app/backend/tests/test_execution_calendar.py",
@@ -1278,9 +1303,19 @@
       "sha256": "0aee3c9470a32afb60d1422a01599db3326a98b370e75c0711724d0a9e31691d"
     },
     {
+      "path": "app/backend/tests/test_execution_mapping_bounds.py",
+      "bytes": 3190,
+      "sha256": "44292ff6386d0576c339c53c4fc8cd0cf298d78eee2107b6dd6e4ba05cb9a0ba"
+    },
+    {
       "path": "app/backend/tests/test_execution_scheduling.py",
       "bytes": 1971,
       "sha256": "7ed6790046e90850d856601a365c699849353ca368f3644458aade57a715262c"
+    },
+    {
+      "path": "app/backend/tests/test_execution_task_gates.py",
+      "bytes": 2486,
+      "sha256": "1456c23a876df09b18e9cdb3dd2c1c89565dcd28a4689a1c88d0c747797888ea"
     },
     {
       "path": "app/backend/tests/test_exploration_lifecycle.py",
@@ -1301,6 +1336,11 @@
       "path": "app/backend/tests/test_generation_orchestration.py",
       "bytes": 7687,
       "sha256": "d164bb59b7568dbeb4edf2ebcf050bba91c0c3fde0aba342b078aa60be622654"
+    },
+    {
+      "path": "app/backend/tests/test_goal_titles.py",
+      "bytes": 2290,
+      "sha256": "eb5bca20973f614c631aa71323fbb5a080f93c21c7103a224e231dde24d7d9a3"
     },
     {
       "path": "app/backend/tests/test_health.py",
@@ -1351,6 +1391,11 @@
       "path": "app/backend/tests/test_local_security.py",
       "bytes": 2699,
       "sha256": "ce28078abacafa995748db13dcdd4347ed4a1843e9b9d3ffd4a303770d6cfd89"
+    },
+    {
+      "path": "app/backend/tests/test_locked_adjustment_days.py",
+      "bytes": 1361,
+      "sha256": "5e35ad21e92103ed44d5ed11263566936569d57b393f1a4eb333b10d879cde16"
     },
     {
       "path": "app/backend/tests/test_manual_plans.py",
@@ -1439,8 +1484,8 @@
     },
     {
       "path": "app/backend/tests/test_plan.py",
-      "bytes": 180870,
-      "sha256": "9ea2985d3ac69c53bdef982f4cadbb2040c60025910d9694127c6079240cc114"
+      "bytes": 182123,
+      "sha256": "bf1da09f26dff8265157d407315ed864eb98de2cdcfd0f57ac53348a58da1679"
     },
     {
       "path": "app/backend/tests/test_plan_capacity_contract.py",
@@ -1454,8 +1499,8 @@
     },
     {
       "path": "app/backend/tests/test_plan_provider.py",
-      "bytes": 37691,
-      "sha256": "f2697978616c60bb6128255dcef6f547e7e9572111971c438d6d6b82404c8fd8"
+      "bytes": 39780,
+      "sha256": "3edd249faa985ed66a294e630709934ff979327befb7db266c0be59ba26b066f"
     },
     {
       "path": "app/backend/tests/test_plan_recovery_guard.py",
@@ -1504,8 +1549,8 @@
     },
     {
       "path": "app/backend/tests/test_recovery_time_preview.py",
-      "bytes": 10107,
-      "sha256": "0d71864e664ba7e0be309541ed9e6ab93375d11b8a2e5bac1b4a7f5276cf3cfe"
+      "bytes": 10126,
+      "sha256": "3488b10c92dceb283dbf0af0314c7e4bdd0d5d1d9806d0bffe9abbb274f60540"
     },
     {
       "path": "app/backend/tests/test_release_packaging.py",
@@ -1514,8 +1559,8 @@
     },
     {
       "path": "app/backend/tests/test_release_rule_integrity.py",
-      "bytes": 18217,
-      "sha256": "cb907606248315fff18abc8533296846bdfafbc584b1feb478ee8318bf17ebc2"
+      "bytes": 21230,
+      "sha256": "570fb53e701103ffe6e39b961d0552d69306fbfedcee1ad86cb64bea9926901e"
     },
     {
       "path": "app/backend/tests/test_reminder_governance.py",
@@ -1694,8 +1739,8 @@
     },
     {
       "path": "app/backend/tests/test_source_feedback_context.py",
-      "bytes": 5654,
-      "sha256": "1474b5d1c4f8759918cd43dcc13f8fcbf9b9c6d7f3d279a6a46263b10b117d83"
+      "bytes": 7054,
+      "sha256": "696fd74521c2afbe254488822cd6d13177261c6bb2d792796ab44cfa7f74a8a2"
     },
     {
       "path": "app/backend/tests/test_specialist_typed_context.py",
@@ -1734,8 +1779,8 @@
     },
     {
       "path": "app/backend/tests/test_work_item_foundation.py",
-      "bytes": 77301,
-      "sha256": "a999ae31ad1985919d88cda988d8401be7067ad5ec9ad0646b56398459036736"
+      "bytes": 78616,
+      "sha256": "1381dfeea8a98de5e894cbcae28a8d0361cff982f7f9cb158dac788fee3db6ba"
     },
     {
       "path": "app/backend/tests/test_work_item_migration.py",
@@ -1760,7 +1805,7 @@
     {
       "path": "app/frontend/package.json",
       "bytes": 893,
-      "sha256": "e59048affbe113d92dd7f02b43fe613451aed506697915f18699d40537437933"
+      "sha256": "8f8e80f790c13d7324fa9ba96c849f2711cd3abc15cc4914175209763e43937f"
     },
     {
       "path": "app/frontend/pnpm-lock.yaml",
@@ -1799,8 +1844,8 @@
     },
     {
       "path": "app/frontend/src/App.test.tsx",
-      "bytes": 100066,
-      "sha256": "ae5b92be7e22458229e406f91f14495f06ce29100350726f7759ad90214ca4e3"
+      "bytes": 100060,
+      "sha256": "76d759ae7350d5809dfe58a1218f9482fe71b4d2bed26fccfc2e6be40ea17288"
     },
     {
       "path": "app/frontend/src/App.tsx",
@@ -1834,8 +1879,8 @@
     },
     {
       "path": "app/frontend/src/ExplorationLifecycle.test.tsx",
-      "bytes": 5934,
-      "sha256": "ff186ee412e439505f5081de4215f3b81dde1edd1295ab725e98d2af83c69b3c"
+      "bytes": 5931,
+      "sha256": "5d84d02fae3d7edc3de5041eee84ad3f2e6d4c1b94da50a7c5ce24790597f466"
     },
     {
       "path": "app/frontend/src/FixedActivityMove.test.tsx",
@@ -1899,8 +1944,8 @@
     },
     {
       "path": "app/frontend/src/api/contracts.ts",
-      "bytes": 47383,
-      "sha256": "0f132f99ccb82cc867f7918e8ac949e761694c7923911cd393832ad57fa542d7"
+      "bytes": 47429,
+      "sha256": "536194fb7995128802829a9d5479ce1848a1a2da29dc6e03f8912c20f0533d72"
     },
     {
       "path": "app/frontend/src/api/execution.ts",
@@ -2100,12 +2145,12 @@
     {
       "path": "app/frontend/src/dashboard/TodayTaskCard.tsx",
       "bytes": 2269,
-      "sha256": "97f752ec938ac7b9428c356b2bdfcb062796507e97cda0e025129364180f33b5"
+      "sha256": "445172639bf9110fc85e2b9ff956f5a9c9af509625f8428efc0311cabdd253aa"
     },
     {
       "path": "app/frontend/src/dashboard/TodayTaskLane.tsx",
-      "bytes": 1723,
-      "sha256": "86beaa6c3a2b964dc28df6490f4735024c3c9970da5e940b84b12e8c6af15ecb"
+      "bytes": 1806,
+      "sha256": "d00fb099ba190a383ff5348a59c8d83884601d93c6c947deea17810351d5abed"
     },
     {
       "path": "app/frontend/src/dashboard/taskPresentation.ts",
@@ -2164,8 +2209,8 @@
     },
     {
       "path": "app/frontend/src/execution/ExecutionTaskCard.tsx",
-      "bytes": 8600,
-      "sha256": "bd69d6382812e560446ce2c49cfc7ae1c0684d8bc3e26e977cc71d75b429c46d"
+      "bytes": 8698,
+      "sha256": "3ec6951994eb0d33ba79987fadbdc89c9227e6a0089f6002d8ae99a92307bb0c"
     },
     {
       "path": "app/frontend/src/execution/ExecutionTools.tsx",
@@ -2294,8 +2339,8 @@
     },
     {
       "path": "app/frontend/src/execution/TodayBrief.tsx",
-      "bytes": 710,
-      "sha256": "3fd0f54f884242de67373a9e6a923c2d2da0d49702df909a6ffc6d76532ba714"
+      "bytes": 863,
+      "sha256": "0d2776510220ab79c25e3ff433c0c5a81632b8dc8ff73223e2f1f8fb2251cfaa"
     },
     {
       "path": "app/frontend/src/execution/TodayPage.css",
@@ -2304,8 +2349,8 @@
     },
     {
       "path": "app/frontend/src/execution/TodayPage.tsx",
-      "bytes": 48867,
-      "sha256": "d98cdcdeca06899ddc7a1c23ab1cf1fab7a996feff3d29ba7d474aa6a0924f19"
+      "bytes": 48887,
+      "sha256": "a84dbc1e85d9b8bf7ce6b0e5eff5decb12a03773aa119141a550e2d7506132a4"
     },
     {
       "path": "app/frontend/src/execution/calendarPreview.test.ts",
@@ -2316,6 +2361,16 @@
       "path": "app/frontend/src/execution/calendarPreview.ts",
       "bytes": 1104,
       "sha256": "0c70a7a848d53a9f6b890ab1557af10898c7819e70697851cf5a1e37d0900769"
+    },
+    {
+      "path": "app/frontend/src/execution/executionLabels.test.ts",
+      "bytes": 1072,
+      "sha256": "41933dfe1d5f418157866e54e98b1769311fbf668080ea1a6b73b2ea8902a572"
+    },
+    {
+      "path": "app/frontend/src/execution/executionLabels.ts",
+      "bytes": 948,
+      "sha256": "8019b0e3a172375220f0ffbacc0af6783a4dd381e7b0e7ccadfedb2f7d7f9540"
     },
     {
       "path": "app/frontend/src/execution/feedbackOptions.ts",
@@ -2379,8 +2434,8 @@
     },
     {
       "path": "app/frontend/src/planner/PlanReviewPage.tsx",
-      "bytes": 62798,
-      "sha256": "96abf00e1ba92608dd163f37c587e57931d89f3237dd8e80dcb9e5250d82755d"
+      "bytes": 62584,
+      "sha256": "abde7b3ce94a95ffe57482d54eb62e5f926e77e9cca82b58208215e98c5c00d2"
     },
     {
       "path": "app/frontend/src/planner/ReviewPages.css",
@@ -2389,8 +2444,8 @@
     },
     {
       "path": "app/frontend/src/planner/RouteReviewPage.tsx",
-      "bytes": 29143,
-      "sha256": "452769391fa82ed79a37c721eb9f04d0d403f27547f9592ce0b0ddf12b5aef5c"
+      "bytes": 28857,
+      "sha256": "bc3689f95d2af6fbdd074489e4ab805f147f089f878e1402dc3c07a6355054c6"
     },
     {
       "path": "app/frontend/src/planner/RouteStageMap.css",
@@ -2499,8 +2554,8 @@
     },
     {
       "path": "app/frontend/src/styles/execution.css",
-      "bytes": 60076,
-      "sha256": "57a4f3cae62ae49f0772410cca62366edbd89c1feffbfaab91a8e9fe604a8fcf"
+      "bytes": 60245,
+      "sha256": "6e1f20ef440a3e5016a5994b5a6192f31f984e0ed0280700e3c5fb007e7a49e3"
     },
     {
       "path": "app/frontend/src/styles/fonts.css",
@@ -2534,8 +2589,8 @@
     },
     {
       "path": "app/frontend/src/styles/shared.css",
-      "bytes": 41383,
-      "sha256": "6e2a925a1dd91bc87c3f2f5d618786afcfd9451595f3bdbd77cf1f81563c2b65"
+      "bytes": 41364,
+      "sha256": "212fd849ca57dd6b6a7dea46da011740865e17de2bd0a3006fac3e48e2b4cf39"
     },
     {
       "path": "app/frontend/src/styles/tokens.css",
@@ -2653,6 +2708,16 @@
       "sha256": "553dfcffb62358053a11c1b28c5ece4a7da58bf6e6424318c89af79a39734a92"
     },
     {
+      "path": "app/frontend/src/ui/RequirementSummary.test.tsx",
+      "bytes": 1054,
+      "sha256": "6dc850aacbcf236ed176702033b8c2ca48f53805c24b1fddf2e476229bb05ab9"
+    },
+    {
+      "path": "app/frontend/src/ui/RequirementSummary.tsx",
+      "bytes": 801,
+      "sha256": "eb273662f3488986c6d829d91708aacef19042f454c7760335c5e9576fc3298d"
+    },
+    {
       "path": "app/frontend/src/ui/ResearchConnectionStatus.test.tsx",
       "bytes": 3265,
       "sha256": "0d8b662d0641a0850ef62b931aa1ad46157ced5302425ddaa18611b5d9bab93d"
@@ -2760,12 +2825,12 @@
     {
       "path": "app/services/web-research/package-lock.json",
       "bytes": 96472,
-      "sha256": "72fa106ff9a0cb15ba405253eb89f9ebeb188d98b4e5a46e5a8e2554f352fb06"
+      "sha256": "48afaa5755319e08dc016feb007b27ceaeb1873682d117d759ca3c78f8d0ac5b"
     },
     {
       "path": "app/services/web-research/package.json",
       "bytes": 496,
-      "sha256": "d89a5fa8a43a0c290f4683ec3bc14f24de9377a88f3c80ae72de59c4d3ec7031"
+      "sha256": "648a231ef590daf2ca7f2937e96b08f95d17e60f50bebfdae962c038d2021446"
     },
     {
       "path": "app/services/web-research/scripts/patch-open-websearch.mjs",
@@ -2885,7 +2950,7 @@
     {
       "path": "desktop/Program.cs",
       "bytes": 3292,
-      "sha256": "6991be769579f2d3c7ae6bbd986ad968a2816fbb437100d03c471c52ddb53176"
+      "sha256": "36f2511a53211409a1ad6db39e58261fc943535f34df5928ca704188f78f7cf9"
     },
     {
       "path": "desktop/Theme.cs",
@@ -2970,7 +3035,7 @@
     {
       "path": "release.json",
       "bytes": 589,
-      "sha256": "a094f53fa225d26e90b1a98dd01e83b4c715da68f66ca1b2b3de7489f94f67c8"
+      "sha256": "8dfce5842f3ec1ff456b36a3532edf810194b05dd487b620c5b1d790d01847cd"
     },
     {
       "path": "requirements-core.lock",

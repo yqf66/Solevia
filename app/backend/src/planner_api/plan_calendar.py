@@ -3,7 +3,7 @@
 Legacy plans keep rolling seven-day weeks. A plan explicitly authored with a
 partial first week ending Sunday uses Monday calendar weeks throughout.
 """
-from datetime import timedelta
+from datetime import date, timedelta
 import re
 
 
@@ -19,6 +19,15 @@ def calendar_weeks(plan, *, from_source=False) -> bool:
         if segment.get("start_week") != 1 or segment.get("end_week") != 1:
             continue
         scope = str(segment.get("date_scope") or "")
+        dates = re.findall(r"\d{4}-\d{2}-\d{2}", scope)
+        if len(dates) == 2 and not re.search(r"或|建议|可选", scope):
+            try:
+                first, last = (date.fromisoformat(value) for value in dates)
+            except ValueError:
+                pass
+            else:
+                if 0 < first.weekday() < 6 and last.weekday() == 6 and (last - first).days == 6 - first.weekday():
+                    return True
         match = re.search(r"(?:周|星期)([二三四五六])\s*(?:至|到|[—–-])\s*(?:周|星期)[日天]", scope)
         if match and not re.search(r"或|建议|可选", scope):
             return True

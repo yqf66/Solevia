@@ -6,6 +6,7 @@ import re
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from contextvars import ContextVar
 from typing import Literal, Protocol, TypeVar, cast
 from urllib.error import HTTPError, URLError
 
@@ -129,7 +130,7 @@ def _plan_input(
         capacity = detail_capacity_contract(extra["plan_outline"], extra["requested_weeks"])
         if capacity is not None:
             extra["compiled_week_capacity"] = capacity
-    payload = compile_context_payload(
+    payload = deduplicate_context_snapshots(
         {
             "prompt_version": prompt_version,
             "confirmed_requirements": context.requirements,
@@ -139,12 +140,12 @@ def _plan_input(
             "calendar_binding": "RELATIVE_ONLY",
             **extra,
         },
-        task_type=f"PLAN_{str(extra.get('generation_step', 'GENERATION'))}",
+        include_source_feedback=source_feedback_enabled,
     )
-    # Resolve duplication after scope/budget compilation so references cannot
-    # point at snapshots removed by a later budget-reduction pass.
-    payload = deduplicate_context_snapshots(
-        payload, include_source_feedback=source_feedback_enabled,
+    # The compiler preserves the complete contract. Measure the actual wire
+    # snapshots after lossless same-request references, not duplicated copies.
+    payload = compile_context_payload(
+        payload, task_type=f"PLAN_{str(extra.get('generation_step', 'GENERATION'))}",
     )
     return json.dumps(
         payload,
@@ -195,6 +196,9 @@ def _expand_truncated_plan_output(
         ]
     logger.info("Retrying truncated plan output with token budget %s -> %s", current, budget)
     return expanded
+
+
+_semantic_retry_owner: ContextVar[bool] = ContextVar("plan_semantic_retry_owner", default=False)
 
 
 def _plan_generation_error(error: Exception | None) -> ProviderUnavailableError:
@@ -1012,6 +1016,12 @@ class DeepSeekPlanProvider(_PlanProviderBase):
             except (URLError, TimeoutError, OSError, ValueError, ValidationError) as error:
                 mark_attempt_failure(error)
                 last_error = error
+            # Schema corrections have one owner when author/compiler orchestration
+            # is active. Otherwise inner and outer repair loops multiply calls.
+            # Transport retries and explicit output truncation retain their policy.
+            if (_semantic_retry_owner.get() and isinstance(last_error, (ValueError, ValidationError))
+                    and not isinstance(last_error, _PlanOutputTruncated)):
+                break
             if (
                 isinstance(last_error, HTTPError)
                 and last_error.code == 504
@@ -1127,6 +1137,12 @@ class OpenAICompatiblePlanProvider(_PlanProviderBase):
             except (URLError, TimeoutError, OSError, ValueError, ValidationError) as error:
                 mark_attempt_failure(error)
                 last_error = error
+            # Schema corrections have one owner when author/compiler orchestration
+            # is active. Otherwise inner and outer repair loops multiply calls.
+            # Transport retries and explicit output truncation retain their policy.
+            if (_semantic_retry_owner.get() and isinstance(last_error, (ValueError, ValidationError))
+                    and not isinstance(last_error, _PlanOutputTruncated)):
+                break
             if (
                 isinstance(last_error, HTTPError)
                 and last_error.code == 504
@@ -1397,7 +1413,7 @@ class SemanticPlanProvider:
         for attempt in range(self.semantic_validation_retries + 1):
             document = document or self.outline_author.draft_document(attempt_context, generation_mode)
             try:
-                compiled = self.compiler.draft_outline(
+                compiled = self._compile(self.compiler.draft_outline,
                     PlanContext(
                         requirements=context.requirements,
                         route=context.route,
@@ -1447,7 +1463,7 @@ class SemanticPlanProvider:
                 attempt_context, outline, start_week, end_week, generation_mode
             )
             try:
-                compiled = self.compiler.draft_details(
+                compiled = self._compile(self.compiler.draft_details,
                     PlanContext(
                         requirements=context.requirements,
                         route=context.route,
@@ -1499,7 +1515,7 @@ class SemanticPlanProvider:
                 if checkpoint:
                     checkpoint(document)
             try:
-                compiled = self.compiler.draft_hybrid_outline(
+                compiled = self._compile(self.compiler.draft_hybrid_outline,
                     PlanContext(
                         requirements=context.requirements,
                         route=context.route,
@@ -1555,7 +1571,7 @@ class SemanticPlanProvider:
                 if checkpoint:
                     checkpoint(document)
             try:
-                compiled = self.compiler.draft_hybrid_details(
+                compiled = self._compile(self.compiler.draft_hybrid_details,
                     PlanContext(
                         requirements=context.requirements,
                         route=context.route,
@@ -1595,6 +1611,14 @@ class SemanticPlanProvider:
                 if attempt > 0 and not self._keep_author_for_field_error(error):
                     document = None
         raise RuntimeError("Unreachable Hybrid detail generation state")
+
+    @staticmethod
+    def _compile(method, *args):
+        token = _semantic_retry_owner.set(True)
+        try:
+            return method(*args)
+        finally:
+            _semantic_retry_owner.reset(token)
 
     def _keep_author_for_field_error(self, error: ProviderUnavailableError) -> bool:
         return bool(getattr(self.compiler, "_compiler_field_retry_enabled", True)) and isinstance(

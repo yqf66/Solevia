@@ -80,7 +80,7 @@ export function ExecutionTaskCard({ task, position, tone, taskTitles, latestFeed
             {schedulingPolicy !== 'EXACT_DAY' && <small className="task-rule-help">{schedulingPolicyHelp(schedulingPolicy)}</small>}
           </div>
           <p>{task.description}</p>
-          {task.depends_on.length > 0 && <div className="plan-task-dependency"><strong>前置任务</strong><span>{task.depends_on.map((id) => taskTitles.get(id) ?? id).join('；')}</span></div>}
+          {task.depends_on.length > 0 && <div className="plan-task-dependency"><strong>前置任务</strong><span>{task.depends_on.map((id) => task.dependency_titles?.[id] ?? taskTitles.get(id) ?? (/^M\d+-W\d+-D\d+-T\d+$/.test(id) ? '待确认的前置任务' : id)).join('；')}</span></div>}
           {task.blocked_reason && <p className="plan-task-dependency" role="status">{task.blocked_reason}</p>}
           {task.evidence.length > 0 && <div className="execution-task-outcome"><span>完成后留下</span><p>{task.evidence.join('；')}</p></div>}
           {task.skip_guidance && task.skip_guidance.length > 0 && schedulingPolicy !== 'EXACT_DAY' && <small className="task-skip-guidance">跳过后：{task.skip_guidance.join(' · ')}</small>}

@@ -25,38 +25,72 @@ class WorkItemValidationError(ValueError):
 
 
 def validate_authored_dependency_order(days, dependencies) -> None:
-    """Reject an authored execution order that its own global gates forbid.
+    """Validate the same explicit binding that execution will enforce."""
+    from planner_api.dependency_matching import (
+        DependencyBindingError, matching_mode, select_predecessors,
+    )
 
-    A dependency on a standing work item applies to all its occurrences. A
-    later-stage refinement therefore needs a separate work item; it cannot
-    silently gate the early occurrences of the same practice.
-    """
-    positions = {}
+    by_item, positions, actions = {}, {}, {}
     atomic = set()
     for day in days:
         for task in day.tasks:
             position = (day.week_index, day.day_index, task.order)
-            keys = task.work_item_keys
-            for key in keys:
-                positions.setdefault(key, []).append(position)
+            positions[id(task)] = position
+            actions[id(task)] = {"week": day.week_index, "day": day.day_index,
+                                 "task_order": task.order, "title": getattr(task, "title", ""),
+                                 "work_item_keys": list(task.work_item_keys)}
+            for key in task.work_item_keys:
+                by_item.setdefault(key, []).append(task)
             if not task.is_splittable and len(task.stage_contributions) > 1:
-                atomic.add(position)
-    issues = []
+                atomic.add(id(task))
+    # Drafts have no database ID; use explicit/default period metadata on a
+    # light wrapper so cross-week matches do not share the None dictionary key.
+    from types import SimpleNamespace
+    wrappers = {}
+    for day in days:
+        for task in day.tasks:
+            data = dict(getattr(task, "scheduling_policy_data", None) or {})
+            data.setdefault("dependency_period_key", f"week:{day.week_index}")
+            wrappers[id(task)] = SimpleNamespace(
+                occurrence_key=getattr(task, "occurrence_key", None),
+                scheduling_policy_data=data, original=task)
+    issues, conflicts = [], []
     for edge in dependencies:
         if edge.get("dependency_type", "FINISH_TO_START") != "FINISH_TO_START":
             continue
-        before = positions.get(edge["predecessor_key"], [])
-        after = positions.get(edge["successor_key"], [])
-        if not before or not after:
-            continue
-        last, first = max(before), min(after)
-        own_atomic = (last == first and first in atomic and len(before) == 1
-                      and not edge.get("minimum_lag_days") and not edge.get("condition"))
-        if last >= first and not own_atomic:
-            issues.append(f"全局前置 {edge['predecessor_key']} 尚未完成，后置 {edge['successor_key']} 已被安排执行；"
-                          "请修正先后顺序；若只约束后期练习，请拆成阶段专用工作项，不能阻断早期练习。")
+        before = by_item.get(edge["predecessor_key"], [])
+        after = by_item.get(edge["successor_key"], [])
+        try:
+            mode = matching_mode(edge)
+            if not after or (not before and mode == "ALL"):
+                continue
+            for successor in after:
+                matched = ([wrappers[id(task)] for task in before] if mode == "ALL" else
+                    select_predecessors(edge, wrappers[id(successor)],
+                        [wrappers[id(task)] for task in before]))
+                if not matched:
+                    continue
+                predecessor = max((part.original for part in matched), key=lambda task: positions[id(task)])
+                last, first = positions[id(predecessor)], positions[id(successor)]
+                own_atomic = (predecessor is successor and id(successor) in atomic
+                              and len(before) == 1 and not edge.get("minimum_lag_days")
+                              and not edge.get("condition"))
+                if last >= first and not own_atomic:
+                    label = "全局前置" if mode == "ALL" else "对应前置"
+                    issues.append(f"{label} {edge['predecessor_key']} 尚未完成，后置 {edge['successor_key']} 已被安排执行；请修正关联实例的先后顺序，不能阻断早期练习。")
+                    conflicts.append({"predecessor_key": edge["predecessor_key"],
+                        "successor_key": edge["successor_key"], "matching_mode": mode,
+                        "last_prerequisite_action": actions[id(predecessor)],
+                        "first_dependent_action": actions[id(successor)]})
+        except DependencyBindingError as error:
+            issues.append(f"{edge['predecessor_key']} -> {edge['successor_key']}: {error}")
+            conflicts.append({**edge, "binding_error": str(error)})
     if issues:
-        raise WorkItemValidationError("WORK_ITEM_EXECUTION_ORDER_INVALID", tuple(issues))
+        raise WorkItemValidationError("WORK_ITEM_EXECUTION_ORDER_INVALID", tuple(issues), {
+            "code": "WORK_ITEM_EXECUTION_ORDER_INVALID", "diagnostic": issues,
+            "conflicts": conflicts,
+            "repair_policy": "按matching_mode修复关联：同次用稳定occurrence_key，同周期用dependency_period_key，整组ALL保留全部前置。仅修复冲突实例及受影响后续，保留总投入、全部产出和硬约束；不能删除依赖或把逐次关系改成整组等待。",
+        })
 
 
 def validate_work_item_batch(

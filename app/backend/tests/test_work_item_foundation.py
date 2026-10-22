@@ -756,8 +756,10 @@ def test_hybrid_setup_expands_weekdays_to_satisfy_cadence_constraints(session_fa
         ]
 
 
+@pytest.mark.parametrize("confirmed_before_adjustment", [False, True])
 def test_hybrid_draft_adjustment_creates_a_valid_lineage_preserving_revision(
     session_factory,
+    confirmed_before_adjustment,
 ):
     with session_factory() as session:
         goal = _draftable_goal(session)
@@ -770,6 +772,8 @@ def test_hybrid_draft_adjustment_creates_a_valid_lineage_preserving_revision(
         service.draft_plan(goal.id)
         original = service.draft_next_details(goal.id)
         original_plan_id = original.plan.id
+        if confirmed_before_adjustment:
+            service.confirm_plan(goal.id)
 
         discussed = service.revise_plan(goal.id, "请降低每周负担，并保留每周复盘。")
 
@@ -802,6 +806,29 @@ def test_hybrid_draft_adjustment_creates_a_valid_lineage_preserving_revision(
             if item.item_key in source_by_key
         )
         assert service._generated_weeks(revised.plan.id) == {1}
+        if confirmed_before_adjustment:
+            assert revised.plan.status == "CONFIRMED"
+            assert goal.active_plan_version_id == revised.plan.id
+            assert goal.status == "READY_TO_START"
+            assert service.confirm_plan(goal.id).plan.id == revised.plan.id
+
+
+def test_failed_incomplete_hybrid_plan_allows_discussion_but_running_plan_does_not(session_factory):
+    with session_factory() as session:
+        goal = _draftable_goal(session)
+        service = PlanService(session, FakePlanProvider(), FakePlanDiscussionProvider(), enable_hybrid_work_items=True)
+        service.draft_plan(goal.id)
+        plan = service._current_plan(goal.id)
+        batches = session.query(GenerationBatch).filter_by(plan_version_id=plan.id).all()
+        batch = batches[0]
+        batch.status = "FAILED"
+        session.commit()
+        assert service._get_review_inputs(goal.id)[0].id == goal.id
+        assert service._require_review_plan(goal.id).id == plan.id
+        batch.status = "RUNNING"
+        session.commit()
+        with pytest.raises(HTTPException):
+            service._get_review_inputs(goal.id)
 
 
 def test_active_hybrid_adjustment_preserves_calendar_completion_and_events(session_factory):

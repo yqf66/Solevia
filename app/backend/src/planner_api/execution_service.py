@@ -317,6 +317,8 @@ class ExecutionService:
         if goal is None:
             raise HTTPException(status_code=404, detail="Goal not found")
         goal.title = title
+        from planner_api.goal_titles import mark_user_title
+        mark_user_title(self.session, goal_id)
         goal.last_active_at = utc_now()
         self.session.commit()
         return self._lifecycle_read(goal)
@@ -347,6 +349,13 @@ class ExecutionService:
                 task.is_required and task.status not in {"COMPLETED", "CANCELLED", "CARRIED_OVER"}
                 for task in self._tasks(goal.active_plan_version_id)
             )
+        summary = goal.completion_summary
+        if goal.completed_at and summary and re.fullmatch(
+            r"计划中的 \d+ 项任务已全部完成。期间记录 \d+ 条反馈，采用 \d+ 次调整。", summary,
+        ):
+            # Refresh only our generated counters. Preserve custom completion
+            # notes and the stored history; old revisions may predate previews.
+            summary = re.sub(r"采用 \d+ 次调整", f"采用 {self._applied_adjustment_count(goal.id)} 次调整", summary)
         return GoalLifecycleRead(
             id=goal.id,
             title=goal.title,
@@ -355,7 +364,7 @@ class ExecutionService:
             pause_until=goal.pause_until,
             completed_at=goal.completed_at,
             archived_at=goal.archived_at,
-            completion_summary=goal.completion_summary,
+            completion_summary=summary,
             remaining_required_tasks=remaining,
         )
 
@@ -1219,10 +1228,7 @@ class ExecutionService:
         return ExecutionProgressRead(
             total_focus_minutes=round(int(self.session.scalar(select(func.sum(FocusSession.actual_seconds)).where(
                 FocusSession.goal_id == goal.id)) or 0) / 60),
-            applied_adjustments=int(self.session.scalar(select(func.count()).select_from(FeedbackAdjustment).where(
-                FeedbackAdjustment.goal_id == goal.id, FeedbackAdjustment.status == "APPLIED")) or 0)
-                + int(self.session.scalar(select(func.count()).select_from(PlanAdjustmentPreview).where(
-                    PlanAdjustmentPreview.goal_id == goal.id, PlanAdjustmentPreview.status == "APPLIED")) or 0),
+            applied_adjustments=self._applied_adjustment_count(goal.id),
             goal_id=goal.id,
             goal_title=goal.title,
             plan_revision=plan.revision,
@@ -2645,7 +2651,7 @@ class ExecutionService:
 
     def _work_item_dependency_preview(
         self, plan: PlanVersion, activation: PlanActivation, item: PlanWorkItem,
-        target_date: date, today: date,
+        target_date: date, today: date, subject_task: PlanTask | None = None,
     ) -> tuple[list[str], list]:
         blockers: list[str] = []
         edges = list(
@@ -2669,6 +2675,11 @@ class ExecutionService:
             )
         )
         dates_by_day = {schedule.plan_day_id: schedule.scheduled_date for schedule in schedules}
+        from planner_api.work_item_dependencies import DependencyBindingError, WorkItemDependencyGraph
+        from planner_api.dependency_matching import matching_mode
+        graph = WorkItemDependencyGraph(self.session, plan.id)
+        if subject_task is not None:
+            edges = [edge for edge in graph.edges if graph.represents(subject_task, edge.successor_work_item_id)]
         dependency_state = []
         work_items = {row.id: row for row in self.session.scalars(select(PlanWorkItem).where(
             PlanWorkItem.plan_version_id == plan.id))}
@@ -2679,6 +2690,15 @@ class ExecutionService:
                 if self._task_represents_work_item(task, work_items.get(edge.predecessor_work_item_id))
                 and task.status not in {"CANCELLED", "CARRIED_OVER"}
             ]
+            if matching_mode(edge) != "ALL":
+                if subject_task is None:
+                    blockers.append("该操作需要明确关联实例，请先通过规划补齐对应任务")
+                    continue
+                try:
+                    predecessors = graph.predecessors(edge, subject_task)
+                except DependencyBindingError as error:
+                    blockers.append(str(error))
+                    continue
             dependency_state.append(
                 [
                     edge.id,
@@ -2692,6 +2712,8 @@ class ExecutionService:
             )
             if not predecessors:
                 blockers.append("前置任务尚未生成，请先处理候选选择或触发前置任务")
+            group_finish_date = max((dates_by_day[part.plan_day_id] for part in predecessors
+                                     if part.plan_day_id in dates_by_day), default=None)
             for predecessor in predecessors:
                 predecessor_date = dates_by_day.get(predecessor.plan_day_id)
                 if predecessor_date is None:
@@ -2702,7 +2724,7 @@ class ExecutionService:
                 if (
                     edge.maximum_lag_days is not None
                     and target_date
-                    > predecessor_date + timedelta(days=edge.maximum_lag_days)
+                    > group_finish_date + timedelta(days=edge.maximum_lag_days)
                 ):
                     blockers.append(f"目标日期超过前置任务“{predecessor.title}”允许的最大间隔")
                 if target_date == today and predecessor.status != "COMPLETED":
@@ -2717,13 +2739,25 @@ class ExecutionService:
                 .order_by(WorkItemDependency.id)
             )
         )
+        if subject_task is not None:
+            successor_edges = [edge for edge in graph.edges if graph.represents(subject_task, edge.predecessor_work_item_id)]
         for edge in successor_edges:
             successors = [
                 task
                 for task in tasks
-                if task.source_work_item_id == edge.successor_work_item_id
+                if graph.represents(task, edge.successor_work_item_id)
                 and task.status not in {"CANCELLED", "CARRIED_OVER"}
             ]
+            if matching_mode(edge) != "ALL":
+                if subject_task is None:
+                    blockers.append("该操作需要明确关联实例，请先通过规划补齐对应任务")
+                    continue
+                try:
+                    successors = [candidate for candidate in successors
+                                  if subject_task in graph.predecessors(edge, candidate)]
+                except DependencyBindingError as error:
+                    blockers.append(str(error))
+                    continue
             dependency_state.append(
                 [
                     "successor",
@@ -2738,15 +2772,22 @@ class ExecutionService:
             )
             for successor in successors:
                 successor_date = dates_by_day.get(successor.plan_day_id)
+                try:
+                    related = graph.predecessors(edge, successor)
+                except DependencyBindingError as error:
+                    blockers.append(str(error))
+                    continue
+                proposed_finish_date = max((target_date if subject_task is None or part.id == subject_task.id
+                    else dates_by_day.get(part.plan_day_id, target_date) for part in related), default=target_date)
                 if successor.status == "COMPLETED":
                     blockers.append(f"后续任务“{successor.title}”已完成，请通过讨论处理依赖关系")
                 elif successor_date is None:
                     blockers.append(f"后续任务“{successor.title}”尚未安排日期")
-                elif successor_date < target_date + timedelta(days=edge.minimum_lag_days):
+                elif successor_date < proposed_finish_date + timedelta(days=edge.minimum_lag_days):
                     blockers.append(f"目标日期晚于后续任务“{successor.title}”允许的前置日期")
                 elif (
                     edge.maximum_lag_days is not None
-                    and successor_date > target_date + timedelta(days=edge.maximum_lag_days)
+                    and successor_date > proposed_finish_date + timedelta(days=edge.maximum_lag_days)
                 ):
                     blockers.append(f"与后续任务“{successor.title}”的间隔超过上限")
         return blockers, dependency_state
@@ -3212,18 +3253,35 @@ class ExecutionService:
         if reason:
             raise HTTPException(409, reason)
 
-    def _hybrid_predecessor_blocked_reason(self, plan, task) -> str | None:
+    def _hybrid_predecessor_blocked_reason(self, plan, task, *, graph=None) -> str | None:
+        # Authored task edges remain binding even when both actions contribute
+        # to the same Hybrid work item and there is no work-item-level edge.
+        if task.depends_on_json:
+            from planner_api.dependency_resolver import PlanDependencyResolver
+
+            resolver = getattr(self, "_execution_dependency_resolver", None)
+            if resolver is None:
+                resolver = PlanDependencyResolver(self.session)
+                self._execution_dependency_resolver = resolver
+            indexes = resolver.indexes(plan.id)
+            for reference in task.depends_on_json:
+                predecessor = resolver.resolve(reference, task, indexes)
+                if predecessor is None or predecessor.id == task.id:
+                    return "待确认前置任务，暂时不能开始或完成"
+                if predecessor.status != "COMPLETED":
+                    return "需先完成前置任务：" + predecessor.title
         if plan.execution_model_version != ExecutionModelVersion.HYBRID_WORK_ITEM or not task.source_work_item_id:
             return
-        for edge in self.session.scalars(select(WorkItemDependency).where(
-            WorkItemDependency.plan_version_id == plan.id,
-            WorkItemDependency.successor_work_item_id == task.source_work_item_id,
-        )):
+        from planner_api.work_item_dependencies import DependencyBindingError, WorkItemDependencyGraph
+        graph = graph or WorkItemDependencyGraph(self.session, plan.id)
+        for edge in graph.edges:
+            if not graph.represents(task, edge.successor_work_item_id):
+                continue
             item = self.session.get(PlanWorkItem, edge.predecessor_work_item_id)
-            predecessors = [candidate for candidate in self._tasks(plan.id)
-                            if candidate.id != task.id
-                            and candidate.status not in {'CANCELLED', 'CARRIED_OVER'}
-                            and self._task_represents_work_item(candidate, item)]
+            try:
+                predecessors = graph.predecessors(edge, task)
+            except DependencyBindingError as error:
+                return str(error)
             if (not predecessors and self._task_represents_work_item(task, item)
                     and item.binding_mode != "TRIGGERED" and edge.dependency_type == "FINISH_TO_START"
                     and not edge.minimum_lag_days
@@ -3236,6 +3294,13 @@ class ExecutionService:
                 continue
             if not predecessors or any(candidate.status != 'COMPLETED' for candidate in predecessors):
                 return '需先完成前置工作项：' + (item.title if item else '待确认任务')
+            goal = self.session.get(Goal, plan.goal_id)
+            activation = self._activation(plan.id)
+            if activation and (edge.minimum_lag_days or edge.maximum_lag_days is not None):
+                lag_error = graph.execution_lag_error(self.session, edge, predecessors, activation,
+                    self._today_for(goal), lambda value, goal=goal: self._local_date(value, goal))
+                if lag_error:
+                    return lag_error
         return None
 
     def get_triggered_tasks(self, goal_id: str) -> list[TriggeredTaskRead]:
@@ -3282,15 +3347,24 @@ class ExecutionService:
             if remaining_value <= 0:
                 blocked_reason = "该触发任务的剩余要求已满足"
             if blocked_reason is None:
+                from planner_api.work_item_dependencies import DependencyBindingError, WorkItemDependencyGraph
+                graph = WorkItemDependencyGraph(self.session, plan.id)
+                try:
+                    trigger_subject = graph.trigger_subject(item.id, window)
+                except DependencyBindingError as error:
+                    blocked_reason = str(error)
+            if blocked_reason is None:
                 for edge in self.session.scalars(select(WorkItemDependency).where(
                     WorkItemDependency.plan_version_id == plan.id,
                     WorkItemDependency.successor_work_item_id == item.id,
                 )):
-                    predecessors = [task for task in self._tasks(plan.id)
-                                    if self._task_represents_work_item(
-                                        task, items.get(edge.predecessor_work_item_id))]
+                    predecessors = graph.predecessors(edge, trigger_subject)
                     if not predecessors or any(task.status != 'COMPLETED' for task in predecessors):
                         blocked_reason = '需要先完成前置工作项'
+                        break
+                    blocked_reason = graph.execution_lag_error(self.session, edge, predecessors,
+                        activation, self._today_for(goal), lambda value: self._local_date(value, goal))
+                    if blocked_reason:
                         break
             previous_window_id = (window.resolution_json or {}).get("previous_window_id")
             if blocked_reason is None and previous_window_id:
@@ -3393,8 +3467,13 @@ class ExecutionService:
         )
         if existing is not None:
             blockers.append("该触发任务已经生成执行任务")
+        from planner_api.work_item_dependencies import DependencyBindingError, WorkItemDependencyGraph
+        try:
+            subject = WorkItemDependencyGraph(self.session, plan.id).trigger_subject(item.id, window)
+        except DependencyBindingError as error:
+            raise HTTPException(409, str(error)) from error
         dependency_blockers, dependency_state = self._work_item_dependency_preview(
-            plan, activation, item, payload.target_date, today
+            plan, activation, item, payload.target_date, today, subject_task=subject
         )
         blockers.extend(dependency_blockers)
         target_schedule = self.session.scalar(
@@ -3598,25 +3677,15 @@ class ExecutionService:
                     scheduled_date=request.target_date,
                 )
             )
-        predecessor_ids: list[str] = []
-        predecessor_item_ids = list(
-            self.session.scalars(
-                select(WorkItemDependency.predecessor_work_item_id).where(
-                    WorkItemDependency.plan_version_id == plan.id,
-                    WorkItemDependency.successor_work_item_id == item.id,
-                )
-            )
-        )
-        if predecessor_item_ids:
-            predecessor_ids = list(
-                self.session.scalars(
-                    select(PlanTask.id).where(
-                        PlanTask.plan_version_id == plan.id,
-                        PlanTask.source_work_item_id.in_(predecessor_item_ids),
-                        PlanTask.status.not_in({"CANCELLED", "CARRIED_OVER"}),
-                    )
-                )
-            )
+        from planner_api.work_item_dependencies import DependencyBindingError, WorkItemDependencyGraph
+        graph = WorkItemDependencyGraph(self.session, plan.id)
+        try:
+            subject = graph.trigger_subject(item.id, window)
+            predecessor_ids = sorted({task.id for edge in graph.edges
+                if edge.successor_work_item_id == item.id
+                for task in graph.predecessors(edge, subject)})
+        except DependencyBindingError as error:
+            raise HTTPException(409, str(error)) from error
         remaining_value = current.remaining_value
         occurrence_index = int(
             self.session.scalar(
@@ -3659,6 +3728,8 @@ class ExecutionService:
                 "eligible_from": window.eligible_from.isoformat(),
                 "eligible_to": window.eligible_to.isoformat(),
                 "work_item_key": item.item_key,
+                **{key: value for key, value in subject.scheduling_policy_json.items()
+                   if key in {"occurrence_key", "dependency_period_key"}},
                 "trigger": current.condition,
             },
             status="NOT_STARTED",
@@ -3673,6 +3744,7 @@ class ExecutionService:
                 )
             )
         )
+        graph = WorkItemDependencyGraph(self.session, plan.id)
         for successor in self.session.scalars(
             select(PlanTask).where(
                 PlanTask.plan_version_id == plan.id,
@@ -3680,7 +3752,14 @@ class ExecutionService:
                 PlanTask.status.not_in({"COMPLETED", "CANCELLED", "CARRIED_OVER"}),
             )
         ):
-            successor.depends_on_json = sorted(set(successor.depends_on_json or []) | {task.id})
+            for edge in graph.edges:
+                if edge.predecessor_work_item_id == item.id and graph.represents(successor, edge.successor_work_item_id):
+                    try:
+                        matched = graph.predecessors(edge, successor)
+                    except DependencyBindingError as error:
+                        raise HTTPException(409, str(error)) from error
+                    if task in matched:
+                        successor.depends_on_json = sorted(set(successor.depends_on_json or []) | {task.id})
         window.status = "OPEN"
         window.opened_at = utc_now()
         window.materialization_revision += 1
@@ -4020,7 +4099,10 @@ class ExecutionService:
                 blockers.append(f"待确认前置条件：{dependency}")
             elif resolved.status != "COMPLETED":
                 blockers.append(resolved.title)
-        return f"需先完成：{'；'.join(blockers)}" if blockers else None
+        if blockers:
+            return f"需先完成：{'；'.join(blockers)}"
+        plan = self.session.get(PlanVersion, task.plan_version_id)
+        return self._hybrid_predecessor_blocked_reason(plan, task)
 
     def _flexible_date_blocked_reason(
         self, activation: PlanActivation, task: PlanTask, today: date,
@@ -4264,6 +4346,11 @@ class ExecutionService:
                 weekly_labels = {item.get("label") for item in plan.commitments_json or [] if isinstance(item, dict) and item.get("cadence") == "PER_WEEK"}
                 if source_day and (task.scheduling_policy == "CADENCE" or weekly_labels.intersection(task.satisfies_commitments_json or [])) and target_week != source_day.week_index:
                     blockers.append("改期不能跨越原周期，请通过执行讨论调整周期要求")
+                if task.source_work_item_id:
+                    semantic_blockers, _ = self._work_item_dependency_preview(
+                        plan, activation, self.session.get(PlanWorkItem, task.source_work_item_id),
+                        target_date, today, subject_task=task)
+                    blockers.extend(semantic_blockers)
                 dates = {row.plan_day_id: row.scheduled_date for row in schedules}
                 for reference in task.depends_on_json or []:
                     predecessor = allocator._resolve_dependency(reference, task, indexes)
@@ -4395,7 +4482,7 @@ class ExecutionService:
             "today": today.isoformat(),
             "reason": payload.reason,
             "work_items": [[row.id, row.status, row.constraints_json, row.target_unit] for row in self.session.scalars(select(PlanWorkItem).where(PlanWorkItem.plan_version_id == plan.id).order_by(PlanWorkItem.id))],
-            "work_dependencies": [[row.id, row.predecessor_work_item_id, row.successor_work_item_id, row.dependency_type, row.minimum_lag_days, row.maximum_lag_days, row.condition_json] for row in self.session.scalars(select(WorkItemDependency).where(WorkItemDependency.plan_version_id == plan.id).order_by(WorkItemDependency.id))],
+            "work_dependencies": [[row.id, row.predecessor_work_item_id, row.successor_work_item_id, row.dependency_type, row.matching_mode, row.minimum_lag_days, row.maximum_lag_days, row.condition_json] for row in self.session.scalars(select(WorkItemDependency).where(WorkItemDependency.plan_version_id == plan.id).order_by(WorkItemDependency.id))],
             "windows": [[row.id, str(row.eligible_from), str(row.eligible_to), row.status, row.required_value] for row in self.session.scalars(select(WorkItemWindow).where(WorkItemWindow.activation_id == activation.id).order_by(WorkItemWindow.id))],
             "activation": [activation.requested_start_date.isoformat(), activation.projected_end_date.isoformat(), activation.excluded_dates_json],
             "tasks": [[row.id, row.plan_day_id, row.status, row.estimate_minutes, row.depends_on_json, row.scheduling_policy, row.scheduling_policy_json, row.satisfies_commitments_json, row.source_work_item_id, row.work_item_window_id, row.occurrence_index] for row in sorted(state_tasks, key=lambda row: row.id)],
@@ -4553,6 +4640,12 @@ class ExecutionService:
         blocked = self._flexible_date_blocked_reason(activation, task, payload.target_date)
         if blocked:
             raise HTTPException(status_code=409, detail=blocked)
+        if task.source_work_item_id:
+            semantic_blockers, _ = self._work_item_dependency_preview(
+                plan, activation, self.session.get(PlanWorkItem, task.source_work_item_id),
+                payload.target_date, today, subject_task=task)
+            if semantic_blockers:
+                raise HTTPException(409, "；".join(semantic_blockers))
 
         schedules = list(
             self.session.scalars(
@@ -6076,15 +6169,7 @@ class ExecutionService:
             )
             or 0
         )
-        adjustment_count = int(
-            self.session.scalar(
-                select(func.count(FeedbackAdjustment.id)).where(
-                    FeedbackAdjustment.plan_version_id == plan.id,
-                    FeedbackAdjustment.status == "APPLIED",
-                )
-            )
-            or 0
-        )
+        adjustment_count = self._applied_adjustment_count(goal.id)
         goal.status = "COMPLETED"
         goal.pause_until = None
         goal.completed_at = utc_now()
@@ -6092,6 +6177,11 @@ class ExecutionService:
             f"计划中的 {len(plan_tasks)} 项任务已全部完成。期间记录 {feedback_count} 条反馈，"
             f"采用 {adjustment_count} 次调整。"
         )
+
+    def _applied_adjustment_count(self, goal_id: str) -> int:
+        return sum(int(self.session.scalar(select(func.count()).select_from(model).where(
+            model.goal_id == goal_id, model.status == "APPLIED")) or 0)
+            for model in (FeedbackAdjustment, PlanAdjustmentPreview))
 
     @staticmethod
     def _has_unplanned_exploration(plan: PlanVersion) -> bool:
@@ -6201,6 +6291,7 @@ class ExecutionService:
                 "message": f"按当前开始日安排会超过原截止日期{deadline}。请先讨论原期限内重排，或确认调整期限/可用时间；任务不会被删除。",
                 "deadline": deadline.isoformat(), "current_date": self._today_for(goal).isoformat(),
                 "projected_end_date": projected_end.isoformat() if projected_end else None})
+        return deadline
 
     def _authored_temporal_constraints(self, plan, payload):
         if plan.execution_model_version != ExecutionModelVersion.HYBRID_WORK_ITEM:
@@ -6287,13 +6378,25 @@ class ExecutionService:
         # historical sequential mapping for plans without this contract.
         phased = any(item.get("available_days_per_week") for item in plan.temporal_segments_json or [])
         if phased:
+            deadline = self._validate_activation_deadline(plan, payload)
+            day_load = {day.id: sum(task.estimate_minutes for task in self._tasks(plan.id)
+                                   if task.plan_day_id == day.id) for day in days}
             for week in sorted({day.week_index for day in days}):
                 anchor, end = plan_week_range(plan, payload.requested_start_date, week)
+                if deadline:
+                    end = min(end, deadline)
                 eligible = [anchor + timedelta(days=index) for index in range((end - anchor).days + 1)
                             if self._is_plan_execution_date(anchor + timedelta(days=index),
                                 execution_weekdays, excluded, holidays, holiday_execution_dates)]
                 week_days = [day for day in days if day.week_index == week]
                 if len(eligible) < len(week_days):
+                    if deadline:
+                        _first, original_end = plan_week_range(plan, payload.requested_start_date, week)
+                        unbounded = [anchor + timedelta(days=index) for index in range(max(0, (original_end - anchor).days + 1))
+                                     if self._is_plan_execution_date(anchor + timedelta(days=index),
+                                         execution_weekdays, excluded, holidays, holiday_execution_dates)]
+                        if len(unbounded) >= len(week_days):
+                            self._validate_activation_deadline(plan, payload, unbounded[len(week_days) - 1])
                     raise HTTPException(409, {"code": "PLAN_STAGE_CALENDAR_CAPACITY_INVALID",
                         "message": f"第{week}周选定日期不足以承接本阶段安排，请调整可用日期或讨论阶段期限。"})
                 def choose(index, after, week_days=week_days, eligible=eligible):
@@ -6305,6 +6408,9 @@ class ExecutionService:
                         if after is not None and value <= after:
                             continue
                         if not self._authored_date_allowed(week_days[index].id, value, constraints):
+                            continue
+                        ceiling = calendar_capacity(plan, payload.requested_start_date, value).get("daily_minutes")
+                        if plan.schedule_type != "OUTCOME" and ceiling is not None and day_load[week_days[index].id] > ceiling:
                             continue
                         rest = choose(index + 1, value)
                         if rest is not None:
@@ -7260,6 +7366,21 @@ class ExecutionService:
 
     def _day_read(self, day: PlanDay, tasks: list[PlanTask]) -> PlanDayRead:
         plan = self.session.get(PlanVersion, day.plan_version_id)
+        from planner_api.work_item_dependencies import WorkItemDependencyGraph
+        graph = WorkItemDependencyGraph(self.session, plan.id) if plan and plan.execution_model_version == "HYBRID_WORK_ITEM" else None
+        dependency_titles: dict[str, dict[str, str]] = {}
+        if plan and any(task.depends_on_json for task in tasks):
+            from planner_api.dependency_resolver import PlanDependencyResolver
+
+            resolver = PlanDependencyResolver(self.session)
+            indexes = resolver.indexes(plan.id)
+            for task in tasks:
+                dependency_titles[task.id] = {
+                    reference: predecessor.title
+                    for reference in task.depends_on_json or []
+                    if (predecessor := resolver.resolve(reference, task, indexes)) is not None
+                    and predecessor.id != task.id
+                }
         return PlanDayRead(
             id=day.id,
             stage_order=day.stage_order,
@@ -7271,7 +7392,8 @@ class ExecutionService:
             do_not=day.do_not_json,
             tasks=[
                 plan_task_read(item).model_copy(update={
-                    "blocked_reason": self._hybrid_predecessor_blocked_reason(plan, item)
+                    "dependency_titles": dependency_titles.get(item.id, {}),
+                    "blocked_reason": self._hybrid_predecessor_blocked_reason(plan, item, graph=graph)
                     if plan and item.status != "COMPLETED" else None,
                 })
                 for item in tasks

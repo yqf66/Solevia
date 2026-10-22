@@ -276,6 +276,7 @@ class WorkItemDependencyDraft(BaseModel):
     predecessor_key: str = Field(min_length=3, max_length=120)
     successor_key: str = Field(min_length=3, max_length=120)
     dependency_type: Literal["FINISH_TO_START"] = "FINISH_TO_START"
+    matching_mode: Literal["ALL", "MATCH_OCCURRENCE", "MATCH_PERIOD"] = "ALL"
     minimum_lag_days: int = Field(default=0, ge=0, le=3650)
     maximum_lag_days: int | None = Field(default=None, ge=0, le=3650)
     condition: dict[str, Any] = Field(default_factory=dict)

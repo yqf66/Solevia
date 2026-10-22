@@ -318,6 +318,9 @@
 .completion-footer p { color: var(--muted); font-size: 12px; }
 @media (max-width: 720px) {
 .completion-hero { padding-top: 22px; }
+.completion-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.completion-stats span { font-size: 12px; }
+.completion-stats strong { white-space: nowrap; }
 .completion-section > header { align-items: start; flex-direction: column; }
 .completion-timeline > article, .completion-revisions > article { grid-template-columns: 1fr; gap: 6px; }
 }

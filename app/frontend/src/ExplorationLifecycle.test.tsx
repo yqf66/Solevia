@@ -33,7 +33,7 @@ it('restores a pending exploration window as an unpublished draft', async () => 
   expect(screen.getByText(/下一阶段草案，尚未接入执行/)).toBeInTheDocument()
   expect(screen.getByRole('button', { name: '确认并接入执行' })).toBeInTheDocument()
   expect(screen.queryByText('计划 v1.2 已生效')).not.toBeInTheDocument()
-  expect(screen.queryByText('接下来的安排已经更新')).not.toBeInTheDocument()
+  expect(screen.queryByText('这份安排包含的更新')).not.toBeInTheDocument()
   expect(screen.getByText('这是待确认的下一阶段草案')).toBeInTheDocument()
   expect(screen.queryByText('这是你正在执行的计划')).not.toBeInTheDocument()
 })

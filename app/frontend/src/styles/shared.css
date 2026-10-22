@@ -396,7 +396,7 @@
 .paused-notice div > p:last-child { margin-top: 5px; color: var(--muted); font-size: 12px; }
 .close-goal-button { min-width: 180px; }
 @media (max-width: 720px) {
-.pause-mode, .completion-stats { grid-template-columns: 1fr 1fr; }
+.pause-mode { grid-template-columns: 1fr 1fr; }
 .paused-notice { align-items: stretch; flex-direction: column; }
 }
 .model-settings-form {grid-template-columns:1fr 1fr}
