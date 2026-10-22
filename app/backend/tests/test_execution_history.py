@@ -1,6 +1,7 @@
-from datetime import date, timedelta
+from datetime import timedelta
 from types import SimpleNamespace
 
+from clock_helpers import shanghai_today
 import pytest
 from sqlalchemy import select
 from test_execution_discussion import _started_goal
@@ -49,8 +50,8 @@ def _fixture(client, session_factory):
             schedule = session.scalar(
                 select(PlanDaySchedule).where(PlanDaySchedule.plan_day_id == day.id)
             )
-            schedule.scheduled_date = date.today() + timedelta(days=index - 1)
-        activation.projected_end_date = date.today() + timedelta(days=len(days) - 2)
+            schedule.scheduled_date = shanghai_today() + timedelta(days=index - 1)
+        activation.projected_end_date = shanghai_today() + timedelta(days=len(days) - 2)
         session.commit()
         return goal_id, plan.id, [day.id for day in days]
 
@@ -113,7 +114,7 @@ def test_recorded_future_day_is_protected_even_without_status(client, session_fa
         common = dict(goal_id=goal_id, plan_version_id=plan_id, plan_day_id=task.plan_day_id)
         if record == "log":
             row = ExecutionDayLog(
-                **common, scheduled_date=date.today() + timedelta(days=2), summary="保留日志"
+                **common, scheduled_date=shanghai_today() + timedelta(days=2), summary="保留日志"
             )
         elif record == "event":
             row = ProgressEvent(**common, task_id=task.id, event_type="STARTED")
@@ -271,7 +272,7 @@ def test_preview_retries_past_day_rewrite_instead_of_accepting_it(
                 past = {
                     (row["week_index"], row["day_index"])
                     for row in context.current_plan["execution_state"]
-                    if row["scheduled_date"] < date.today().isoformat()
+                    if row["scheduled_date"] < shanghai_today().isoformat()
                 }
                 result = result.model_copy(
                     update={
@@ -395,11 +396,11 @@ def test_execution_discussion_receives_actual_today_and_future_task_states(clien
             for message in execution_memory["recent_messages"]
         )
     days = provider.context.current_plan["execution_days"]
-    today_entry = next(row for row in days if row["scheduled_date"] == date.today().isoformat())
+    today_entry = next(row for row in days if row["scheduled_date"] == shanghai_today().isoformat())
     assert any(task["status"] == "IN_PROGRESS" for task in today_entry["tasks"])
     assert any(
         task["status"] == "COMPLETED"
         for row in days
-        if row["scheduled_date"] > date.today().isoformat()
+        if row["scheduled_date"] > shanghai_today().isoformat()
         for task in row["tasks"]
     )

@@ -88,7 +88,7 @@ def create_app(
 
     application = FastAPI(
         title="Solevia API",
-        version="0.1.5",
+        version="0.1.6",
         description="Solevia · 足下 — 千里之行，始于足下。",
         lifespan=lifespan,
     )

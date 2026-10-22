@@ -1,4 +1,6 @@
-from datetime import date, timedelta
+from datetime import timedelta
+
+from clock_helpers import shanghai_today
 
 from sqlalchemy import select
 
@@ -24,7 +26,7 @@ def _started_goal(client) -> str:
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     assert client.post(f"/api/goals/{goal_id}/plan/confirm").status_code == 200
-    today = date.today()
+    today = shanghai_today()
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
         json={
@@ -382,7 +384,7 @@ def test_future_review_is_scheduled_without_showing_an_immediate_prompt(
     session_factory, client
 ) -> None:
     goal_id = _started_goal(client)
-    future_date = date.today() + timedelta(days=10)
+    future_date = shanghai_today() + timedelta(days=10)
 
     class FutureReviewProvider(FakePlanDiscussionProvider):
         def discuss_execution(self, context):

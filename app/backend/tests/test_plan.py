@@ -1,5 +1,7 @@
 from datetime import UTC, date, datetime, timedelta
 from types import SimpleNamespace
+
+from clock_helpers import shanghai_today
 import pytest
 
 from fastapi import HTTPException
@@ -434,7 +436,7 @@ def test_exploratory_plan_stops_at_first_observable_route_outcome(client, sessio
     assert workspace["generated_weeks"] == 2
     assert all(day["day_index"] == 1 for day in workspace["plan"]["days"])
     assert client.post(f"/api/goals/{goal_id}/plan/confirm").status_code == 200
-    today = date.today()
+    today = shanghai_today()
     start = client.post(
         f"/api/goals/{goal_id}/execution/start",
         json={
@@ -713,7 +715,7 @@ def test_confirm_plan_then_map_dates_and_start(client, session_factory) -> None:
     assert setup["weekly_execution_days"] == 2
     assert len(setup["suggested_weekdays"]) == 2
 
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     payload = {
         "requested_start_date": today.isoformat(),
@@ -814,7 +816,7 @@ def test_today_can_pull_a_partial_future_task_forward(client) -> None:
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -841,7 +843,7 @@ def test_today_can_arrange_a_floating_task_without_duplicate_materialization(cli
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     assert client.post(f"/api/goals/{goal_id}/plan/confirm").status_code == 200
-    today = date.today()
+    today = shanghai_today()
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
         json={
@@ -894,7 +896,7 @@ def test_today_can_reschedule_flexible_task_with_a_reason(client, session_factor
     goal_id = workspace["goal_id"]
     plan_id = workspace["plan"]["id"]
     assert client.post(f"/api/goals/{goal_id}/plan/confirm").status_code == 200
-    today = date.today()
+    today = shanghai_today()
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
         json={
@@ -945,7 +947,7 @@ def test_flexible_decision_preview_requires_explicit_apply(client, session_facto
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     assert client.post(f"/api/goals/{goal_id}/plan/confirm").status_code == 200
-    today = date.today()
+    today = shanghai_today()
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
         json={
@@ -1052,7 +1054,7 @@ def test_today_explains_when_a_floating_task_is_blocked_by_a_dependency(client, 
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     assert client.post(f"/api/goals/{goal_id}/plan/confirm").status_code == 200
-    today = date.today()
+    today = shanghai_today()
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
         json={
@@ -1091,7 +1093,7 @@ def test_today_rejects_partial_carry_for_atomic_exam_task(client, session_factor
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -1135,7 +1137,7 @@ def test_today_task_events_are_idempotent_and_persist(client, session_factory) -
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     payload = {
         "requested_start_date": today.isoformat(),
@@ -1172,7 +1174,7 @@ def test_last_plan_task_automatically_completes_goal(client, session_factory) ->
     goal_id = workspace["goal_id"]
     plan_id = workspace["plan"]["id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -1205,7 +1207,7 @@ def test_inactivity_distinguishes_short_and_long_pauses(client, session_factory)
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -1291,7 +1293,7 @@ def test_missed_task_can_be_completed_retrospectively(client, session_factory) -
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -1345,7 +1347,7 @@ def test_partial_day_is_distinct_and_optional_tasks_share_completion_boundary(
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
         json={
@@ -1421,7 +1423,7 @@ def test_status_check_persists_recovery_required_and_defer_reactivates(
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -1465,7 +1467,7 @@ def test_goal_pause_resume_timezone_completion_archive_and_delete(client, sessio
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -1550,7 +1552,7 @@ def test_pause_until_date_resumes_from_today_and_shifts_missed_work(
     goal_id = workspace["goal_id"]
     original_plan_id = workspace["plan"]["id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -1627,7 +1629,7 @@ def test_recovery_shift_preview_is_read_only_and_apply_is_idempotent(
     source_plan_id = workspace["plan"]["id"]
     original_titles = [task["title"] for day in workspace["plan"]["days"] for task in day["tasks"]]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started_response = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -1684,7 +1686,7 @@ def test_recovery_defer_persists_and_catchup_keeps_original_end_date(
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     started_response = client.post(
         f"/api/goals/{goal_id}/execution/start",
         json={
@@ -1852,7 +1854,7 @@ def test_recovery_ai_retries_incomplete_task_ledger(client, session_factory) -> 
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     assert client.post(f"/api/goals/{goal_id}/plan/confirm").status_code == 200
-    today = date.today()
+    today = shanghai_today()
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
         json={
@@ -1892,7 +1894,7 @@ def test_recovery_can_add_up_to_three_explicit_extension_days(client, session_fa
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2001,7 +2003,7 @@ def test_recovery_shift_preserves_partial_day_and_creates_carryover_lineage(
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2086,7 +2088,7 @@ def test_blocked_task_feedback_is_persisted_without_replanning(client, session_f
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2132,7 +2134,7 @@ def test_feedback_record_can_be_deleted_and_pending_block_is_cleared(client) -> 
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2166,7 +2168,7 @@ def test_task_feedback_creates_preview_then_applies_local_split(
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2213,7 +2215,7 @@ def test_focus_history_capacity_and_quick_capture_persist(client, session_factor
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2276,7 +2278,7 @@ def test_adjustment_can_be_discarded_without_changing_task(client) -> None:
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2305,7 +2307,7 @@ def test_in_progress_task_only_reschedules_the_reported_remainder(client) -> Non
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2343,7 +2345,7 @@ def test_reschedule_uses_the_nearest_execution_day_within_seven_days(client) -> 
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     later_weekday = (today.weekday() + 4) % 7
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2368,7 +2370,7 @@ def test_temporary_conflict_can_create_a_nearby_non_execution_recovery_day(clien
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     later_weekday = (today.weekday() + 4) % 7
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2411,7 +2413,7 @@ def test_three_consecutive_difficult_days_offer_review_without_applying_it(
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2471,7 +2473,7 @@ def test_positive_day_pace_feedback_does_not_change_completed_tasks(
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2508,7 +2510,7 @@ def test_overall_heavy_feedback_proposes_a_visible_near_term_adjustment(client) 
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -2549,7 +2551,7 @@ def test_active_plan_can_be_partially_regenerated_without_losing_progress(client
     workspace = _completed_plan(client)
     goal_id = workspace["goal_id"]
     client.post(f"/api/goals/{goal_id}/plan/confirm")
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted({today.weekday(), (today.weekday() + 1) % 7})
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
@@ -4426,7 +4428,7 @@ def test_active_adjustment_preview_rolls_back_time_blocks_until_confirmed(
     started = client.post(
         f"/api/goals/{goal_id}/execution/start",
         json={
-            "requested_start_date": date.today().isoformat(),
+            "requested_start_date": shanghai_today().isoformat(),
             "execution_weekdays": [0, 1],
             "excluded_dates": [],
         },

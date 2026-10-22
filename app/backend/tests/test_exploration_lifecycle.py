@@ -1,7 +1,8 @@
 """Exercise stage boundaries and persisted exploration publication state."""
-from datetime import date, timedelta
+from datetime import timedelta
 from types import SimpleNamespace
 
+from clock_helpers import shanghai_today
 import pytest
 from fastapi import HTTPException
 from sqlalchemy import select, func
@@ -30,7 +31,7 @@ def started_exploration(client, schedule_type="RHYTHM"):
         workspace = client.post(f"/api/goals/{goal_id}/plan/details/next").json()
     assert workspace["plan"]["next_unplanned_week"] <= workspace["plan"]["total_weeks"]
     assert client.post(f"/api/goals/{goal_id}/plan/confirm").status_code == 200
-    today = date.today()
+    today = shanghai_today()
     weekdays = sorted((today.weekday() + offset) % 7 for offset in range(workspace["plan"]["weekly_execution_days"]))
     started = client.post(f"/api/goals/{goal_id}/execution/start", json={
         "requested_start_date": today.isoformat(), "execution_weekdays": weekdays, "excluded_dates": [],
@@ -52,7 +53,7 @@ def test_finishing_materialized_stage_keeps_remaining_route_available(client, se
         schedules = list(session.scalars(select(PlanDaySchedule).where(PlanDaySchedule.plan_day_id.in_([task.plan_day_id for task in tasks])).order_by(PlanDaySchedule.scheduled_date)))
         last_day = tasks[-1].plan_day_id
         for index, schedule in enumerate(schedules):
-            schedule.scheduled_date = date.today() if schedule.plan_day_id == last_day else date.today() - timedelta(days=len(schedules) - index)
+            schedule.scheduled_date = shanghai_today() if schedule.plan_day_id == last_day else shanghai_today() - timedelta(days=len(schedules) - index)
         session.commit()
     completed = client.post(f"/api/goals/{goal_id}/tasks/{last_id}/complete")
     assert completed.status_code == 200, completed.text
@@ -132,7 +133,7 @@ def test_exploration_only_completes_after_final_window(client, session_factory):
             task.status = "COMPLETED"
         last = tasks[-1]
         schedule = session.scalar(select(PlanDaySchedule).where(PlanDaySchedule.plan_day_id == last.plan_day_id))
-        schedule.scheduled_date = date.today()
+        schedule.scheduled_date = shanghai_today()
         last_id = last.id
         session.commit()
     response = client.post(f"/api/goals/{goal_id}/tasks/{last_id}/complete")

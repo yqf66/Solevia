@@ -156,7 +156,7 @@ Solevia 可以结合目标、计划和实际进度继续交流，帮助你理解
 
 **下载、安装、连接模型，就可以开启第一步。**
 
-1. 在[下载页面](https://github.com/yqf66/Solevia/releases/latest)选择 **Solevia-Setup-0.1.5-windows-x64.exe**，双击打开中文安装向导。
+1. 在[下载页面](https://github.com/yqf66/Solevia/releases/latest)选择 **Solevia-Setup-0.1.6-windows-x64.exe**，双击打开中文安装向导。
 2. 选择安装位置和需要的能力，看清用途与占用后确认安装。向导会自动准备运行环境、依赖和工作区，无需预先安装 Python 或 Node.js。
 3. 点击桌面上的 **Solevia**，工作台自动在浏览器中打开。在「模型连接」中填写自己的服务地址、模型名称与 API 密钥，就能开始讨论目标。
 

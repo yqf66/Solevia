@@ -1,4 +1,6 @@
-from datetime import date, timedelta
+from datetime import timedelta
+
+from clock_helpers import shanghai_today
 
 from sqlalchemy import select
 
@@ -19,7 +21,7 @@ def _make_first_execution_day_missed(client, session_factory) -> str:
             .order_by(PlanDaySchedule.scheduled_date)
         )
         assert schedule is not None
-        schedule.scheduled_date = date.today() - timedelta(days=1)
+        schedule.scheduled_date = shanghai_today() - timedelta(days=1)
         task = session.scalar(
             select(PlanTask).where(PlanTask.plan_day_id == schedule.plan_day_id)
         )
@@ -41,7 +43,7 @@ def test_plan_workspace_exposes_recovery_guard_for_unresolved_missed_work(
     assert guard["required"] is True
     assert guard["missed_execution_days"] >= 1
     assert guard["interrupted_execution_days"] >= 1
-    assert (date.today() - timedelta(days=1)).isoformat() in guard["missed_dates"]
+    assert (shanghai_today() - timedelta(days=1)).isoformat() in guard["missed_dates"]
     assert "先决定追赶" in guard["message"]
 
 
