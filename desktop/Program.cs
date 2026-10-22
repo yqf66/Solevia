@@ -9,7 +9,7 @@ using System.Windows.Forms;
 [assembly:AssemblyProduct("Solevia · 足下")]
 [assembly:AssemblyCompany("Solevia")]
 [assembly:AssemblyCopyright("Solevia contributors")]
-[assembly:AssemblyVersion("0.1.4.0")]
+[assembly:AssemblyVersion("0.1.5.0")]
 namespace Solevia.Desktop {
     static class Program {
         [DllImport("user32.dll")]static extern bool SetProcessDPIAware();
@@ -21,7 +21,7 @@ namespace Solevia.Desktop {
             try {
                 if(args.Length==2&&args[0]=="--verify-package") {Package.Verify(File.ReadAllBytes(args[1]));return 0;}
                 if(args.Length==2&&args[0]=="--verify-target") {Package.RejectLinks(Path.GetFullPath(args[1]));return 0;}
-                if(args.Length==3&&args[0]=="--extract-package") {Package.Extract(args[1],s=>{});File.WriteAllText(args[2],"verified");return 0;}
+                if(args.Length==3&&args[0]=="--extract-package") {Package.Extract(args[1],s=>{});Bootstrap.Prepare(args[1],s=>{});File.WriteAllText(args[2],"verified");return 0;}
                 if(args.Length==2&&args[0]=="--render-installer") {
                     using(var form=new InstallerForm(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Programs","Solevia"),Package.Embedded)) {
                         form.DiagnosticPath=args[1];

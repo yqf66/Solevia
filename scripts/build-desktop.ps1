@@ -1,5 +1,5 @@
 ﻿[CmdletBinding()]
-param([string]$Output, [string]$Payload, [string]$PayloadHash)
+param([string]$Output, [string]$Payload, [string]$PayloadHash, [string]$Bootstrap)
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 if (-not $Output) {$Output=Join-Path $root 'Solevia.exe'}
@@ -19,6 +19,7 @@ if ($Payload) {
     if (-not $PayloadHash) {throw '必须提供产品包的校验文件。'}
     $arguments+=@(('/resource:'+$Payload+',solevia.payload'),('/resource:'+$PayloadHash+',solevia.sha256'))
 }
+if($Bootstrap){$arguments+=('/resource:'+$Bootstrap+',solevia.bootstrap')}
 $arguments+=@(Get-ChildItem -LiteralPath $source -Filter '*.cs' | ForEach-Object {$_.FullName})
 & $compiler @arguments
 if ($LASTEXITCODE -ne 0) {throw 'Solevia 桌面入口生成失败。'}

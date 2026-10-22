@@ -8,8 +8,23 @@ $script:Release = Get-Content -LiteralPath (Join-Path $script:SoleviaRoot 'relea
 
 function Invoke-Checked {
     param([string]$File, [string[]]$Arguments)
-    & $File @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "步骤执行失败（退出码 $LASTEXITCODE）：$([IO.Path]::GetFileName($File))。请保留当前目录，重新运行 Install.cmd 重试。" }
+    $tail=[Collections.Generic.Queue[string]]::new()
+    $previousPreference=$ErrorActionPreference
+    try {
+        $ErrorActionPreference='Continue'
+        & $File @Arguments 2>&1 | ForEach-Object {
+            $line=$_.ToString()
+            if($line -eq 'System.Management.Automation.RemoteException'){return}
+            Write-Host $line
+            $tail.Enqueue($line);if($tail.Count -gt 16){[void]$tail.Dequeue()}
+        }
+        $code=$LASTEXITCODE
+    } finally {$ErrorActionPreference=$previousPreference}
+    if($code -ne 0) {
+        $cause=($tail.ToArray() -join "`n")
+        $failure=Get-SoleviaFailure $cause
+        throw ('['+$failure.code+'] 当前步骤失败（退出码 '+$code+'）。'+$failure.advice+"`n原始原因："+$cause)
+    }
 }
 
 function Get-SoleviaFileHash {
@@ -20,15 +35,7 @@ function Get-SoleviaFileHash {
     finally { $stream.Dispose(); $sha.Dispose() }
 }
 
-function Get-VerifiedDownload {
-    param([string]$Url, [string]$Destination, [string]$Sha256)
-    if ($Url -notmatch '^https://') { throw '下载地址必须使用 HTTPS。' }
-    if ((Test-Path -LiteralPath $Destination) -and (Get-SoleviaFileHash $Destination) -eq $Sha256) { return }
-    $partial = $Destination + '.partial'
-    Invoke-WebRequest -UseBasicParsing -Uri $Url -OutFile $partial -TimeoutSec 600
-    if ((Get-SoleviaFileHash $partial) -ne $Sha256) { throw '下载文件校验失败，本文件尚未安装。请重试。' }
-    Move-Item -LiteralPath $partial -Destination $Destination -Force
-}
+. (Join-Path $PSScriptRoot 'install-network.ps1')
 
 function Set-LocalRuntime {
     New-Item -ItemType Directory -Path $script:Runtime -Force | Out-Null

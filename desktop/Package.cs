@@ -73,8 +73,10 @@ namespace Solevia.Desktop {
             if(Hash(bytes)!=Encoding.UTF8.GetString(Resource("solevia.sha256")).Trim())throw new InvalidDataException("安装包完整性校验失败，请重新下载。");
             var files=Verify(bytes);
             RejectLinks(Path.GetFullPath(root));
-            if(Directory.Exists(root)&&Directory.EnumerateFileSystemEntries(root).Any()) {
-                if(!File.Exists(Path.Combine(root,"release.json")))throw new IOException("此文件夹不是 Solevia 安装目录。请选择空文件夹。");
+            string installer=Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
+            bool otherFiles=Directory.Exists(root)&&Directory.EnumerateFileSystemEntries(root).Any(p=>!String.Equals(Path.GetFullPath(p),installer,StringComparison.OrdinalIgnoreCase));
+            if(otherFiles) {
+                if(!File.Exists(Path.Combine(root,"release.json")))throw new IOException("[INSTALL_LOCATION] 所选目录中有其他文件，无法安全安装。请选择空文件夹（例如在此目录下新建 Solevia 文件夹）。仅放着当前安装器的目录可以直接安装。");
                 var current=Product.Read(Path.Combine(root,"release.json"));
                 var incoming=Product.Json.Deserialize<Dictionary<string,object>>(Encoding.UTF8.GetString(files["release.json"]));
                 if(Convert.ToString(current["repository"])!=Product.Repository||Convert.ToString(current["version"])!=Convert.ToString(incoming["version"]))

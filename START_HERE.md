@@ -4,16 +4,20 @@
 
 ## 安装与启动
 
-1. 在[官方下载页面](https://github.com/yqf66/Solevia/releases/latest)下载 **Solevia-Setup-0.1.4-windows-x64.exe**。
+1. 在[官方下载页面](https://github.com/yqf66/Solevia/releases/latest)下载 **Solevia-Setup-0.1.5-windows-x64.exe**。
 2. 双击安装程序，在中文向导中选择安装位置和所需能力，查看下载与占用估算，确认后安装。准备过程中可查看进度和详细日志。
 3. 安装完成后点击 **打开 Solevia**，或使用桌面、开始菜单中的 **Solevia** 图标。后台服务自动启动，工作台在默认浏览器中打开。
 4. 在「模型连接」中填写自己的服务地址、模型名称与 API 密钥，开始你的第一个目标。
 
-首次安装需要联网。运行环境保存在所选文件夹中，无需预先安装 Python 或 Node.js，无需管理员权限。EXE 随包携带产品代码，联网准备所选依赖及模型组件。安装中断后，重新打开安装程序并选择原目录可修复同一版本。
+首次安装需要联网。运行环境保存在所选文件夹中，无需预先安装 Python 或 Node.js，无需管理员权限。EXE 随包携带产品代码与已校验的安装工具，安装工具无需再从 GitHub 下载；联网准备所选依赖及模型组件。安装中断后，重新打开安装程序并选择原目录可修复同一版本。
 
 ![Solevia 中文安装向导：按能力选择组件并查看容量](docs/assets/solevia/installer.webp)
 
-也可以下载 **Solevia-0.1.4-windows-x64.zip** 或从[公开源码仓库](https://github.com/yqf66/Solevia)下载源码，完整解压后运行 Install.cmd。脚本安装完成同样会生成 **Solevia.exe**；保留 CMD 入口便于命令行使用。
+文件下载时可以查看进度、速度与预计剩余时间；准备依赖和构建界面时会显示当前步骤。遇到失败，可展开详细日志并按中文排查建议重试。
+
+![安装中的文件进度、下载速度与步骤提示](docs/assets/solevia/install-progress.webp)
+
+也可以下载 **Solevia-0.1.5-windows-x64.zip** 或从[公开源码仓库](https://github.com/yqf66/Solevia)下载源码，完整解压后运行 Install.cmd。脚本安装完成同样会生成 **Solevia.exe**；保留 CMD 入口便于命令行使用。
 
 ## 按需安装功能
 
@@ -88,3 +92,38 @@
 
 
 隐私与数据流向见 [PRIVACY.md](PRIVACY.md)，系统要求与容量见 [README](README.md#系统要求与按需安装)，Windows SmartScreen 与下载校验见 [SECURITY.md](SECURITY.md)。
+
+
+## 下载源、网络与安装排查
+
+向导默认使用 **直连 + 国内镜像**。直连仅作用于本次安装，不修改电脑代理设置。需要代理时，在开始前选择“使用系统或环境代理”，并确保代理服务可用。
+
+| 下载内容 | 国内镜像选项 | 官方源选项 |
+| --- | --- | --- |
+| 安装工具 uv | EXE 已内置，无需联网下载 | EXE 已内置，无需联网下载 |
+| Python 独立运行环境 | Astral 官方发布服务 / GitHub | Astral 官方发布服务 / GitHub |
+| Node.js 界面运行环境 | npmmirror，失败后自动尝试 nodejs.org；两者使用同一官方 SHA-256 | nodejs.org |
+| Python 功能依赖 | 清华 PyPI 镜像 | pypi.org |
+| 界面 / 联网服务依赖 | npmmirror | registry.npmjs.org |
+| 语义查找模型 | hf-mirror | huggingface.co |
+| 图片识别模型 / 额外浏览器 | 组件上游下载地址 | 组件上游下载地址 |
+
+镜像由相应第三方运营，仅供获取公开依赖或模型，不用于转发你的模型 API 密钥。国内镜像覆盖部分下载，不能保证所有网络都能直接访问上游。GitHub、Hugging Face 或浏览器组件来源不可达时，可换网络或选择可用的系统代理；失败后不用删除整个安装目录。
+
+界面区分“安装步骤”和“当前文件下载”。直接管理的文件下载显示 **百分比、已下载 / 总大小、实时速度与预计剩余时间**；总大小未知时使用等待动画。持续低于约 100 KiB/s 会提示网速较慢。第三方工具未提供字节进度时，只显示原始进度和等待时间，不把构建、解压误报为网速慢。文件连接 / 读取超时会重试，最终仍失败时显示原因。
+
+| 提示编号 | 建议处理 |
+| --- | --- |
+| `INSTALL_LOCATION` | 选择空文件夹；只放着当前安装器的目录也可以使用。已有其他文件时，新建 Solevia 子目录。 |
+| `NETWORK_DOWNLOAD` | 查看失败前的来源和组件；检查联网，切换镜像 / 官方源后重试。 |
+| `NETWORK_PROXY` | 裸网安装选直连；代理安装检查代理是否正在运行、是否需要认证。 |
+| `NETWORK_TLS` | 检查系统时间和证书、网络安全拦截，不关闭证书验证。 |
+| `DISK_SPACE` | 安装盘按所选功能预留空间；系统临时目录所在盘另留 2 GiB。磁盘空间与运行内存不是同一个指标。 |
+| `MEMORY` | 关闭占内存程序，先安装基础功能，之后逐项补装可选能力。 |
+| `PERMISSION` | 换到当前账户可写的普通目录，检查安全软件的拦截记录。 |
+| `HASH_MISMATCH` | 文件没有通过完整性校验，重新下载或重试，不跳过校验。 |
+| `INSTALL_STEP` | 查看日志末尾的原始错误；组件自身异常可能无法仅靠错误编号判断。 |
+
+EXE 安装日志：`安装目录/user-data/logs/install.log`。失败窗口可以复制排查日志，默认遮盖当前账户主目录、机器标识和常见密钥格式；分享前仍请自行检查资料名、网址参数等个人内容。安装器会保留现有缓存，再次运行相同版本选择原目录即可重试。
+
+命令行也可选择来源，例如 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install.ps1 -DownloadSource Official -NetworkMode System`。ZIP / 源码首次安装仍需获取 uv；新用户优先使用带内置工具的 EXE。

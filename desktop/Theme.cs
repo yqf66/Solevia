@@ -37,11 +37,12 @@ namespace Solevia.Desktop {
     }
     public sealed class DetailDialog:Form {
         public DetailDialog(string title,string message,string details) {
-            Theme.Form(this,title,new Size(680,400));
-            var label=Theme.Text(message,11,true);label.Dock=DockStyle.Top;label.Height=80;label.Padding=new Padding(20);
+            Theme.Form(this,title,new Size(820,540));
+            var label=Theme.Text(message,11,true);label.Dock=DockStyle.Top;label.Height=145;label.Padding=new Padding(20);
             var content=new TextBox {Multiline=true,ReadOnly=true,ScrollBars=ScrollBars.Both,Dock=DockStyle.Fill,Text=details,WordWrap=false};
             var close=Theme.Button("关闭");close.Dock=DockStyle.Bottom;close.Click+=(s,e)=>Close();
-            Controls.Add(content);Controls.Add(label);Controls.Add(close);CancelButton=close;
+            var copy=Theme.Button("复制排查日志");copy.Dock=DockStyle.Bottom;copy.Click+=(s,e)=>{try{Clipboard.SetText(InstallDiagnostics.Clean(message+Environment.NewLine+details));copy.Text="已复制";}catch{copy.Text="复制失败";}};
+            Controls.Add(content);Controls.Add(label);Controls.Add(copy);Controls.Add(close);CancelButton=close;
         }
     }
 }

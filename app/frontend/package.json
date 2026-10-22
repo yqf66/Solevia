@@ -1,7 +1,7 @@
 {
   "name": "solevia-frontend",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "packageManager": "pnpm@11.25.0",
   "type": "module",
   "scripts": {

@@ -5,6 +5,9 @@ param(
     [switch]$ChooseFeatures,
     [switch]$Repair,
     [switch]$PlanOnly,
+    [switch]$BootstrapOnly,
+    [ValidateSet('Direct','System')][string]$NetworkMode='Direct',
+    [ValidateSet('China','Official')][string]$DownloadSource='China',
     [ValidateRange(-1,1)][int]$Web=-1,
     [ValidateRange(-1,1)][int]$Documents=-1,
     [ValidateRange(-1,1)][int]$Ocr=-1,
@@ -74,6 +77,9 @@ Write-Host '  以后可用 Models.cmd 补装；取消已安装能力只会停用
 if (-not $NonInteractive -and -not (Read-SoleviaChoice '确认开始安装 / 修复？' $true)) {
     Write-Host '已取消，尚未下载或安装组件。'; exit 0
 }
+Set-SoleviaInstallNetwork $NetworkMode $DownloadSource
+Assert-SoleviaInstallSpace $plan.diskMiB[0]
+Write-Host '[说明] 下载安装工具、Python、Node.js、依赖、浏览器和模型是不同步骤。下载大小与内存占用不同；出现问题请保留安装目录与详细日志。'
 Set-LocalRuntime
 $installGuard=$null;$serviceGuard=$null
 try {
@@ -90,11 +96,12 @@ if (Test-Path -LiteralPath $uv) { $uvReady = ((& $uv --version) -match ('^uv '+[
 if (-not $uvReady) {
     Write-Host '[1/6] 准备并校验安装工具...'
     $zip = Join-Path $downloads 'uv.zip'
-    Get-VerifiedDownload $Release.uv.url $zip $Release.uv.sha256
+    Get-VerifiedDownload $Release.uv.url $zip $Release.uv.sha256 '安装工具（源码安装）'
     Expand-Archive -LiteralPath $zip -DestinationPath (Join-Path $Runtime 'uv') -Force
 }
-Write-Host '[2/6] 准备独立运行环境（Python）...'
-Invoke-Checked $uv @('python','install',[string]$Release.python)
+if($BootstrapOnly){Write-Host '[完成] 安装工具已就绪，诊断模式到此结束，未下载运行环境。';exit 0}
+Write-Host '[2/6] 准备独立运行环境（Python，下载来源 Astral 官方发布服务 / GitHub；已有环境会复用）...'
+Invoke-Checked $uv @('python','install','--no-bin',[string]$Release.python)
 $python = Get-InstalledPython
 if (-not (Test-Path -LiteralPath $python)) { Invoke-Checked $uv @('venv','--python',[string]$Release.python,(Join-Path $Runtime 'venv')) }
 $node = Join-Path $Runtime 'node\node.exe'
@@ -103,7 +110,10 @@ if (Test-Path -LiteralPath $node) { $nodeReady = ((& $node --version) -eq ('v'+$
 if (-not $nodeReady) {
     Write-Host '[3/6] 准备界面运行环境（Node.js）...'
     $zip = Join-Path $downloads 'node.zip'
-    Get-VerifiedDownload $Release.node.url $zip $Release.node.sha256
+    $nodeUrl=[string]$Release.node.url
+    if($DownloadSource -eq 'China') {$nodeUrl=$nodeUrl.Replace('https://nodejs.org/dist/','https://npmmirror.com/mirrors/node/')}
+    try {Get-VerifiedDownload $nodeUrl $zip $Release.node.sha256 '界面运行环境'}
+    catch {if($DownloadSource -ne 'China'){throw};Write-Host '[切换来源] Node.js 镜像下载失败，改用官方源，仍使用同一官方 SHA-256 校验。';Get-VerifiedDownload $Release.node.url $zip $Release.node.sha256 '界面运行环境（官方备用源）'}
     $nodeStage = Join-Path $Runtime 'node-extract'
     Expand-Archive -LiteralPath $zip -DestinationPath $nodeStage -Force
     $nodeFolder = Join-Path $nodeStage ('node-v'+$Release.node.version+'-win-x64')
@@ -145,6 +155,7 @@ if ($features.web) {
 }
 if ($features.ocr -or $features.semantic) {
     Push-Location $backend
+    Write-Host '[本地模型] 正在准备识字 / 语义查找模型。首次可能较慢，模型文件与缓存会保留，重试可复用。'
     try {
         $modelArgs = @('tools/setup_material_models.py')
         if ($features.ocr) {$modelArgs += '--ocr'}
@@ -168,6 +179,12 @@ $runtimeBytes = Get-SoleviaFolderBytes $Runtime
 $appBytes = Get-SoleviaFolderBytes (Join-Path $SoleviaRoot 'app')
 Write-Host ('实际文件占用：运行环境、模型与缓存 '+(Format-SoleviaSize ($runtimeBytes/1MB))+'；应用与依赖 '+(Format-SoleviaSize ($appBytes/1MB))+'。不含个人资料；共享文件按逻辑大小统计。')
 Write-Host '安装完成！双击 Solevia.exe 打开 Solevia，在「模型连接」中填写自己的模型服务。' -ForegroundColor Green
+} catch {
+    $failure=Get-SoleviaFailure $_.Exception.Message
+    Write-Host ('['+$failure.code+'] '+$failure.advice)
+    Write-Host ('[原始原因] '+$_.Exception.Message)
+    Write-Host '[排查] EXE 安装日志位于安装目录 user-data/logs/install.log；分享前请检查并遮盖个人信息。可先只选基础功能，再逐项补装。'
+    throw
 } finally {
     if($serviceGuard){$serviceGuard.Dispose()}
     if($installGuard){Remove-Item -LiteralPath (Join-Path $Runtime 'install.in-progress') -ErrorAction SilentlyContinue;$installGuard.Dispose()}

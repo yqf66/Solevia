@@ -1,6 +1,6 @@
 {
   "product": "Solevia",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "files": [
     {
       "path": ".gitattributes",
@@ -33,6 +33,16 @@
       "sha256": "10c698b8bfba4b2365b8bb1e801082eaa39f385509f362aaceeb873033a111c1"
     },
     {
+      "path": "LICENSE-UV-APACHE.txt",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "LICENSE-UV-MIT.txt",
+      "bytes": 1077,
+      "sha256": "860e3d7a86b84e6a7012c7a635fc64df475cebc6cce34dfeb73a5982ec58176c"
+    },
+    {
       "path": "Models.cmd",
       "bytes": 171,
       "sha256": "d959ce2cadc398d0450211b2c0d2c9b0a01f62f832b6ba08bc02749af12e7ac1"
@@ -44,8 +54,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 14042,
-      "sha256": "d739a70620f5c177906d7901d7f228b36bab040aeeaf8edc50004ca7a8f55e18"
+      "bytes": 14532,
+      "sha256": "7c56962cdd8d4245e9e96c9370a79d4f8876e0a751c0330de62d899f91ece652"
     },
     {
       "path": "SECURITY.md",
@@ -54,8 +64,8 @@
     },
     {
       "path": "START_HERE.md",
-      "bytes": 7710,
-      "sha256": "9276f7f06ddbcd2de49ddf1fc57075eb2cea0c97e1f437b67d4a4a20d708f515"
+      "bytes": 11493,
+      "sha256": "e8ece34519b77a27232f76d83978e98042c2ba257c9eaa1a3ff1ba63663d87ac"
     },
     {
       "path": "Start.cmd",
@@ -66,6 +76,11 @@
       "path": "Stop.cmd",
       "bytes": 137,
       "sha256": "21e649d4b41e325fd793364455300a2a7ee1593c33532a7bb730545453a5f3db"
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "bytes": 754,
+      "sha256": "f5b35ba6e3c06c7df9e9b7366dffa6fd1d7819162367fa22640900bd16060a11"
     },
     {
       "path": "Update.cmd",
@@ -430,7 +445,7 @@
     {
       "path": "app/backend/pyproject.toml",
       "bytes": 1387,
-      "sha256": "c34d976887d0bc97ee8f85fcc274a0e2ca66a90332146ac6e62d1fed0f0bb2a6"
+      "sha256": "6730c5f4910075860a70a00eb189de7dddecab6907905e8ec26bd38681a3025a"
     },
     {
       "path": "app/backend/requirements.lock",
@@ -670,7 +685,7 @@
     {
       "path": "app/backend/src/planner_api/main.py",
       "bytes": 5559,
-      "sha256": "42d0b83bcbb382ef8735d09e6f745f1b1225b8e8ca173e138c27a71ad01df5b3"
+      "sha256": "b2c7ab9fe6b2cfde3e28601245ac4f316abe39ab150be465abd3916a1099086c"
     },
     {
       "path": "app/backend/src/planner_api/manual_plan_service.py",
@@ -1274,8 +1289,8 @@
     },
     {
       "path": "app/backend/tests/test_desktop_distribution.py",
-      "bytes": 3387,
-      "sha256": "0e0db2e1a87e6ede74afeeb50a4b96ffe80d16ba41010ebf802f9d4a535ffb0c"
+      "bytes": 7209,
+      "sha256": "1794fa5a3f5d2a92057fc1dc9cb3012e4e237f2658acab8323bc81754535aed6"
     },
     {
       "path": "app/backend/tests/test_e2e_journey.py",
@@ -1354,8 +1369,8 @@
     },
     {
       "path": "app/backend/tests/test_installer_guidance.py",
-      "bytes": 4417,
-      "sha256": "c2171d3d7235269f33032a6e61fd41973296e6d44ac29d783c2f0399d6c2a3fa"
+      "bytes": 12693,
+      "sha256": "458ef3007d6ce21fe21758d1bfaac2ab2671397ed17ed714191fcdc639ec82cc"
     },
     {
       "path": "app/backend/tests/test_integrity_fix_regressions.py",
@@ -1805,7 +1820,7 @@
     {
       "path": "app/frontend/package.json",
       "bytes": 893,
-      "sha256": "8f8e80f790c13d7324fa9ba96c849f2711cd3abc15cc4914175209763e43937f"
+      "sha256": "1d83702d2a91f9d0bdccd1abe3eb9d3fc86dfe3e7376a18935c7d9a4db0a117a"
     },
     {
       "path": "app/frontend/pnpm-lock.yaml",
@@ -2825,12 +2840,12 @@
     {
       "path": "app/services/web-research/package-lock.json",
       "bytes": 96472,
-      "sha256": "48afaa5755319e08dc016feb007b27ceaeb1873682d117d759ca3c78f8d0ac5b"
+      "sha256": "7f9eac240f0b74c6a8dd7045961dc46caae57e94f0ef99bdc8e545b5ae82ab48"
     },
     {
       "path": "app/services/web-research/package.json",
       "bytes": 496,
-      "sha256": "648a231ef590daf2ca7f2937e96b08f95d17e60f50bebfdae962c038d2021446"
+      "sha256": "f982ec2a026f5ba3337e0acbc78a601d15175f05c9e07d9b7514e67d38f06bfb"
     },
     {
       "path": "app/services/web-research/scripts/patch-open-websearch.mjs",
@@ -2923,24 +2938,34 @@
       "sha256": "ca7f31cc1002cded5b82e4a1d07c6d6862f81adb269e5fc3897dbcea21813ffb"
     },
     {
+      "path": "desktop/Bootstrap.cs",
+      "bytes": 1124,
+      "sha256": "5d6a38697035b59f35fc1a029bc567f0ab93eb253f91a2afa1b4beb8b61dd500"
+    },
+    {
       "path": "desktop/Host.cs",
       "bytes": 11872,
       "sha256": "d34101b80848f8f890eceae02eaf985857aae831cb54e4128b522b1d6c045352"
     },
     {
+      "path": "desktop/InstallDiagnostics.cs",
+      "bytes": 1133,
+      "sha256": "7b4ef266baa71a92e9328abed726bd59fb8f32a1169426e01929499d84d74b19"
+    },
+    {
       "path": "desktop/InstallerForm.cs",
-      "bytes": 13274,
-      "sha256": "12a9345b3eb35cadde35c5be9c71681d8a8412c0a6830c1435b316c7c40d95a1"
+      "bytes": 18312,
+      "sha256": "4287394f7af3ba940421f7cb1f914179b22841b1d4b34c4a89a71f78711f7f9c"
     },
     {
       "path": "desktop/Package.cs",
-      "bytes": 7330,
-      "sha256": "7114264615c41bd2f4d1834baa45a4ae9d67f59c312221e3faba69a380adc394"
+      "bytes": 7773,
+      "sha256": "d2d4c9cd10baa54d669b82df40b52309b765f3cf2952671908fd14e40257a592"
     },
     {
       "path": "desktop/ProcessRunner.cs",
-      "bytes": 2180,
-      "sha256": "d80e5c2729bbc9065bd68b4972186fa22d629f48c7a4f8d298be72dc13ef1503"
+      "bytes": 3240,
+      "sha256": "f307e18b21ed89ccb36c52adca0694c52470e52d2d6a142e75d6c2ec2d0bfa49"
     },
     {
       "path": "desktop/Product.cs",
@@ -2949,13 +2974,18 @@
     },
     {
       "path": "desktop/Program.cs",
-      "bytes": 3292,
-      "sha256": "36f2511a53211409a1ad6db39e58261fc943535f34df5928ca704188f78f7cf9"
+      "bytes": 3325,
+      "sha256": "6aa29eaa655fbcf00d9eb51d0ac16e4ff2df29c35646a54376b65237024422d5"
     },
     {
       "path": "desktop/Theme.cs",
-      "bytes": 3156,
-      "sha256": "799d36540bfb8da2a55fabf384daa9a11fc406d90d251316ba72a29d4b5042c8"
+      "bytes": 3470,
+      "sha256": "b7045a90382692951ab0ff800c8d8fa3d972b8318e70be8fb2659739434fa5c8"
+    },
+    {
+      "path": "desktop/TransferProgress.cs",
+      "bytes": 1349,
+      "sha256": "9f20f3ae332071a2c9afc3ee1d76dd63bfd4a2faddfdd6403c4bcebc5eee07bf"
     },
     {
       "path": "desktop/app.manifest",
@@ -3008,9 +3038,14 @@
       "sha256": "1af32d673bc4a01d7980bf05fa2f1cbed3c7a6406ea245b184b3a1489b2e36ea"
     },
     {
+      "path": "docs/assets/solevia/install-progress.webp",
+      "bytes": 34904,
+      "sha256": "1c8926249649378f439d6004ecd620a4f3093b02ce82dec8315cec6619974919"
+    },
+    {
       "path": "docs/assets/solevia/installer.webp",
-      "bytes": 39198,
-      "sha256": "17f2629264d48276da8a3abcefaee14b2f749e95e1a48394fa3b15b3810ba9ac"
+      "bytes": 42110,
+      "sha256": "81157b9e23e070c32d1b2ee795a4a2fc8ae056689a8a85055ae72bb869585df7"
     },
     {
       "path": "docs/assets/solevia/overview.webp",
@@ -3035,7 +3070,7 @@
     {
       "path": "release.json",
       "bytes": 589,
-      "sha256": "8dfce5842f3ec1ff456b36a3532edf810194b05dd487b620c5b1d790d01847cd"
+      "sha256": "e3643cf7974326144c38126211760e38e9827be14c2975bd3245090e53201fc5"
     },
     {
       "path": "requirements-core.lock",
@@ -3094,13 +3129,13 @@
     },
     {
       "path": "scripts/build-desktop.ps1",
-      "bytes": 1944,
-      "sha256": "d8faae6249a1aabe27185c629eb74afab724c553ed94523cef0581c871093545"
+      "bytes": 2064,
+      "sha256": "b55851a2259c8d0a4207ccc3e49ca8b79ace2dcb28d57f52c567f4ef82b6dbaf"
     },
     {
       "path": "scripts/common.ps1",
-      "bytes": 2317,
-      "sha256": "1b6cfd06c88eac849124fec78056872be04c0172cca28d384f8bc7bd24814bfa"
+      "bytes": 2365,
+      "sha256": "1cad6c60b8e4e17164c150e88e6ae4ab00f00a100f438466e3c423592efa9882"
     },
     {
       "path": "scripts/desktop-update.ps1",
@@ -3118,14 +3153,19 @@
       "sha256": "edd461d86b7c46f364685ef7096bddc02601010a42283cee8387ccb83f8ad233"
     },
     {
+      "path": "scripts/install-network.ps1",
+      "bytes": 12457,
+      "sha256": "417d0ec3afc72ea38b6ad097bd1aa526ae5b4e7fa2c9c58453fa7a74460161d1"
+    },
+    {
       "path": "scripts/install-options.ps1",
       "bytes": 4033,
       "sha256": "fa19180d9a7101b5f3589917f647c7c005f243e06d06173c6f78ee53d7ca1d43"
     },
     {
       "path": "scripts/install.ps1",
-      "bytes": 11642,
-      "sha256": "ea585fee9cad89025ba0fbd9df703473b7542763847cf2c94505885d88eca950"
+      "bytes": 13505,
+      "sha256": "05b3deba280c21467bc5503731886556d78bd49c83f3c26c1fc8ec1e0cf68216"
     },
     {
       "path": "scripts/launcher.py",
