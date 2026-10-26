@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -9,27 +9,19 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Solevia.Desktop {
-    public sealed class Host:Form {
+    public sealed partial class Host:Form {
         readonly string root;
         readonly Label status=Theme.Text("正在检查本地服务…",18,true), note=Theme.Text("",10);
         readonly Button open=Theme.Button("打开工作台",true),stop=Theme.Button("停止服务"),start=Theme.Button("启动服务"),
-            update=Theme.Button("检查更新"),features=Theme.Button("管理能力"),logs=Theme.Button("打开日志"),quit=Theme.Button("退出 Solevia"),localUpdate=Theme.Button("本地包更新");
+            update=Theme.Button("检查更新"),features=Theme.Button("补装与管理能力"),logs=Theme.Button("打开日志"),quit=Theme.Button("退出 Solevia"),localUpdate=Theme.Button("本地包更新");
         readonly NotifyIcon tray=new NotifyIcon();
         readonly System.Windows.Forms.Timer timer=new System.Windows.Forms.Timer {Interval=3000};
         readonly TextBox detail=new TextBox {Multiline=true,ReadOnly=true,ScrollBars=ScrollBars.Vertical,Dock=DockStyle.Fill};
-        Process supervisor;StreamWriter output;bool exiting,busy,updating,starting;string url;DateTime started;int generation;
+        Process supervisor,installerBridge;StreamWriter output;bool exiting,busy,updating,starting,managing;string url;DateTime started;int generation;
+        internal Func<bool> ConfirmCapabilityChange;
         public Host(string folder,bool automatic=true) {
-            root=folder;Theme.Form(this,"Solevia · 服务管理",new Size(760,490));
-            var content=new TableLayoutPanel {Dock=DockStyle.Fill,Padding=new Padding(28,0,28,22),ColumnCount=1,RowCount=6};
-            content.RowStyles.Add(new RowStyle(SizeType.Absolute,44));content.RowStyles.Add(new RowStyle(SizeType.Absolute,58));
-            content.RowStyles.Add(new RowStyle(SizeType.Absolute,57));content.RowStyles.Add(new RowStyle(SizeType.Absolute,57));
-            content.RowStyles.Add(new RowStyle(SizeType.Absolute,36));content.RowStyles.Add(new RowStyle(SizeType.Percent,100));
-            status.Dock=DockStyle.Fill;note.Dock=DockStyle.Fill;note.ForeColor=Theme.Muted;
-            var row=new FlowLayoutPanel {Dock=DockStyle.Fill};row.Controls.AddRange(new Control[]{open,start,stop,quit});
-            var tools=new FlowLayoutPanel {Dock=DockStyle.Fill};tools.Controls.AddRange(new Control[]{update,features,logs,localUpdate});
-            var hint=Theme.Text("关闭此窗口后留在托盘运行。关闭浏览器不会结束服务。",9);hint.Dock=DockStyle.Fill;hint.ForeColor=Theme.Muted;
-            content.Controls.Add(status,0,0);content.Controls.Add(note,0,1);content.Controls.Add(row,0,2);content.Controls.Add(tools,0,3);content.Controls.Add(hint,0,4);content.Controls.Add(detail,0,5);
-            Controls.Add(content);Controls.Add(Theme.Header("工作台在浏览器中打开，服务由 Solevia 在后台管理。"));
+            root=folder;BuildHostLayout();
+            ConfirmCapabilityChange=()=>MessageBox.Show(this,"补装期间会暂停本地服务，资料与对话保留。请先完成正在进行的操作。是否继续？","补装与管理能力",MessageBoxButtons.OKCancel,MessageBoxIcon.Question)==DialogResult.OK;
             tray.Icon=Theme.Icon();tray.Text="Solevia · 足下";tray.Visible=true;
             var menu=new ContextMenuStrip();menu.Items.Add("打开工作台",null,async(s,e)=>await Open());
             menu.Items.Add("服务管理",null,(s,e)=>Restore());menu.Items.Add("检查更新",null,async(s,e)=>{Restore();await CheckUpdate(true);});
@@ -44,11 +36,45 @@ namespace Solevia.Desktop {
                     if(dialog.ShowDialog(this)==DialogResult.OK&&MessageBox.Show(this,"将校验所选安装包，停止服务并更新，保留个人资料。是否继续？","确认本地更新",MessageBoxButtons.OKCancel)==DialogResult.OK)
                         LaunchUpdater("-Package '"+dialog.FileName.Replace("'","''")+"'");
             };
-            features.Click+=async(s,e)=>{if(updating)return;if(url!=null&&MessageBox.Show(this,"调整能力需要先停止服务，个人资料会保留。是否继续？","管理能力",MessageBoxButtons.OKCancel)!=DialogResult.OK)return;
-                await Stop();using(var installer=new InstallerForm(root,false))installer.ShowDialog(this);RefreshState();};
+            features.Click+=async(s,e)=>await ManageCapabilities();
             FormClosing+=(s,e)=>{if(!exiting){e.Cancel=true;Hide();tray.ShowBalloonTip(2500,"Solevia 正在后台运行","双击托盘图标打开工作台；右键可更新或退出。",ToolTipIcon.Info);}};
-            timer.Tick+=(s,e)=>RefreshState();timer.Start();
+            timer.Tick+=async(s,e)=>{RefreshState();WriteHeartbeat();EnsureInstallerBridge();await HandleDesktopRequest();};timer.Start();WriteHeartbeat();EnsureInstallerBridge();
             if(automatic)Shown+=async(s,e)=>{await Start(true);if(!exiting)await CheckUpdate(false);};
+        }
+        string DesktopFile(string name){return Path.Combine(root,".runtime",name);}
+        bool WebInstalling {get {try {var state=Product.Read(DesktopFile("installer-progress.json"));string value=Convert.ToString(state["status"]);return installerBridge!=null&&!installerBridge.HasExited&&(value=="INSTALLING"||value=="RESTORING");}catch{return false;}}}
+        void EnsureInstallerBridge() {
+            if(exiting||(installerBridge!=null&&!installerBridge.HasExited)||!File.Exists(Product.Python(root))||!File.Exists(Path.Combine(root,@"scripts\installer_bridge.py")))return;
+            try {
+                var info=ProcessRunner.Info(Product.Python(root),ProcessRunner.Quote(Path.Combine(root,@"scripts\installer_bridge.py"))+" --parent "+Process.GetCurrentProcess().Id,root);
+                installerBridge=new Process {StartInfo=info};
+                installerBridge.OutputDataReceived+=(s,e)=>{};installerBridge.ErrorDataReceived+=(s,e)=>{if(e.Data!=null)Append("安装服务："+e.Data);};
+                installerBridge.Start();installerBridge.StandardInput.Close();installerBridge.BeginOutputReadLine();installerBridge.BeginErrorReadLine();
+            }catch(Exception error){Append("网页补装服务暂不可用："+error.Message);}
+        }
+        void WriteHeartbeat() {
+            if(exiting)return;
+            try {string path=DesktopFile("desktop-host.json");Package.RejectLinks(path);Directory.CreateDirectory(Path.GetDirectoryName(path));File.WriteAllText(path,"{}");}catch{}
+        }
+        async Task HandleDesktopRequest() {
+            if(busy||updating||managing||WebInstalling)return;
+            string path=DesktopFile("desktop-request.json");if(!File.Exists(path))return;
+            try {
+                Package.RejectLinks(path);var request=Product.Read(path);File.Delete(path);
+                double now=(DateTime.UtcNow-new DateTime(1970,1,1)).TotalSeconds;
+                if(Convert.ToString(request["action"])!="manage-capabilities"||Convert.ToDouble(request["expires"])<now)return;
+                Restore();await ManageCapabilities();
+            }catch(Exception error){Append("无法打开能力管理："+error.Message);}
+        }
+        async Task ManageCapabilities() {
+            if(updating||busy||managing||WebInstalling)return;
+            if(url!=null&&!ConfirmCapabilityChange())return;
+            managing=true;bool resume=url!=null;
+            try {
+                await Stop();if(Product.RunningUrl(root)!=null)return;
+                using(var installer=new InstallerForm(root,false)){installer.ShowDialog(this);resume=resume||installer.Completed;}
+            }finally{managing=false;RefreshState();}
+            if(resume)await Start(true);
         }
         void Append(string line) {
             if(IsDisposed)return;if(InvokeRequired){BeginInvoke(new Action<string>(Append),line);return;}
@@ -58,16 +84,19 @@ namespace Solevia.Desktop {
         void Restore(){Show();WindowState=FormWindowState.Normal;Activate();}
         void RefreshState() {
             if(updating||IsDisposed)return;
+            if(WebInstalling){status.Text="正在补装能力";note.Text="可在网页查看下载速度与安装进度。\r\n完成后自动恢复服务，资料与对话保留。";start.Enabled=stop.Enabled=open.Enabled=update.Enabled=features.Enabled=localUpdate.Enabled=false;return;}
+            localUpdate.Enabled=true;
             url=Product.RunningUrl(root);
             bool alive=supervisor!=null&&!supervisor.HasExited;
-            if(url!=null){status.Text="Solevia 已就绪";note.Text="版本 "+Product.Version(root)+" · 服务仅在本机运行\r\n可以打开工作台，也可以关闭此窗口留在托盘。";starting=false;}
+            if(url!=null){status.Text="Solevia 已就绪";note.Text="版本 "+Product.Version(root)+" · 服务仅在本机运行\r\n关窗后在托盘继续运行。";starting=false;}
             else if(alive||starting){status.Text="正在启动 Solevia…";note.Text="正在准备数据库与本地服务，请稍候。";}
-            else {status.Text="Solevia 已停止";note.Text="点击「启动服务」继续使用，个人资料与执行记录仍在原位。";}
+            else {status.Text="Solevia 已停止";note.Text="点击「启动服务」继续使用，资料与执行记录仍在原位。";}
             if(starting&&(DateTime.UtcNow-started).TotalSeconds>200){starting=false;Append("启动等待超时，请查看日志，或通过「管理能力」修复安装。");}
-            start.Enabled=url==null&&!alive&&!busy;stop.Enabled=(url!=null||alive)&&!busy;open.Enabled=!busy;update.Enabled=!busy;features.Enabled=!busy;
+            serviceSignal.ForeColor=url!=null?Theme.Accent:Theme.Muted;start.Visible=url==null&&!alive;stop.Visible=!start.Visible;RefreshConnection();
+            start.Enabled=url==null&&!alive&&!busy;stop.Enabled=(url!=null||alive)&&!busy;open.Enabled=!busy;update.Enabled=!busy;features.Enabled=!busy&&!managing;
         }
         async Task Start(bool openWhenReady) {
-            if(busy||updating)return;url=await Task.Run(()=>Product.RunningUrl(root));
+            if(busy||updating||WebInstalling)return;url=await Task.Run(()=>Product.RunningUrl(root));
             if(url!=null){if(openWhenReady)ProcessRunner.Open(url);RefreshState();return;}
             if(supervisor!=null&&!supervisor.HasExited)return;
             if(!File.Exists(Product.Python(root))||!File.Exists(Path.Combine(root,@".runtime\installed.json"))) {
@@ -90,7 +119,7 @@ namespace Solevia.Desktop {
         }
         async Task Open(){if(updating)return;if(url!=null)ProcessRunner.Open(url);else await Start(true);}
         async Task Stop() {
-            if(busy||updating)return;++generation;busy=true;RefreshState();
+            if(busy||updating||WebInstalling)return;++generation;busy=true;RefreshState();
             try {if(File.Exists(Product.Python(root))) {
                 int code=await ProcessRunner.Run(Product.Python(root),ProcessRunner.Quote(Path.Combine(root,@"scripts\launcher.py"))+" --stop",root,Append);
                 if(code!=0)throw new IOException("服务尚未停止，请稍后重试或查看日志。");
@@ -99,12 +128,12 @@ namespace Solevia.Desktop {
             finally{busy=false;RefreshState();}
         }
         async Task Exit() {
-            if(updating||busy){Restore();return;}await Stop();
+            if(updating||busy||WebInstalling){Restore();return;}await Stop();
             if(Product.RunningUrl(root)!=null||(supervisor!=null&&!supervisor.HasExited))return;
             exiting=true;timer.Stop();tray.Visible=false;tray.Dispose();Close();
         }
         async Task CheckUpdate(bool explicitCheck) {
-            if(busy||updating)return;busy=true;update.Enabled=false;
+            if(busy||updating||WebInstalling)return;busy=true;update.Enabled=false;
             try {
                 var lines=new StringBuilder();int code=await ProcessRunner.Run(Product.Python(root),ProcessRunner.Quote(Path.Combine(root,@"scripts\desktop_worker.py"))+" check",root,line=>lines.AppendLine(line));
                 if(code!=0)throw new IOException("暂时无法检查更新，请稍后重试。\r\n"+lines);

@@ -49,7 +49,6 @@
 .execution-discussion-trigger-label { font-weight: 500; font-size: 13px; }
 .progress-page { padding-bottom: 110px; }
 .execution-discussion-panel { border-radius: 20px; box-shadow: var(--shadow-float); }
-.execution-discussion-messages .assistant-answer { font-size: 14px; line-height: 1.85; }
 @media (max-width: 640px) {
   .today-page .commitment-alert { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .today-page .commitment-alert > div, .today-page .commitment-alert > button:first-of-type { grid-column: 1 / -1; }
@@ -116,7 +115,6 @@
 .progress-page .execution-day-timeline header strong { font-size: 16px; line-height: 1.6; }
 .progress-page .execution-day-timeline p, .progress-page .progress-feedback-list p { font-size: 15px; line-height: 1.7; }
 .progress-page .execution-day-timeline small, .progress-page .progress-feedback-list time { font-size: 13px; }
-.app-shell .execution-discussion-messages .assistant-answer { font-size: 16px; line-height: 1.75; }
 .app-shell .execution-discussion-trigger-label { font-size: 14px; }
 @media (max-width: 1050px) { .planner-stage-page.today-page, .planner-stage-page.today-page.today-tools-collapsed { display: block; } }
 @media (max-width: 640px) {

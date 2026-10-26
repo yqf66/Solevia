@@ -1,8 +1,10 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AssistantAnswer, useFreshAnswers } from './AssistantAnswer'
 import { OperationProgress } from './ProcessDetails'
 import { AnswerResearch } from './AnswerResearch'
+import { ResearchSources } from './ResearchSources'
 import type { ResearchSummary } from '../api'
 import type { useResearchResponse } from './useResearchResponse'
 
@@ -53,6 +55,26 @@ describe('assistant presentation', () => {
     vi.unstubAllGlobals()
   })
 
+  it('reveals a table as a complete unit, keeping headers, aligned columns, escaped pipes and links', async () => {
+    vi.useFakeTimers()
+    const content = '| 候选 | 预算 | 来源 |\n|:---|---:|:---:|\n| **吊兰** | 100 | [官方](https://example.com) |\n| `A\\|B` | 20 | 待核实 |\n\n后续观察建议'
+    const view = render(<AssistantAnswer content={content} animate />)
+    await act(() => vi.advanceTimersByTimeAsync(32))
+    const table = screen.getByRole('table')
+    expect(table.querySelectorAll('th')).toHaveLength(3)
+    expect(table.querySelectorAll('tbody tr')).toHaveLength(2)
+    expect(Array.from(table.querySelectorAll('tbody tr')).map(row => row.children.length)).toEqual([3, 3])
+    expect(table.querySelector('strong')).toHaveTextContent('吊兰')
+    expect(table.querySelector('code')).toHaveTextContent('A|B')
+    expect(table.querySelectorAll('th')[1]).toHaveStyle({ textAlign: 'right' })
+    expect(screen.getByRole('link', { name: '官方' })).toHaveAttribute('href', 'https://example.com')
+    expect(screen.getByRole('region', { name: '回答表格' })).toHaveAttribute('tabindex', '0')
+    expect(view.container.textContent).not.toContain('后续观察建议')
+    await act(() => vi.advanceTimersByTimeAsync(2000))
+    expect(view.container.textContent).toContain('后续观察建议')
+    expect(view.container.querySelectorAll('table')).toHaveLength(1)
+  })
+
   it('animates new and regenerated messages, but not initial or switched history', () => {
     type Row = { id: string; role: string; content: string; generation_status: string }
     function History({ scope, rows }: { scope: string; rows?: Row[] }) {
@@ -70,9 +92,64 @@ describe('assistant presentation', () => {
     view.rerender(<History scope="g2" rows={[first]} />)
     expect(screen.getByText('a1:old')).toBeInTheDocument()
   })
+
+  it.each(['complete', 'skip', 'close early'])('presents each saved answer only once across panel remounts (%s)', async mode => {
+    vi.useFakeTimers()
+    type Row = { id: string; role: string; content: string; generation_status: string }
+    function History({ rows, open }: { rows: Row[]; open: boolean }) {
+      const fresh = useFreshAnswers('g1', rows)
+      return open && rows.map(row => <AssistantAnswer key={row.id} content={row.content} animate={fresh(row.id)} onPresented={() => fresh.markPresented(row.id, row.content)} />)
+    }
+    const row = { id: 'a', role: 'ASSISTANT', content: '刚生成的回答'.repeat(100), generation_status: 'SUCCEEDED' }
+    const view = render(<History rows={[]} open />)
+    view.rerender(<History rows={[row]} open />)
+    expect(view.container.querySelector('.assistant-answer')).toHaveAttribute('aria-busy', 'true')
+    if (mode === 'complete') await act(() => vi.advanceTimersByTimeAsync(2000))
+    if (mode === 'skip') fireEvent.click(screen.getByRole('button', { name: '显示全文' }))
+    view.rerender(<History rows={[row]} open={false} />)
+    view.rerender(<History rows={[row]} open />)
+    expect(view.container.querySelector('.assistant-answer')).toHaveAttribute('aria-busy', 'false')
+    expect(view.container.textContent).toContain(row.content)
+    expect(screen.queryByRole('button', { name: '显示全文' })).not.toBeInTheDocument()
+
+    // Regenerating the same row with new content is a new presentation. The
+    // previous row's cleanup cannot consume it while React replaces its props.
+    view.rerender(<History rows={[{ ...row, content: '重新生成的回答'.repeat(100) }]} open />)
+    expect(view.container.querySelector('.assistant-answer')).toHaveAttribute('aria-busy', 'true')
+    view.rerender(<History rows={[{ ...row, content: '重新生成的回答'.repeat(100) }]} open />)
+    expect(view.container.querySelector('.assistant-answer')).toHaveAttribute('aria-busy', 'true')
+    await act(() => vi.advanceTimersByTimeAsync(2000))
+    expect(view.container.textContent).toContain('重新生成的回答'.repeat(100))
+  })
+
+  it('keeps newly arrived answers readable after StrictMode cleanup and repeated rerenders', async () => {
+    vi.useFakeTimers()
+    function History({ content, open }: { content: string; open: boolean }) {
+      const rows = content ? [{ id: 'strict', role: 'ASSISTANT', content, generation_status: 'SUCCEEDED' }] : []
+      const fresh = useFreshAnswers('g1', rows)
+      return open && rows.map(row => <AssistantAnswer key={row.id} content={row.content} animate={fresh(row.id)} onPresented={() => fresh.markPresented(row.id, row.content)} />)
+    }
+    const view = render(<StrictMode><History content="" open /></StrictMode>)
+    view.rerender(<StrictMode><History content={'完整回答'.repeat(100)} open /></StrictMode>)
+    await act(() => vi.advanceTimersByTimeAsync(2000))
+    view.rerender(<StrictMode><History content={'完整回答'.repeat(100)} open={false} /></StrictMode>)
+    view.rerender(<StrictMode><History content={'完整回答'.repeat(100)} open /></StrictMode>)
+    expect(view.container.querySelector('.assistant-answer')).toHaveAttribute('aria-busy', 'false')
+    expect(view.container.textContent).toContain('完整回答'.repeat(100))
+  })
 })
 
 describe('observed processing', () => {
+  it('shows readable research status and the actual evidence gaps', () => {
+    const summary = { status: 'PARTIAL', question: '核对资料', stop_reason: 'CODEX_EVIDENCE_REVIEW_REQUIRED',
+      sources: [{ url: 'https://example.com', title: '官方', evidence_level: 'FULL_TEXT', read_status: 'SUCCEEDED' }],
+      unresolved_points: ['幼儿接触边界尚未核实'] } as unknown as ResearchSummary
+    render(<ResearchSources research={summary} />)
+    expect(screen.getByText('已保留收集的资料，仍有证据需要核实')).toBeInTheDocument()
+    expect(screen.getByText('正文读取 · 已读取')).toBeInTheDocument()
+    expect(screen.getByText('幼儿接触边界尚未核实')).toBeInTheDocument()
+    expect(screen.queryByText(/CODEX_EVIDENCE/)).not.toBeInTheDocument()
+  })
   it('expands while active, keeps observed steps, and folds on completion', () => {
     const view = render(<OperationProgress active scope="g1" label="生成预览" detail="已校验 1 / 4 周" />)
     expect(view.container.querySelector('details')).toHaveAttribute('open')

@@ -24,9 +24,10 @@ STOP = RUNTIME / 'stop.request'
 
 def runtime_environment(features, ports=None):
     allowed = {'SYSTEMROOT','WINDIR','PATH','PATHEXT','COMSPEC','SYSTEMDRIVE',
-               'PROGRAMFILES','PROGRAMFILES(X86)','LOCALAPPDATA','APPDATA','TEMP','TMP','LANG'}
+               'PROGRAMFILES','PROGRAMFILES(X86)','LOCALAPPDATA','APPDATA','TEMP','TMP','LANG',
+               'USERPROFILE','HOMEDRIVE','HOMEPATH','HOME','CODEX_HOME','SOLEVIA_CODEX_EXECUTABLE'}
     env = {key:value for key,value in os.environ.items() if key.upper() in allowed}
-    env.update(SOLEVIA_DATA_DIR=str(DATA), SOLEVIA_ENV_FILE=str(DATA/'.env'),
+    env.update(SOLEVIA_DESKTOP_ROOT=str(ROOT), SOLEVIA_DATA_DIR=str(DATA), SOLEVIA_ENV_FILE=str(DATA/'.env'),
                PYTHONUTF8='1', PYTHONNOUSERSITE='1', PYTHONUNBUFFERED='1',
                PLAYWRIGHT_BROWSERS_PATH=str(RUNTIME/'browsers'), HF_HOME=str(RUNTIME/'models'))
     env['PATH'] = str(RUNTIME/'node') + os.pathsep + env.get('PATH','')
@@ -191,7 +192,7 @@ def main():
             if service.get('output'):service['output'].close()
         node=str(RUNTIME/'node/node.exe')
         services=[{'name':'backend','cwd':ROOT/'app/backend',
-                   'command':[sys.executable,'-m','uvicorn','planner_api.main:app','--host','127.0.0.1','--port',str(ports['backend'])],
+                   'command':[sys.executable,'-m','uvicorn','planner_api.solevia_main:app','--host','127.0.0.1','--port',str(ports['backend'])],
                    'health':f"http://127.0.0.1:{ports['backend']}/api/health"},
                   {'name':'frontend','cwd':ROOT,
                    'command':[node,str(ROOT/'scripts/frontend-server.mjs'),str(ROOT/'app/frontend/dist'),str(ports['frontend']),str(ports['backend'])],

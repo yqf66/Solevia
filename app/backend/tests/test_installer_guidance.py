@@ -31,12 +31,12 @@ def run_installer(root, *args, answers=None):
                           input=answers, text=True, encoding='utf8', capture_output=True, timeout=30)
 
 
-def test_standard_plan_explains_capabilities_without_installing(tmp_path):
+def test_minimal_plan_explains_capabilities_without_installing(tmp_path):
     root = installer_fixture(tmp_path)
     result = run_installer(root, '-PlanOnly')
     assert result.returncode == 0, result.stderr
     plan = json.loads(result.stdout)
-    assert plan['plan']['features'] == dict(web=True, documents=True, ocr=False, semantic=False)
+    assert plan['plan']['features'] == dict(web=False, documents=False, ocr=False, semantic=False)
     assert plan['plan']['estimateOnly'] and plan['plan']['includesCaches']
     assert len(plan['capabilities']) == 4
     assert all(row['Benefit'] and row['Skip'] and row['Memory'] for row in plan['capabilities'])
@@ -216,3 +216,13 @@ def test_stream_download_reports_real_bytes_speed_slow_connection_and_checks_has
         if mode == 'retry':
             assert '[重试]' in result.stdout and Handler.attempts == 2
         assert 'total=' + str(len(payload)) in result.stdout
+
+
+def test_insufficient_target_disk_space_reports_actual_drive_and_required_capacity(tmp_path):
+    root = installer_fixture(tmp_path)
+    command = "$d=[IO.DriveInfo]::new([IO.Path]::GetPathRoot($SoleviaRoot)); Assert-SoleviaInstallSpace (($d.AvailableFreeSpace/1MB)+10240)"
+    result = network_script(root, command)
+    assert result.returncode != 0
+    assert '[DISK_SPACE]' in result.stdout + result.stderr
+    assert 'GiB' in result.stdout + result.stderr
+    assert not (root / '.runtime').exists()

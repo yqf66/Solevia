@@ -1,7 +1,8 @@
+from planner_api.model_connection import model_required
 from datetime import date, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -222,7 +223,7 @@ ManualPlanServiceDependency = Annotated[ManualPlanService, Depends(get_manual_pl
 def get_light_arrangement_service(session: SessionDependency) -> LightArrangementService:
     settings = get_settings()
     provider = None
-    if settings.llm_provider != "fake" and settings.llm_api_key.get_secret_value().strip():
+    if settings.llm_provider != "fake" and settings.model_runtime_configured:
         provider = build_light_provider(settings)
     return LightArrangementService(session, provider)
 
@@ -240,6 +241,7 @@ TodayServiceDependency = Annotated[TodayService, Depends(get_today_service)]
 
 
 @router.post("/goals", response_model=ClarificationWorkspace, status_code=201)
+@model_required
 def create_goal(
     payload: GoalCreate,
     background_tasks: BackgroundTasks,
@@ -265,6 +267,7 @@ def initialize_goal(payload: GoalCreate, service: ServiceDependency):
     "/goals/{goal_id}/clarification/start",
     response_model=ClarificationWorkspace,
 )
+@model_required
 def start_initial_clarification(goal_id: str, service: ServiceDependency):
     return service.complete_initial_response(goal_id)
 
@@ -369,6 +372,7 @@ def get_conversation_messages(
 
 
 @router.post("/goals/{goal_id}/messages", response_model=ClarificationWorkspace)
+@model_required
 def add_message(
     goal_id: str,
     payload: MessageCreate,
@@ -389,16 +393,19 @@ def add_message(
 
 
 @router.post("/goals/{goal_id}/messages/retry", response_model=ClarificationWorkspace)
+@model_required
 def retry_failed_message(goal_id: str, service: ServiceDependency):
     return service.retry_last_failed_message(goal_id)
 
 
 @router.post("/goals/{goal_id}/messages/regenerate", response_model=ClarificationWorkspace)
+@model_required
 def regenerate_message(goal_id: str, service: ServiceDependency):
     return service.regenerate_last_message(goal_id)
 
 
 @router.post("/goals/{goal_id}/clarification/analysis/retry", response_model=ClarificationWorkspace)
+@model_required
 def retry_analysis(
     goal_id: str,
     background_tasks: BackgroundTasks,
@@ -433,6 +440,7 @@ def update_fact(
 
 
 @router.post("/goals/{goal_id}/requirements/draft", response_model=ClarificationWorkspace)
+@model_required
 def draft_requirement(goal_id: str, service: ServiceDependency):
     return service.create_requirement_draft(goal_id)
 
@@ -479,11 +487,13 @@ def get_route(goal_id: str, service: RouteServiceDependency):
 
 
 @router.post("/goals/{goal_id}/route/draft", response_model=RouteWorkspace)
+@model_required
 def draft_route(goal_id: str, service: RouteServiceDependency):
     return service.draft_route(goal_id)
 
 
 @router.post("/goals/{goal_id}/route/revise", response_model=RouteWorkspace)
+@model_required
 def revise_route(goal_id: str, payload: RouteFeedback, service: RouteServiceDependency):
     return service.revise_route(
         goal_id,
@@ -491,10 +501,12 @@ def revise_route(goal_id: str, payload: RouteFeedback, service: RouteServiceDepe
         web_research_enabled=payload.web_research_enabled,
         research_run_id=payload.research_run_id,
         regenerate=payload.regenerate,
+        material_source_ids=payload.material_source_ids,
     )
 
 
 @router.post("/goals/{goal_id}/route/explain", response_model=RouteWorkspace)
+@model_required
 def explain_route(goal_id: str, payload: RouteFeedback, service: RouteServiceDependency):
     return service.explain_route(
         goal_id,
@@ -502,6 +514,7 @@ def explain_route(goal_id: str, payload: RouteFeedback, service: RouteServiceDep
         web_research_enabled=payload.web_research_enabled,
         research_run_id=payload.research_run_id,
         regenerate=payload.regenerate,
+        material_source_ids=payload.material_source_ids,
     )
 
 
@@ -516,6 +529,7 @@ def get_plan(goal_id: str, service: PlanServiceDependency):
 
 
 @router.post("/goals/{goal_id}/research/runs", response_model=ResearchRunRead, status_code=202)
+@model_required
 def enqueue_research_run(
     goal_id: str,
     payload: ResearchRunCreate,
@@ -554,6 +568,7 @@ def cancel_research_run(
 
 
 @router.post("/goals/{goal_id}/research/runs/{run_id}/resume", response_model=ResearchRunRead)
+@model_required
 def resume_research_run(
     goal_id: str,
     run_id: str,
@@ -563,6 +578,7 @@ def resume_research_run(
 
 
 @router.post("/goals/{goal_id}/research/runs/{run_id}/retry", response_model=ResearchRunRead)
+@model_required
 def retry_research_run(
     goal_id: str,
     run_id: str,
@@ -597,6 +613,7 @@ def get_generation_runs(goal_id: str, session: SessionDependency):
     response_model=GenerationBatchRead,
     status_code=201,
 )
+@model_required
 def create_generation_batch(
     goal_id: str,
     payload: GenerationBatchCreate,
@@ -609,21 +626,25 @@ def create_generation_batch(
     "/goals/{goal_id}/plan/compiler/batches/{batch_id}/retry",
     response_model=GenerationBatchRead,
 )
+@model_required
 def retry_generation_batch(goal_id: str, batch_id: str, service: PlanServiceDependency):
     return service.retry_recovery_batch(goal_id, batch_id)
 
 
 @router.post("/goals/{goal_id}/plan/draft", response_model=PlanWorkspace)
+@model_required
 def draft_plan(goal_id: str, service: PlanServiceDependency):
     return service.draft_plan(goal_id)
 
 
 @router.post("/goals/{goal_id}/plan/details/next", response_model=PlanWorkspace)
+@model_required
 def draft_next_plan_details(goal_id: str, service: PlanServiceDependency):
     return service.draft_next_details(goal_id)
 
 
 @router.post("/goals/{goal_id}/plan/generation/start", response_model=PlanWorkspace)
+@model_required
 def start_plan_generation(
     goal_id: str,
     payload: PlanGenerationRequest,
@@ -640,6 +661,7 @@ def start_plan_generation(
 
 
 @router.post("/goals/{goal_id}/plan/explain", response_model=PlanWorkspace)
+@model_required
 def explain_plan(goal_id: str, payload: PlanFeedback, service: PlanServiceDependency):
     return service.explain_plan(
         goal_id,
@@ -647,10 +669,12 @@ def explain_plan(goal_id: str, payload: PlanFeedback, service: PlanServiceDepend
         web_research_enabled=payload.web_research_enabled,
         research_run_id=payload.research_run_id,
         regenerate=payload.regenerate,
+        material_source_ids=payload.material_source_ids,
     )
 
 
 @router.post("/goals/{goal_id}/plan/revise", response_model=PlanWorkspace)
+@model_required
 def revise_plan(goal_id: str, payload: PlanFeedback, service: PlanServiceDependency):
     return service.revise_plan(
         goal_id,
@@ -658,6 +682,8 @@ def revise_plan(goal_id: str, payload: PlanFeedback, service: PlanServiceDepende
         web_research_enabled=payload.web_research_enabled,
         research_run_id=payload.research_run_id,
         regenerate=payload.regenerate,
+        material_source_ids=payload.material_source_ids,
+        recovery_options=payload.recovery_options.model_dump(mode="json") if payload.recovery_options else None,
     )
 
 
@@ -667,6 +693,7 @@ def decide_recovery(goal_id: str, payload: RecoveryDecisionRequest, service: Pla
 
 
 @router.post("/goals/{goal_id}/execution/recovery/ai", response_model=PlanWorkspace)
+@model_required
 def revise_recovery_plan(
     goal_id: str,
     payload: RecoveryAIRequest,
@@ -682,6 +709,7 @@ def revise_recovery_plan(
         payload.preview_id,
         payload.instruction,
         research_run_id=payload.research_run_id,
+        availability_offer=payload.availability_offer.model_dump(mode="json") if payload.availability_offer else None,
     )
     if workspace.pending_adjustment:
         background_tasks.add_task(run_recovery_generation, goal_id)
@@ -739,6 +767,7 @@ def confirm_plan(goal_id: str, service: PlanServiceDependency):
 
 
 @router.post("/goals/{goal_id}/plan/exploration/draft", response_model=PlanWorkspace)
+@model_required
 def draft_exploration_window(
     goal_id: str,
     payload: ExplorationWindowRequest,
@@ -809,8 +838,12 @@ def get_model_connection():
 
 
 @router.put("/settings/model", response_model=ModelConnectionRead)
-def update_model_connection(payload: ModelConnectionUpdate):
-    return UserSettingsService().update_model_connection(payload)
+def update_model_connection(payload: ModelConnectionUpdate, request: Request):
+    manager = request.app.state.kernel
+    with manager.lock:
+        if get_settings().llm_provider != "codex" and (manager.active or manager.busy_check()):
+            raise HTTPException(409, "当前还有生成或资料研究在进行，请等待完成后再修改 API 配置。")
+        return UserSettingsService().update_model_connection(payload)
 
 
 @router.get("/schedule/profile/holidays", response_model=HolidayCalendarRead)
@@ -958,6 +991,7 @@ def get_light_arrangement_draft(draft_id: str, service: LightArrangementServiceD
     include_in_schema=False,
 )
 @router.post("/quick-plan-drafts/{draft_id}/generate", response_model=LightDraftRead)
+@model_required
 def generate_light_arrangement_draft(
     draft_id: str,
     payload: LightRevisionRequest,
@@ -1041,11 +1075,13 @@ def schedule_today_task(
 
 
 @router.post("/today/allocation/preview", response_model=DayAllocationPreview)
+@model_required
 def preview_day_allocation(payload: DayAllocationRequest, session: SessionDependency):
     return DayScheduleService(session).preview(payload)
 
 
 @router.post("/today/allocation/preview-many", response_model=list[DayAllocationPreview])
+@model_required
 def preview_many_day_allocations(payload: DayAllocationBatchRequest, session: SessionDependency):
     return DayScheduleService(session).preview_many(payload.requests)
 
@@ -1067,6 +1103,7 @@ def get_schedule_foundation(goal_id: str, service: ExecutionServiceDependency):
     "/goals/{goal_id}/execution/schedule/allocate-plan",
     response_model=PlanScheduleAllocationRead,
 )
+@model_required
 def allocate_entire_plan(goal_id: str, service: ExecutionServiceDependency):
     return service.allocate_entire_plan(goal_id)
 
@@ -1142,6 +1179,7 @@ def preview_execution(
 
 
 @router.post("/goals/{goal_id}/execution/calendar/smart-preview", response_model=SmartCalendarRead)
+@model_required
 def smart_calendar_preview(goal_id: str, payload: SmartCalendarRequest, session: SessionDependency):
     return ExecutionCalendarService(session).smart_preview(goal_id, payload)
 
@@ -1232,6 +1270,7 @@ def get_execution_calendar(goal_id: str, service: ExecutionServiceDependency):
 
 
 @router.post("/goals/{goal_id}/execution/recommendations/preview", response_model=RecommendationPreview)
+@model_required
 def preview_task_recommendations(goal_id: str, payload: RecommendationRequest, session: SessionDependency):
     return RecommendationService(session).preview(goal_id, payload)
 
@@ -1353,6 +1392,7 @@ def get_execution_discussion(
     "/goals/{goal_id}/execution/discussion/messages",
     response_model=ExecutionDiscussionWorkspace,
 )
+@model_required
 def discuss_execution(
     goal_id: str,
     payload: ExecutionDiscussionCreate,
@@ -1373,6 +1413,7 @@ def discuss_execution(
     "/goals/{goal_id}/execution/discussion/retry",
     response_model=ExecutionDiscussionWorkspace,
 )
+@model_required
 def retry_execution_discussion(
     goal_id: str, service: ExecutionDiscussionServiceDependency
 ):

@@ -73,7 +73,7 @@ it.each(['RECOVERY_REQUIRED', 'ACTIVE', 'READY_TO_START'])('keeps the existing r
     fireEvent.click(screen.getByRole('button', { name: '允许这次顺延' }))
     await waitFor(() => expect(screen.getByRole('button', { name: '先预览日期与时间' })).toBeEnabled())
     fireEvent.click(screen.getByRole('button', { name: '先预览日期与时间' }))
-    await screen.findByText('调整后的时间安排')
+    await screen.findByText('这次安排，具体改了什么')
     fireEvent.click(screen.getByRole('button', { name: '确认并发布调整' }))
     await waitFor(() => expect(fetchMock.mock.calls.some(([input]) => String(input).endsWith('/plan/adjustment/apply'))).toBe(true))
     expect(screen.queryByRole('button', { name: '先处理追赶' })).not.toBeInTheDocument()

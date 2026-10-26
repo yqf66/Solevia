@@ -25,7 +25,8 @@ class Settings(BaseSettings):
     model_telemetry_max_bytes: int = Field(default=8 * 1024 * 1024, ge=65536, le=64 * 1024 * 1024)
     model_telemetry_backups: int = Field(default=3, ge=1, le=8)
     database_url: str = DEFAULT_DATABASE_URL
-    llm_provider: Literal["fake", "deepseek", "openai_compatible"] = "fake"
+    llm_provider: Literal["fake", "deepseek", "openai_compatible", "codex"] = "fake"
+    solevia_kernel: Literal["auto", "api", "codex"] = "auto"
     llm_api_key: SecretStr = SecretStr("")
     llm_base_url: str = "https://api.deepseek.com"
     llm_proxy_url: str = ""
@@ -37,6 +38,8 @@ class Settings(BaseSettings):
     # planning argument. Keep the conversational/DEEP reasoning policy separate.
     llm_analysis_reasoning_effort: Literal["none", "low", "medium", "high"] = "none"
     llm_timeout_seconds: float = Field(default=45, gt=0, le=180)
+    codex_model: str = ""
+    codex_reasoning_effort: Literal["low", "medium", "high", "xhigh", "max", "ultra"] = "low"
     llm_max_retries: int = Field(default=2, ge=0, le=5)
     llm_max_output_tokens: int = Field(default=3000, ge=256, le=16000)
     # Research has its own bounded model calls. A stalled gate or reflection
@@ -228,6 +231,10 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    @property
+    def model_runtime_configured(self) -> bool:
+        return self.llm_provider == "codex" or bool(self.llm_api_key.get_secret_value().strip())
+
     @model_validator(mode="after")
     def validate_material_chunk_settings(self):
         if self.material_chunk_overlap_chars >= self.material_chunk_chars:
@@ -264,10 +271,20 @@ def get_settings() -> Settings:
     return load_user_settings(settings_env_file(), migrate=True)
 
 
-def load_user_settings(path: Path, *, migrate=False) -> Settings:
+def load_user_settings(path: Path, *, migrate=False, kernel: str | None = None) -> Settings:
     from planner_api.credential_store import read_key
 
     settings = Settings(_env_file=path)
+    selected = kernel or settings.solevia_kernel
+    if selected == "auto":
+        selected = "codex" if settings.llm_provider == "codex" else os.environ.get("SOLEVIA_DEFAULT_KERNEL", "api")
+    if selected == "codex":
+        # Codex owns its login. Never read or migrate Solevia API credentials.
+        return settings.model_copy(update={"llm_provider": "codex", "llm_api_key": SecretStr(""),
+                                           "llm_model": settings.codex_model or (settings.llm_model if settings.llm_provider == "codex" else "")})
+    if settings.llm_provider == "codex":
+        # Legacy Codex-only profiles have no self-configured API connection yet.
+        settings = settings.model_copy(update={"llm_provider": "openai_compatible", "llm_model": ""})
     legacy = settings.llm_api_key.get_secret_value()
     # Explicit process secrets remain process-scoped; never persist them.
     key = read_key(path, legacy, migrate=migrate and not os.environ.get("LLM_API_KEY"))

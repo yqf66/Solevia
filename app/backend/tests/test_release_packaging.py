@@ -10,7 +10,7 @@ import pytest
 
 ROOT=Path(__file__).resolve().parents[3]
 sys.path.insert(0,str(ROOT/'scripts'))
-from package_integrity import safe_path,scan_text,verify_zip
+from package_integrity import safe_path,scan_text,strip_gif_metadata,verify_zip
 import launcher
 import updater
 
@@ -26,6 +26,25 @@ def test_private_or_unsafe_paths_are_rejected(name):
 def test_private_content_blocks_packaging_without_echoing_it(value):
     with pytest.raises(ValueError) as error:scan_text('app/file.txt',value.encode())
     assert value not in str(error.value)
+
+
+def test_gif_comments_are_removed_without_changing_image_or_animation_bytes():
+    import base64
+    image = base64.b64decode('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==')
+    loop = b'\x21\xff\x0bNETSCAPE2.0\x03\x01\x00\x00\x00'
+    animation = image[:19] + loop + image[19:]
+    comment = b'\x21\xfe\x07private\x00'
+    with_metadata = animation[:-1] + comment + b'\x3b'
+    assert strip_gif_metadata(with_metadata) == animation
+    scan_text('docs/animation.gif', animation)
+    with pytest.raises(ValueError, match='metadata'):
+        scan_text('docs/animation.gif', with_metadata)
+
+
+@pytest.mark.parametrize('data', [b'not an image', b'GIF89a', b'GIF89a' + b'\x00' * 8])
+def test_invalid_gif_cannot_bypass_public_content_validation(data):
+    with pytest.raises(ValueError):
+        scan_text('docs/animation.gif', data)
 
 
 def test_launcher_does_not_inherit_provider_credentials(monkeypatch):
@@ -134,3 +153,30 @@ def test_update_preparation_failure_releases_lock_and_marker(tmp_path,monkeypatc
     assert not (runtime/'update.in-progress').exists()
     lock=launcher.acquire_lock();assert lock is not None;lock.close()
     assert json.loads((target/'release.json').read_text())['version']=='0.1.0'
+
+
+def test_real_checksums_with_port_like_digits_do_not_fail_privacy_scan(tmp_path):
+    import re
+    payload = next(value for number in range(200000)
+        if re.search(r"(?<!\d)78(?:97|90)(?!\d)", hashlib.sha256(value := f"checksum-fixture-{number}".encode()).hexdigest()))
+    package, _ = release_archive(tmp_path, "0.1.1", {"app/checksum-fixture.txt": payload})
+    assert verify_zip(package)[1]["app/checksum-fixture.txt"] == payload
+
+
+@pytest.mark.parametrize("change", ["unexpected", "escaped_private_text", "bad_digest", "duplicate"])
+def test_manifest_structure_and_decoded_private_text_are_checked(change):
+    from package_integrity import scan_manifest
+    manifest = {"files": [{"path": "app/test.txt", "bytes": 1, "sha256": "a" * 64}]}
+    if change == "unexpected":
+        manifest["unreviewed"] = "arbitrary text"
+    elif change == "bad_digest":
+        manifest["files"][0]["sha256"] = "invalid"
+    elif change == "escaped_private_text":
+        manifest["product"] = "sk-" + "x" * 24
+    data = json.dumps(manifest).encode()
+    if change == "escaped_private_text":
+        data = data.replace(b"sk-", b"\\u0073k-")
+    elif change == "duplicate":
+        data = b'{"files": [], "files": []}'
+    with pytest.raises(ValueError):
+        scan_manifest(data)

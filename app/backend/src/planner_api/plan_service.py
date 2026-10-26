@@ -73,7 +73,7 @@ from planner_api.plan_ai import PlanContext, PlanProvider
 from planner_api.plan_capacity import capacity_assessment, capacity_conflicts
 from planner_api.plan_compiler_repair import repair_bookkeeping
 from planner_api.temporal_contract import snapshot_deadline
-from planner_api.plan_calendar import calendar_weeks
+from planner_api.plan_calendar import calendar_weeks, plan_week_range
 from planner_api.plan_rule_integrity import quantified_workloads, validate_action_coverage, validate_recurrence_contracts
 from planner_api.plan_discussion_ai import (
     PLAN_DISCUSSION_PROMPT_VERSION,
@@ -270,7 +270,7 @@ class PlanService:
                 and pending_adjustment is None
                 and plan.next_unplanned_week <= plan.total_weeks
             ),
-            available_generation_modes=list(self.provider.supported_generation_modes),
+            available_generation_modes=["STANDARD"],
             generation_job=self._generation_job_read(generation_job) if generation_job else None,
             generation_repair=self._generation_repair_read(goal_id, plan),
             capacity_negotiation=self._capacity_negotiation(goal_id, plan),
@@ -1187,14 +1187,22 @@ class PlanService:
         research_run_id: str | None = None,
         regenerate: bool = False,
         use_saved_research: bool = True,
+        material_source_ids: list[str] | None = None,
     ) -> PlanWorkspace:
         goal, requirement, route = self._get_review_inputs(goal_id)
         current = self._require_review_plan(goal_id)
         conversation = self._ensure_plan_conversation(goal_id)
         clean_question = question.strip()
+        from planner_api.materials.conversation import resolve_discussion_sources, remember_discussion_sources
+        material_source_ids = resolve_discussion_sources(self.session, conversation, clean_question, "EXPLAIN", material_source_ids, regenerate=regenerate)
+        from planner_api.materials.analysis_ai import build_material_analysis_provider
+        from planner_api.materials.analysis_service import MaterialAnalysisService
+        material_context = MaterialAnalysisService(self.session, build_material_analysis_provider(get_settings())).prepare_conversation_context(
+            goal_id, clean_question, material_source_ids) if material_source_ids else None
         user_message, existing_assistant = self._prepare_discussion_exchange(
             conversation, clean_question, "EXPLAIN", allow_existing=regenerate
         )
+        remember_discussion_sources(self.session, conversation, material_source_ids, material_context)
         goal.last_active_at = utc_now()
         self.session.commit()
         research_context, research_read = self._prepare_plan_research(
@@ -1216,6 +1224,7 @@ class PlanService:
                     current,
                     clean_question,
                     research_context=research_context,
+                    material_context=material_context,
                 )
             )
         except ClarificationProviderError as error:
@@ -1256,6 +1265,8 @@ class PlanService:
         research_run_id: str | None = None,
         regenerate: bool = False,
         use_saved_research: bool = True,
+        material_source_ids: list[str] | None = None,
+        recovery_options: dict[str, object] | None = None,
     ) -> PlanWorkspace:
         require_clarification_analysis_complete(self.session, goal_id)
         goal, requirement, route = self._get_review_inputs(goal_id)
@@ -1271,6 +1282,30 @@ class PlanService:
         if recovery_context is None:
             recovery_context = self._active_recovery_context(goal_id)
         clean_feedback = feedback.strip()
+        if recovery_options:
+            if not recovery_context or not previous_adjustment:
+                raise HTTPException(409, "当前没有待调整的恢复方案，请先生成恢复预览。")
+            updated = self._with_recovery_preview_options(recovery_context, recovery_options)
+            brief = self.session.scalar(select(PlanningBrief).where(
+                PlanningBrief.goal_id == goal_id, PlanningBrief.brief_kind == "RECOVERY",
+                PlanningBrief.status == "DRAFT").order_by(PlanningBrief.version.desc()))
+            if brief is None:
+                raise HTTPException(409, "恢复方案已变化，请重新读取。")
+            proposal = self._local_recovery_proposal(updated)
+            brief.brief_json = {**brief.brief_json, "recovery_context": updated}
+            self._add_user_message(conversation, clean_feedback, "REVISE")
+            self._add_assistant_message(conversation, proposal.assistant_message, "REVISE", {
+                "prompt_version": "recovery-preview-preferences-v1", "recovery_brief_id": brief.id,
+                "adjustment_proposal": proposal.model_dump(mode="json")})
+            goal.last_active_at = utc_now()
+            self.session.commit()
+            return self.get_workspace(goal_id)
+        from planner_api.materials.conversation import resolve_discussion_sources, remember_discussion_sources
+        material_source_ids = resolve_discussion_sources(self.session, conversation, clean_feedback, "REVISE", material_source_ids, regenerate=regenerate)
+        from planner_api.materials.analysis_ai import build_material_analysis_provider
+        from planner_api.materials.analysis_service import MaterialAnalysisService
+        material_context = MaterialAnalysisService(self.session, build_material_analysis_provider(get_settings())).prepare_conversation_context(
+            goal_id, clean_feedback, material_source_ids) if material_source_ids else None
         # Answering a saved decision must not start research or generation.
         if recovery_context:
             answer = re.split(r"[。；;！!？?：:\s]+", clean_feedback.strip("。；;！!？?，,. \r\n\t"))[-1]
@@ -1292,6 +1327,7 @@ class PlanService:
         user_message, existing_assistant = self._prepare_discussion_exchange(
             conversation, clean_feedback, "REVISE", allow_existing=regenerate
         )
+        remember_discussion_sources(self.session, conversation, material_source_ids, material_context)
         goal.last_active_at = utc_now()
         self.session.commit()
         research_context, research_read = self._prepare_plan_research(
@@ -1570,6 +1606,7 @@ class PlanService:
                 recovery_context=recovery_context,
                 orchestration=orchestration,
                 research_context=research_context,
+                material_context=material_context,
             )
             result = self.discussion_provider.revise(discussion_context)
             self._normalize_outcome_adjustment(result, current.schedule_type)
@@ -1600,6 +1637,7 @@ class PlanService:
                     recovery_context=recovery_context,
                     orchestration=orchestration,
                     research_context=research_context,
+                    material_context=material_context,
                 )
                 retry_result = self.discussion_provider.revise(retry_context)
                 if retry_result.can_apply or retry_result.needs_clarification:
@@ -2463,6 +2501,8 @@ class PlanService:
                     if costs[day_number - 1][before] == infinity:
                         continue
                     load = existing + prefix[used] - prefix[before]
+                    if load > int(ordered_days[day_number - 1].get("maximum_total_minutes", 1440)):
+                        continue
                     candidate_cost = max(costs[day_number - 1][before], load)
                     if candidate_cost < costs[day_number][used]:
                         costs[day_number][used] = candidate_cost
@@ -2562,6 +2602,137 @@ class PlanService:
         )
         return result
 
+    @staticmethod
+    def _with_recovery_preview_options(context, options):
+        from copy import deepcopy
+        updated = deepcopy(context)
+        days = sorted([day for day in context.get("candidate_days", [])
+            if str(context["today"]) <= str(day["date"]) <= str(context["original_end_date"])], key=lambda day: day["date"])
+        tasks = context.get("backlog_tasks", [])
+        action = options["action"]
+        if action == "MOVE_TASK":
+            source_id, target_date = options.get("source_task_id"), options.get("target_date")
+            day = next((day for day in days if str(day["date"]) == str(target_date)), None)
+            assignment = next((row for row in updated.get("proposed_assignments", []) if row["backlog_task_id"] == source_id), None)
+            if day is None or assignment is None:
+                raise HTTPException(409, "只能把本次所选补回任务移到原结束日期前的后续执行日。请更换日期，其他范围可继续文字讨论。")
+            assignment.update(target_date=str(day["date"]), target_week=day["week_index"], target_day=day["day_index"], target_stage=day["stage_order"])
+        elif action in {"SPREAD", "DAILY_LIMIT"}:
+            if action == "DAILY_LIMIT":
+                limit = int(options.get("daily_limit_minutes") or 0)
+                if not 5 <= limit <= 1440:
+                    raise HTTPException(422, "请填写每天总用时上限。")
+                updated["daily_total_limit_minutes"] = limit
+            offer = updated.get("availability_offer")
+            candidates = [{**day, "maximum_total_minutes": min(
+                int(updated.get("daily_total_limit_minutes") or 1440),
+                int(day["existing_minutes"]) + int(offer["extra_minutes_per_execution_day"]) if offer else 1440)} for day in days
+                if not offer or str(day["date"]) >= str(offer["from_date"])]
+            updated["proposed_assignments"] = PlanService._ordered_balanced_recovery_assignments(tasks, candidates)
+        else:
+            raise HTTPException(422, "不支持的恢复调整方式。")
+        assignments = updated.get("proposed_assignments", [])
+        by_task = {row["backlog_task_id"]: row for row in assignments}
+        ordered = PlanService._dependency_ordered_recovery_tasks(tasks)
+        previous_date = ""
+        for task in ordered:
+            row = by_task.get(task["task_id"])
+            if row is None:
+                continue
+            if str(row["target_date"]) < previous_date or any(
+                    str(dep.get("status", "UNKNOWN")) not in {"COMPLETED", "CARRIED_OVER"}
+                    and (dep.get("task_id") not in by_task or str(by_task[dep["task_id"]]["target_date"]) > str(row["target_date"]))
+                    for dep in task.get("dependency_constraints", [])):
+                raise HTTPException(409, "这个日期会打乱原任务顺序或前置关系，请同时讨论相关任务，或换一个日期。")
+            previous_date = str(row["target_date"])
+        loads = {str(day["date"]): int(day["existing_minutes"]) for day in days}
+        for row in assignments:
+            if str(row["target_date"]) not in loads:
+                raise HTTPException(409, "草案包含范围外的日期，请重新读取恢复方案。")
+            loads[str(row["target_date"])] += int(row["estimate_minutes"])
+        if action == "MOVE_TASK":
+            offer = updated.get("availability_offer")
+            for day in days:
+                maximum = int(updated.get("daily_total_limit_minutes") or 1440)
+                if offer:
+                    maximum = min(maximum, int(day["existing_minutes"]) + (int(offer["extra_minutes_per_execution_day"]) if str(day["date"]) >= str(offer["from_date"]) else 0))
+                if loads[str(day["date"])] > maximum:
+                    raise HTTPException(409, "这个日期超出你确认的每日用时上限，请换一天或先补充可用时间。")
+        missing = sorted({str(task["task_id"]) for task in tasks} - set(by_task))
+        return {**updated, "unassigned_task_ids": missing, "ai_required": False, "ai_allocation_generated": False,
+            "projected_peak_daily_minutes": max(loads.values(), default=0), "original_task_moves": [],
+            "original_task_layout": [], "shifted_original_task_count": 0, "shifted_original_minutes": 0,
+            "requires_direct_extension": False, "direct_extension_dates": [],
+            "allocation_clarifying_question": "这个用时上限内放不下全部积压，请增加时间、缩小范围或选择顺延。" if missing else None}
+
+    @staticmethod
+    def _with_recovery_availability_offer(context, offer):
+        """Use only the user's additional budget; never enlarge it to make a draft fit."""
+        from_date = str(offer["from_date"])
+        extra = int(offer["extra_minutes_per_execution_day"])
+        if not 5 <= extra <= 480 or not str(context["today"]) <= from_date <= str(context["original_end_date"]):
+            raise HTTPException(422, "额外可用时间须为每天 5–480 分钟，起始日期须在今天至原结束日期之间。")
+        days = sorted((day for day in context.get("candidate_days", [])
+            if from_date <= str(day["date"]) <= str(context["original_end_date"])), key=lambda day: day["date"])
+        tasks = context.get("backlog_tasks", [])
+        ordered = PlanService._dependency_ordered_recovery_tasks(tasks)
+        assignments, unassigned = [], []
+        added = {str(day["date"]): 0 for day in days}
+        assigned_ids = set()
+        cursor = 0
+        for task in ordered:
+            constraints = task.get("dependency_constraints", [])
+            if any(str(dep.get("status", "UNKNOWN")) not in {"COMPLETED", "CARRIED_OVER"}
+                   and str(dep.get("task_id")) not in assigned_ids for dep in constraints):
+                unassigned.append(task["task_id"])
+                continue
+            minutes = int(task["estimate_minutes"])
+            while cursor < len(days) and added[str(days[cursor]["date"])] + minutes > extra:
+                cursor += 1
+            if cursor == len(days):
+                unassigned.append(task["task_id"])
+                continue
+            day = days[cursor]
+            added[str(day["date"])] += minutes
+            assigned_ids.add(str(task["task_id"]))
+            assignments.append({"backlog_task_id": task["task_id"], "target_date": str(day["date"]),
+                "target_week": day["week_index"], "target_day": day["day_index"], "target_stage": day["stage_order"],
+                "estimate_minutes": minutes, "rationale": "按用户明确补充的每日额外时间上限承接"})
+        unassigned = sorted({str(task["task_id"]) for task in tasks} - assigned_ids)
+        peak = max((int(day["existing_minutes"]) + added[str(day["date"])] for day in days), default=0)
+        return {**context, "availability_offer": offer, "proposed_assignments": assignments,
+            "unassigned_task_ids": unassigned, "projected_peak_daily_minutes": peak,
+            "ai_required": False, "ai_allocation_generated": False, "original_task_moves": [],
+            "original_task_layout": [], "shifted_original_task_count": 0, "shifted_original_minutes": 0,
+            "requires_direct_extension": False, "direct_extension_dates": [], "direct_extension_confirmed": False,
+            "allocation_clarifying_question": (f"按你补充的每天额外 {extra} 分钟，仍有 {len(unassigned)} 项放不下；请增加可用时间、缩小补回范围或选择顺延。" if unassigned else None)}
+
+    @staticmethod
+    def _assert_recovery_budget(context, schedule=None):
+        """Keep explicit user budgets binding through model turns and publication."""
+        offer = context.get("availability_offer")
+        limit = context.get("daily_total_limit_minutes")
+        if not offer and not limit:
+            return
+        days = {str(day["date"]): day for day in context.get("candidate_days", [])}
+        loads = {key: int(day["existing_minutes"]) for key, day in days.items()}
+        for row in context.get("proposed_assignments", []):
+            target = str(row["target_date"])
+            if target not in days or target > str(context["original_end_date"]) or (offer and target < str(offer["from_date"])):
+                raise HTTPException(409, "这份安排超出你确认的可用日期，请重新预览或补充可用时间。")
+            loads[target] += int(row["estimate_minutes"])
+        if schedule is not None:
+            loads = {key: 0 for key in days}
+            for row in schedule:
+                if str(row["date"]) in loads:
+                    loads[str(row["date"])] += int(row["minutes"])
+        for target, load in loads.items():
+            maximum = int(limit or 1440)
+            if offer:
+                maximum = min(maximum, int(days[target]["existing_minutes"]) + (int(offer["extra_minutes_per_execution_day"]) if target >= str(offer["from_date"]) else 0))
+            if load > maximum:
+                raise HTTPException(409, f"{target} 需要 {load} 分钟，超出你确认的 {maximum} 分钟上限。请重新分配，或明确补充可用时间。")
+
     def revise_recovery_plan(
         self,
         goal_id: str,
@@ -2573,6 +2744,7 @@ class PlanService:
         instruction: str = "",
         *,
         research_run_id: str | None = None,
+        availability_offer: dict[str, object] | None = None,
     ) -> PlanWorkspace:
         """Start C3-C with a persisted recovery brief and resumable week batches."""
         if research_run_id:
@@ -2617,6 +2789,8 @@ class PlanService:
                                 "recovery_scope": scoped_preview["recovery_scope"],
                                 "blocking_snapshot": scoped_preview.get("time_preview", {}),
                                 "user_instruction": instruction.strip()}
+        if availability_offer:
+            recovery_context = self._with_recovery_availability_offer(recovery_context, availability_offer)
         research_context = None
         research_status = None
         if research_run_id:
@@ -2659,7 +2833,7 @@ class PlanService:
         )
         self.session.add(recovery_brief)
         self.session.commit()
-        if not recovery_context.get("ai_required", True):
+        if availability_offer or not recovery_context.get("ai_required", True):
             conversation = self._ensure_plan_conversation(goal_id)
             local_request = (
                 f"这是一次中断恢复重规划：错过 {len(missed_dates)} 个执行日，"
@@ -2964,11 +3138,14 @@ class PlanService:
                         status_code=409,
                         detail="调整建议已变化，请重新生成预览。",
                     )
+                if self._recovery_preview_key(context) != self._recovery_preview_key(operation.preview_json.get("recovery_context")):
+                    raise HTTPException(409, "任务分配或每日上限已变化，请重新生成预览。")
                 if operation.preview_json.get("unallocated_count") and not accept_unallocated:
                     raise HTTPException(
                         status_code=409,
                         detail="仍有任务没有具体时段，请确认保留待安排或返回修改方案。",
                     )
+                self._validate_adjustment_time_overrides(operation.preview_json.get("schedule", []), schedule_overrides)
                 if operation.preview_json.get("execution_model") == "HYBRID_WORK_ITEM":
                     return self._apply_staged_hybrid_adjustment(
                         goal_id, operation, current_proposal
@@ -3268,14 +3445,16 @@ class PlanService:
             )
             self._publish_revision_schedule(goal, current, revised, schedule_plan)
             actual_schedule = self._preview_schedule(goal, revised, rebuild=False)
+            self._assert_recovery_budget(recovery_context, actual_schedule)
             expected_schedule = self._with_schedule_overrides(
                 operation.preview_json.get("schedule", []), schedule_overrides
             )
-            if schedule_overrides is None and actual_schedule != expected_schedule:
+            if not schedule_overrides and actual_schedule != expected_schedule:
                 raise HTTPException(
                     status_code=409,
                     detail="实际时间安排与预览不一致，请重新生成调整预览。",
                 )
+            self._assert_adjustment_time_overrides(actual_schedule, schedule_overrides)
         except HTTPException:
             self.session.rollback()
             raise
@@ -3363,12 +3542,13 @@ class PlanService:
         expected_schedule = self._with_schedule_overrides(
             staged.get("schedule", []), schedule_overrides
         )
-        if schedule_overrides is None and actual_schedule != expected_schedule:
+        if not schedule_overrides and actual_schedule != expected_schedule:
             self.session.rollback()
             raise HTTPException(
                 status_code=409,
                 detail="实际时间安排与预览不一致，请重新生成调整预览。",
             )
+        self._assert_adjustment_time_overrides(actual_schedule, schedule_overrides)
         conversation = self._ensure_plan_conversation(goal_id)
         self._add_assistant_message(
             conversation,
@@ -3388,6 +3568,38 @@ class PlanService:
         goal.last_active_at = utc_now()
         self.session.commit()
         return self.get_workspace(goal_id)
+
+    @staticmethod
+    def _validate_adjustment_time_overrides(schedule, overrides):
+        seen = set()
+        for override in overrides or []:
+            key = (str(override.get("scheduled_date")), str(override.get("title")))
+            matches = [row for row in schedule if (str(row["date"]), row["title"]) == key]
+            if key in seen or len(matches) != 1:
+                raise HTTPException(409, "修改时段无法唯一对应预览任务，请继续讨论调整日期或重新预览。")
+            seen.add(key)
+            row = matches[0]
+            start, end = override.get("start_local"), override.get("end_local")
+            if row["state"] == "FLEXIBLE":
+                if start is None and end is None:
+                    continue
+                raise HTTPException(409, "当前为自由安排，无需填写起止时间；如需固定时段，请先切换时间安排方式。")
+            if not start or not end:
+                raise HTTPException(422, "请为修改的任务填写完整起止时间；任务日期与用时不能在这里省略。")
+            def minutes(value):
+                hour, minute = map(int, str(value).split(":"))
+                return hour * 60 + minute
+            if minutes(end) - minutes(start) != row["minutes"]:
+                raise HTTPException(422, "修改后的时段长度须与任务预计用时一致，不能压缩任务来通过校验。")
+
+    def _assert_adjustment_time_overrides(self, actual, overrides):
+        for override in overrides or []:
+            if override.get("start_local") is None and override.get("end_local") is None:
+                continue
+            matches = [row for row in actual if row["date"] == str(override["scheduled_date"]) and row["title"] == override["title"]]
+            if len(matches) != 1 or (matches[0]["start"], matches[0]["end"]) != (override["start_local"], override["end_local"]):
+                self.session.rollback()
+                raise HTTPException(409, "你修改的时段未通过可用窗口、冲突或前置关系校验，当前计划未改变。请换一个时段或继续讨论。")
 
     @staticmethod
     def _with_schedule_overrides(
@@ -3437,6 +3649,8 @@ class PlanService:
                         item["start_local"] = override.get("start_local")
                         item["end_local"] = override.get("end_local")
                         break
+                else:
+                    assignments.append({"title": title, "start_local": override.get("start_local"), "end_local": override.get("end_local")})
         return result
 
     def preview_adjustment(self, goal_id: str) -> PlanAdjustmentPreviewRead:
@@ -3593,12 +3807,14 @@ class PlanService:
                     # migration artifacts such as carryovers and split tasks.
                     "plan": result.model_dump(mode="json"),
                     "schedule": schedule,
+                    "comparison": self._adjustment_comparison(current, schedule, revised=revised),
                     "schedule_plan": getattr(self, "_last_schedule_plan", []),
                     "unallocated_count": sum(
                         item.get("state") == "UNALLOCATED" for item in schedule
                     ),
                     "source_fingerprint": source_fingerprint,
                     "proposal": proposal.model_dump(mode="json"),
+                    "recovery_context": recovery_context,
                 }
             finally:
                 savepoint.rollback()
@@ -3958,6 +4174,7 @@ class PlanService:
             "source_fingerprint": source_fingerprint,
             "proposal": proposal.model_dump(mode="json"),
             "execution_model": "HYBRID_WORK_ITEM",
+            "recovery_context": self._active_recovery_context(goal.id),
         }
         encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()
         preview = PlanAdjustmentPreview(
@@ -4138,9 +4355,11 @@ class PlanService:
                 self._publish_revision_schedule(goal, current, revised)
                 self.session.flush()
             schedule = self._preview_schedule(goal, revised, rebuild=False)
+            self._assert_recovery_budget(recovery_context, schedule)
             payload = {
                 "plan": self._plan_payload(revised),
                 "schedule": schedule,
+                "comparison": self._adjustment_comparison(current, schedule, recovery_context, revised),
                 "schedule_plan": getattr(self, "_last_schedule_plan", []),
                 "unallocated_count": sum(item.get("state") == "UNALLOCATED" for item in schedule),
                 "source_fingerprint": source_fingerprint,
@@ -4171,6 +4390,7 @@ class PlanService:
         return self._adjustment_preview_read(existing)
 
     def _build_local_recovery_revision(self, current, proposal, recovery_context):
+        self._assert_recovery_budget(recovery_context)
         if recovery_context.get("requires_direct_extension") and not (
             recovery_context.get("direct_extension_confirmed")
             and recovery_context.get("slight_extension_possible")
@@ -4534,7 +4754,7 @@ class PlanService:
         for task in self.session.scalars(
             select(PlanTask).where(
                 PlanTask.plan_version_id == plan.id,
-                PlanTask.status == "NOT_STARTED",
+                PlanTask.status.in_(("NOT_STARTED", "IN_PROGRESS")),
             )
         ):
             block = blocks.get(task.id)
@@ -4633,6 +4853,19 @@ class PlanService:
         encoded = json.dumps(rows, sort_keys=True, ensure_ascii=False).encode()
         return hashlib.sha256(encoded).hexdigest()
 
+    @staticmethod
+    def _recovery_preview_key(context):
+        if not context:
+            return None
+        # Summary text can stay identical after a task move or budget change.
+        # Exclude refreshed observation fields, retain every saved operation.
+        return {key: context.get(key) for key in (
+            "proposed_assignments", "original_task_layout", "original_task_moves",
+            "availability_offer", "daily_total_limit_minutes", "recovery_scope",
+            "unassigned_task_ids", "requires_direct_extension", "direct_extension_dates",
+            "direct_extension_confirmed",
+        )}
+
     def _matching_adjustment_preview(
         self,
         goal_id: str,
@@ -4641,6 +4874,7 @@ class PlanService:
         source_fingerprint: str,
     ) -> PlanAdjustmentPreview | None:
         proposal_payload = proposal.model_dump(mode="json")
+        recovery_key = self._recovery_preview_key(self._active_recovery_context(goal_id))
         previews = self.session.scalars(
             select(PlanAdjustmentPreview)
             .where(
@@ -4656,6 +4890,7 @@ class PlanService:
                 for item in previews
                 if item.preview_json.get("source_fingerprint") == source_fingerprint
                 and item.preview_json.get("proposal") == proposal_payload
+                and self._recovery_preview_key(item.preview_json.get("recovery_context")) == recovery_key
             ),
             None,
         )
@@ -4680,15 +4915,99 @@ class PlanService:
             .order_by(PlanAdjustmentPreview.created_at.desc())
         )
         source_fingerprint = self._adjustment_schedule_fingerprint(plan)
+        recovery_key = self._recovery_preview_key(self._active_recovery_context(goal_id))
         for preview in previews:
             if (preview.preview_json.get("proposal") == proposal_payload
-                    and preview.preview_json.get("source_fingerprint") == source_fingerprint):
+                    and preview.preview_json.get("source_fingerprint") == source_fingerprint
+                    and self._recovery_preview_key(preview.preview_json.get("recovery_context")) == recovery_key):
                 return self._adjustment_preview_read(preview)
         return None
 
-    @staticmethod
-    def _adjustment_preview_read(item):
+    def _adjustment_comparison(self, source, schedule, recovery_context=None, revised=None):
+        """Explain a staged draft from task lineage, without allocating or changing it."""
+        from collections import defaultdict, deque
+
+        activation = self.session.scalar(select(PlanActivation).where(
+            PlanActivation.plan_version_id == source.id))
+        if activation is None or not schedule:
+            return None
+        dates = {row.plan_day_id: row.scheduled_date.isoformat() for row in self.session.scalars(
+            select(PlanDaySchedule).where(PlanDaySchedule.activation_id == activation.id))}
+        blocks = {row.task_id: row for row in self.session.scalars(
+            select(TaskTimeBlock).where(TaskTimeBlock.plan_version_id == source.id))}
+        before = []
+        for task in self.session.scalars(select(PlanTask).where(
+                PlanTask.plan_version_id == source.id, PlanTask.status.in_(("NOT_STARTED", "IN_PROGRESS")))
+                .order_by(PlanTask.order_in_day, PlanTask.id)):
+            if task.plan_day_id not in dates:
+                continue
+            block = blocks.get(task.id)
+            before.append({"source_task_id": task.id, "title": task.title,
+                "date": dates[task.plan_day_id], "minutes": task.estimate_minutes,
+                "start": block.start_local if block else None,
+                "end": block.end_local if block else None})
+        before.sort(key=lambda row: (row["date"], row["title"], row["source_task_id"]))
+        by_id = {row["source_task_id"]: row for row in before}
+        target_sources = defaultdict(deque)
+        if revised is not None:
+            revised_activation = self.session.scalar(select(PlanActivation).where(
+                PlanActivation.plan_version_id == revised.id))
+            revised_dates = {row.plan_day_id: row.scheduled_date.isoformat()
+                for row in self.session.scalars(select(PlanDaySchedule).where(
+                    PlanDaySchedule.activation_id == revised_activation.id))} if revised_activation else {}
+            for task in self.session.scalars(select(PlanTask).where(
+                    PlanTask.plan_version_id == revised.id, PlanTask.status.in_(("NOT_STARTED", "IN_PROGRESS")))
+                    .order_by(PlanTask.order_in_day, PlanTask.id)):
+                if task.source_task_id in by_id and task.plan_day_id in revised_dates:
+                    target_sources[(revised_dates[task.plan_day_id], task.title)].append(task.source_task_id)
+        # Older saved previews have no comparison snapshot. Recovery assignments
+        # contain explicit source IDs, so repeated daily titles remain distinguishable.
+        context = recovery_context or {}
+        if revised is None:
+            for assignment in context.get("proposed_assignments", []):
+                origin = by_id.get(assignment.get("backlog_task_id"))
+                if origin:
+                    target_sources[(assignment["target_date"], "补回：" + origin["title"])].append(origin["source_task_id"])
+            for layout in context.get("original_task_layout", []):
+                for source_id in layout.get("source_task_ids", []):
+                    if source_id in by_id:
+                        target_sources[(layout["target_date"], by_id[source_id]["title"])].append(source_id)
+        same_day = defaultdict(deque)
+        for row in before:
+            same_day[(row["date"], row["title"])].append(row["source_task_id"])
+        used = set()
+        after = []
+        today = context.get("today") or self._today_for_goal_id(source.goal_id).isoformat()
+        for item in schedule:
+            key = (item["date"], item["title"])
+            candidates = target_sources.get(key) or same_day.get(key) or deque()
+            while candidates and candidates[0] in used:
+                candidates.popleft()
+            source_id = candidates.popleft() if candidates else None
+            origin = by_id.get(source_id)
+            if origin:
+                used.add(source_id)
+            kind = ("RECOVERED" if origin and origin["date"] < today and origin["date"] != item["date"]
+                    else "MOVED" if origin and origin["date"] != item["date"]
+                    else "MODIFIED" if origin and any(origin.get(k) != item.get(k) for k in ("title", "minutes", "start", "end"))
+                    else "UNCHANGED" if origin else "UNMATCHED")
+            after.append({**item, "source_task_id": source_id, "source_date": origin["date"] if origin else None,
+                "source_minutes": origin["minutes"] if origin else None,
+                "source_start": origin["start"] if origin else None, "source_end": origin["end"] if origin else None,
+                "change_kind": kind})
+        return {"before": before, "after": after, "anchor_date": today,
+            "original_end_date": str(context.get("original_end_date") or activation.projected_end_date),
+            "proposed_end_date": str(revised_activation.projected_end_date) if revised is not None and revised_activation else max(row["date"] for row in schedule),
+            "backlog_minutes": sum(row["minutes"] for row in before if row["date"] < today),
+            "backlog_tasks": sum(row["date"] < today for row in before)}
+
+    def _adjustment_preview_read(self, item):
         proposal = item.preview_json.get("proposal", {})
+        comparison = item.preview_json.get("comparison")
+        source = self.session.get(PlanVersion, item.source_plan_version_id)
+        if comparison is None and source is not None:
+            comparison = self._adjustment_comparison(source, item.preview_json.get("schedule", []),
+                item.preview_json.get("recovery_context"))
         return PlanAdjustmentPreviewRead(
             id=item.id,
             goal_id=item.goal_id,
@@ -4697,6 +5016,7 @@ class PlanService:
             fingerprint=item.fingerprint,
             plan=item.preview_json["plan"],
             schedule=item.preview_json.get("schedule", []),
+            comparison=comparison,
             unallocated_count=item.preview_json.get("unallocated_count", 0),
             reason_codes=list(proposal.get("reason_codes", ["USER_REQUESTED"])),
             created_at=item.created_at,
@@ -8312,6 +8632,7 @@ class PlanService:
         recovery_context: dict[str, object] | None = None,
         orchestration: dict[str, object] | None = None,
         research_context: dict[str, object] | None = None,
+        material_context: dict[str, object] | None = None,
     ) -> PlanDiscussionContext:
         route_stages = self._route_stages(route.id)
         current_plan = self._plan_payload(plan)
@@ -8410,6 +8731,7 @@ class PlanService:
             application_outline=application_outline,
             recovery_context=recovery_context,
             research_context=research_context,
+            material_context=material_context,
         )
 
     def _locked_execution_coordinates(self, plan: PlanVersion) -> set[tuple[int, int]]:
@@ -9271,11 +9593,24 @@ class PlanService:
         # Unfinished work from those days is carried into existing days from
         # today onward below; moving every coordinate to a new unique date
         # would silently extend a keep-deadline recovery by many days.
+        bounded_calendar = (
+            revised.execution_model_version == ExecutionModelVersion.HYBRID_WORK_ITEM
+            and revised.schedule_type == "CALENDAR"
+        )
+        # New days belong to their authored week, rather than being appended
+        # after the entire active plan. Repair unrecorded out-of-week dates
+        # from older revisions using the same rule; recorded dates stay locked.
+        retained_dates = dict(scheduled_by_coordinate)
+        if bounded_calendar:
+            for coordinate, scheduled_date in scheduled_by_coordinate.items():
+                first, last = plan_week_range(revised, old_activation.requested_start_date, coordinate[0])
+                if coordinate not in protected and scheduled_date >= today and not first <= scheduled_date <= last:
+                    retained_dates.pop(coordinate)
         cursor = max(scheduled_by_coordinate.values(), default=today) + timedelta(days=1)
-        occupied: set[date] = set(scheduled_by_coordinate.values())
+        occupied: set[date] = {value for coordinate, value in retained_dates.items() if coordinate in new_by_coordinate}
         mapped_dates: dict[tuple[int, int], date] = {}
         for coordinate in sorted(new_by_coordinate):
-            old_date = scheduled_by_coordinate.get(coordinate)
+            old_date = retained_dates.get(coordinate)
             if old_date is not None:
                 mapped_dates[coordinate] = old_date
                 continue
@@ -9286,14 +9621,39 @@ class PlanService:
                 mapped_dates[coordinate] = explicit_extension_date
                 occupied.add(explicit_extension_date)
                 continue
-            while (
+            last = None
+            if bounded_calendar:
+                first, last = plan_week_range(revised, old_activation.requested_start_date, coordinate[0])
+                previous = [value for key, value in mapped_dates.items() if key[0] == coordinate[0] and key < coordinate]
+                following = [value for key, value in retained_dates.items() if key[0] == coordinate[0] and key > coordinate and key in new_by_coordinate]
+                cursor = max(first, today, max(previous, default=first - timedelta(days=1)) + timedelta(days=1))
+                if following:
+                    last = min(last, min(following) - timedelta(days=1))
+            while (last is None or cursor <= last) and (
                 not holidays.is_execution_date(cursor, execution_weekdays, excluded)
                 or cursor in occupied
             ):
                 cursor += timedelta(days=1)
+            if last is not None and cursor > last:
+                raise ProviderUnavailableError(
+                    f"第 {coordinate[0]} 周没有可容纳新增执行日的日期，未发布调整，原安排保持不变。",
+                    code="ADJUSTMENT_WEEK_DATES_EXHAUSTED",
+                )
             mapped_dates[coordinate] = cursor
             occupied.add(cursor)
             cursor += timedelta(days=1)
+
+        if revised.schedule_type == "CALENDAR":
+            requirement = self.session.get(RequirementVersion, goal.current_requirement_version_id)
+            deadline = snapshot_deadline(
+                requirement.snapshot_json if requirement else {}, timezone=goal.timezone, require_resolved=True,
+            )
+            if deadline and max(mapped_dates.values()) > deadline:
+                raise ProviderUnavailableError(
+                    "调整后的实际日期超过已确认的截止日，未发布调整，原安排保持不变。",
+                    code="ADJUSTMENT_DEADLINE_EXCEEDED",
+                    diagnostic=f"new_end={max(mapped_dates.values()).isoformat()}, deadline={deadline.isoformat()}",
+                )
 
         activation = PlanActivation(
             goal_id=goal.id,

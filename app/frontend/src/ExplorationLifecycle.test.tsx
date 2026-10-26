@@ -38,6 +38,16 @@ it('restores a pending exploration window as an unpublished draft', async () => 
   expect(screen.queryByText('这是你正在执行的计划')).not.toBeInTheDocument()
 })
 
+it('confirms an initial exploration plan through preparation before allowing renewal actions', async () => {
+  const initial = { ...workspace('a', true), status: 'PLAN_REVIEW' }
+  vi.spyOn(globalThis, 'fetch').mockImplementation(input => Promise.resolve(response(
+    String(input) === '/api/goals/a/plan' ? initial : [])))
+  show()
+  expect(await screen.findByRole('button', { name: '确认计划，准备开始 →' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '确认并接入执行' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '放弃草案' })).not.toBeInTheDocument()
+})
+
 it('keeps the completed route readable without returning to initial planning', async () => {
   const completed = workspace('a')
   completed.status = 'COMPLETED'

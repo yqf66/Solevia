@@ -18,7 +18,8 @@ it('distinguishes diagnostics from an applicable draft and shows source progress
   expect(screen.getByText('积压任务与阻塞原因')).toBeInTheDocument()
   expect(screen.getByText(/剩余估时 30 分钟.*原日期 2035-09-07/)).toBeInTheDocument()
   expect(screen.getByText('可用时间不足以承接这项任务。')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: '查看并补充可用时间' })).toHaveAttribute('href', '/goals/goal-1/prepare')
+  expect(screen.queryByRole('link')).not.toBeInTheDocument()
+  expect(screen.getByText(/进入恢复讨论并说明可增加的日期和分钟数/)).toBeInTheDocument()
   expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
 })
 

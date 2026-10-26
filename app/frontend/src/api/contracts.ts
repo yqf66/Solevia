@@ -448,6 +448,9 @@ export type PlanAdjustmentProposal = {
   can_apply: boolean
 }
 
+export type RecoveryAvailabilityOffer = { from_date: string; extra_minutes_per_execution_day: number }
+export type RecoveryPreviewOptions = { action: 'SPREAD' | 'DAILY_LIMIT' | 'MOVE_TASK'; daily_limit_minutes?: number; source_task_id?: string; target_date?: string }
+
 export type PlanAdjustmentPreview = {
   id: string
   goal_id: string
@@ -456,6 +459,15 @@ export type PlanAdjustmentPreview = {
   fingerprint: string
   plan: Record<string, unknown>
   schedule: Array<{ title: string; date: string; start: string | null; end: string | null; minutes: number; state: string }>
+  comparison?: {
+    before: Array<{ source_task_id: string; title: string; date: string; minutes: number; start: string | null; end: string | null }>
+    after: Array<{ title: string; date: string; minutes: number; start: string | null; end: string | null; state: string; source_task_id: string | null; source_date: string | null; source_minutes: number | null; source_start: string | null; source_end: string | null; change_kind: 'RECOVERED' | 'MOVED' | 'MODIFIED' | 'UNCHANGED' | 'UNMATCHED' }>
+    anchor_date: string
+    original_end_date: string
+    proposed_end_date: string
+    backlog_minutes: number
+    backlog_tasks: number
+  } | null
   unallocated_count: number
   reason_codes: AdjustmentReasonCode[]
   schedule_plan?: Array<{ scheduled_date: string; assignments: Array<{ title: string; start_local: string; end_local: string }> }>
@@ -928,8 +940,12 @@ export type EffectiveWorkspaceAvailability = {
   windows: Array<{ weekday: number; start_local: string; end_local: string; valid_from: string | null; valid_to: string | null }>
 }
 
+export type ModelCatalog = {
+  model: string; models: Array<{ id: string }>; available: boolean; connection_id: string; message: string
+}
+
 export type ModelConnection = {
-  provider: 'fake' | 'deepseek' | 'openai_compatible'
+  provider: 'fake' | 'deepseek' | 'openai_compatible' | 'codex'
   base_url: string
   proxy_url: string
   model: string

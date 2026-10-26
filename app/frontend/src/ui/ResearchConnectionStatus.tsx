@@ -5,6 +5,7 @@ import './ResearchProgress.css'
 const labels: Record<string, string> = { search_reader: '搜索与网页读取', bge: 'BGE 排序' }
 
 export function ResearchConnectionStatus({ connection }: { connection: ReturnType<typeof useWebResearch> }) {
+  if (!connection.available) return null
   if (!connection.enabled) return connection.everEnabled
     ? <p className="research-connection" role="status">联网已关闭；组件闲置 10 分钟后释放。</p> : null
   const components = Object.entries(connection.readiness?.components ?? {})

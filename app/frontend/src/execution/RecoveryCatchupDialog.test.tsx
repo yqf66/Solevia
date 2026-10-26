@@ -58,6 +58,26 @@ it('requires a new scoped preview after editing and submits only the selected so
   await waitFor(() => expect(applyRecoveryCatchup).toHaveBeenCalledWith('goal', 'preview-first', false))
 })
 
+it('collects a bounded extra-time offer inside the dialog without navigating to preparation', async () => {
+  const sample = { ...preview(undefined, false), original_end_date: '2035-09-20', time_preview: {
+    mode: 'FLEXIBLE' as const, timezone: 'Asia/Shanghai', before: [], after: [{ title: '阅读论文', date: '2035-09-10', minutes: 10,
+      start: null, end: null, state: 'UNALLOCATED' as const, allowed_actions: ['ADJUST_AVAILABILITY' as const] }],
+    diagnostics_only: true, unallocated_count: 1, fingerprint: 'time',
+  } }
+  vi.mocked(previewRecoveryCatchup).mockResolvedValue(sample)
+  const onRequestAI = vi.fn()
+  mount(onRequestAI)
+  fireEvent.click(await screen.findByRole('button', { name: '补充我能多投入的时间' }))
+  expect(screen.queryByRole('link', { name: '查看并补充可用时间' })).not.toBeInTheDocument()
+  fireEvent.change(screen.getByLabelText('从哪天起'), { target: { value: '2035-09-10' } })
+  fireEvent.change(screen.getByLabelText('每个执行日额外分钟'), { target: { value: '15' } })
+  fireEvent.click(screen.getByRole('button', { name: '按这个投入讨论补回方案' }))
+  await waitFor(() => expect(onRequestAI).toHaveBeenCalledWith(sample, expect.stringContaining('最多额外投入 15 分钟'), {
+    from_date: '2035-09-10', extra_minutes_per_execution_day: 15,
+  }))
+  expect(applyRecoveryCatchup).not.toHaveBeenCalled()
+})
+
 it('empty selection cannot preview or apply and cancel does not publish', async () => {
   vi.mocked(previewRecoveryCatchup).mockResolvedValue(preview())
   const { onClose } = mount()

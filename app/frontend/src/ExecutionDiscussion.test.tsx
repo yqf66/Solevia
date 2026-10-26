@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ExecutionDiscussionDock, isExecutionDiscussionPath } from './App'
@@ -29,10 +29,69 @@ const emptyWorkspace = {
 
 afterEach(() => {
   cleanup()
+  vi.useRealTimers()
   vi.restoreAllMocks()
 })
 
 describe('ExecutionDiscussionDock', () => {
+  it.each([true, false])('never repeats a message or plan request when closed during or after generation (pending=%s)', async closeWhilePending => {
+    let finish!: (value: api.ExecutionDiscussionWorkspace) => void
+    const pending = new Promise<api.ExecutionDiscussionWorkspace>(resolve => { finish = resolve })
+    const read = vi.spyOn(api, 'getExecutionDiscussion').mockResolvedValue(emptyWorkspace as unknown as api.ExecutionDiscussionWorkspace)
+    const send = vi.spyOn(api, 'sendExecutionDiscussionMessage').mockReturnValue(pending)
+    const revise = vi.spyOn(api, 'revisePlan')
+    const retry = vi.spyOn(api, 'retryExecutionDiscussion')
+    const apply = vi.spyOn(api, 'applyPlanAdjustment')
+    const preview = vi.spyOn(api, 'previewPlanAdjustment')
+    render(<MemoryRouter><ExecutionDiscussionDock goalId="goal-1" /></MemoryRouter>)
+    await waitFor(() => expect(read).toHaveBeenCalledTimes(1))
+    fireEvent.click(screen.getByRole('button', { name: '与 Solevia 讨论当前执行' }))
+    fireEvent.change(screen.getByRole('textbox', { name: '执行讨论内容' }), { target: { value: '我想减轻一些强度，先讨论一下。' } })
+    fireEvent.submit(screen.getByRole('textbox', { name: '执行讨论内容' }).closest('form')!)
+    expect(send).toHaveBeenCalledTimes(1)
+    if (closeWhilePending) fireEvent.click(screen.getByRole('button', { name: '关闭执行讨论' }))
+    vi.useFakeTimers()
+    await act(async () => { finish({ ...emptyWorkspace, messages: [
+      { id: 'u', role: 'USER', content: '我想减轻一些强度，先讨论一下。', generation_status: 'SUCCEEDED' },
+      { id: 'a', role: 'ASSISTANT', content: '可以先讨论调整建议，当前计划尚未改变。'.repeat(40), generation_status: 'SUCCEEDED' },
+    ], latest_analysis: { intents: [], adjustment_signal: { recommended: true, reason: '时间变化', request: '减轻强度' } },
+    } as unknown as api.ExecutionDiscussionWorkspace) })
+    if (closeWhilePending) fireEvent.click(screen.getByRole('button', { name: '与 Solevia 讨论当前执行' }))
+    await act(() => vi.advanceTimersByTimeAsync(2000))
+    for (let index = 0; index < 3; index++) {
+      fireEvent.click(screen.getByRole('button', { name: '关闭执行讨论' }))
+      fireEvent.click(screen.getByRole('button', { name: '与 Solevia 讨论当前执行' }))
+      expect(screen.queryByRole('button', { name: '显示全文' })).not.toBeInTheDocument()
+      expect(document.querySelector('.assistant-answer')).toHaveAttribute('aria-busy', 'false')
+      expect(screen.getByRole('button', { name: '生成可确认的调整建议' })).toBeVisible()
+    }
+    expect(send).toHaveBeenCalledTimes(1)
+    expect(read).toHaveBeenCalledTimes(1)
+    expect(revise).not.toHaveBeenCalled()
+    expect(retry).not.toHaveBeenCalled()
+    expect(preview).not.toHaveBeenCalled()
+    expect(apply).not.toHaveBeenCalled()
+  })
+
+  it('preserves the draft and conversation when expanding and restoring the companion panel', async () => {
+    const read = vi.spyOn(api, 'getExecutionDiscussion').mockResolvedValue({
+      ...emptyWorkspace,
+      messages: [{ id: 'answer-1', role: 'ASSISTANT', content: '先完成今天的观察记录。', generation_status: 'SUCCEEDED' }],
+    } as unknown as api.ExecutionDiscussionWorkspace)
+    render(<MemoryRouter><ExecutionDiscussionDock goalId="goal-1" /></MemoryRouter>)
+    fireEvent.click(screen.getByRole('button', { name: '与 Solevia 讨论当前执行' }))
+    expect(await screen.findByText('先完成今天的观察记录。')).toBeVisible()
+    fireEvent.change(screen.getByRole('textbox', { name: '执行讨论内容' }), { target: { value: '还没发送的观察问题' } })
+    fireEvent.click(screen.getByRole('button', { name: '展开执行讨论' }))
+    expect(screen.getByLabelText('执行讨论')).toHaveClass('is-expanded')
+    expect(screen.getByRole('textbox', { name: '执行讨论内容' })).toHaveValue('还没发送的观察问题')
+    fireEvent.click(screen.getByRole('button', { name: '收起执行讨论' }))
+    expect(screen.getByLabelText('执行讨论')).not.toHaveClass('is-expanded')
+    expect(screen.getByRole('textbox', { name: '执行讨论内容' })).toHaveValue('还没发送的观察问题')
+    expect(screen.getByText('先完成今天的观察记录。')).toBeVisible()
+    expect(read).toHaveBeenCalledTimes(1)
+  })
+
   it('does not navigate back to an old goal when its adjustment finishes after switching', async () => {
     let finish!: (workspace: api.PlanWorkspace) => void
     const pending = new Promise<api.PlanWorkspace>(resolve => { finish = resolve })

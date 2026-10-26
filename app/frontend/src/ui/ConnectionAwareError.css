@@ -1,0 +1,8 @@
+.model-connection-reply { display:flex; align-items:flex-start; gap:10px; padding:14px 16px; margin:12px 0; border:1px solid #f0d9b0; background:#fffbf3; border-radius:14px; color:#714c1f; font-size:13px; line-height:1.65; }
+.model-connection-reply > svg { flex:none; margin-top:3px; color:#b47a27; }
+.model-connection-reply strong { font-size:13px; font-weight:600; }
+.model-connection-reply p { margin:3px 0 8px; font-size:13px; line-height:1.65; }
+.model-connection-actions { display:flex; flex-wrap:wrap; gap:8px 18px; }
+.model-connection-actions button { padding:0; border:0; background:transparent; color:#245cc3; font-size:12px; cursor:pointer; }
+.model-connection-actions button:hover { text-decoration:underline; }
+.model-connection-actions button:focus-visible { outline:2px solid #245cc3; outline-offset:4px; border-radius:2px; }

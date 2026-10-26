@@ -77,6 +77,19 @@ class MaterialAnalysisService:
             latest.setdefault(revision.source_id, revision)
         if any(source_id not in latest or latest[source_id].status != "READY" for source_id in source_ids):
             raise HTTPException(409, "所选资料尚未完成解析，请解析完成后发送")
+        from planner_api.config import get_settings
+        if get_settings().llm_provider == "codex":
+            # Codex selects ranges through request-scoped read-only tools; avoid
+            # a second model-driven retrieval/planning chain before its answer.
+            return {
+                "goal_id": goal_id, "query": query, "source_ids": list(dict.fromkeys(source_ids)),
+                "sources": [{"source_id": source.id, "title": source.title, "relative_path": source.relative_path or ""} for source in
+                    self.session.scalars(select(MaterialSource).where(MaterialSource.id.in_(source_ids)))],
+                "revisions": [{"source_id": row.source_id, "revision_id": row.id,
+                               "warnings": (row.metadata_json or {}).get("warnings", [])} for row in latest.values()],
+                "passages": [], "reading_rules": MATERIAL_READING_RULES,
+                "note": "请调用资料读取工具取得正文后回答；目录不代表已读全文。",
+            }
         # The request Schema bounds the standalone analysis UI. Conversation
         # questions may be longer: pass the complete text to query planning,
         # rather than quietly deleting a trailing exclusion or second topic.

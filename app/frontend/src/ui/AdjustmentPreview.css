@@ -1,0 +1,63 @@
+.app-shell .adjustment-preview { display: grid; gap: 18px; min-width: 0; padding: 18px; border: 1px solid #d9e5fb; border-radius: 16px; background: #fff; font-size: 13px; line-height: 1.55; }
+.app-shell .adjustment-preview > header { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.app-shell .adjustment-preview h3 { margin: 3px 0 0; font-size: 19px; color: var(--text); }
+.app-shell .adjustment-preview header span,.app-shell .adjustment-preview small { color: var(--muted); font-size: 12px; }
+.app-shell .adjustment-draft-status { flex-shrink: 0; padding-top: 4px; }
+.app-shell .adjustment-change-facts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.app-shell .adjustment-change-facts > div { display: grid; align-content: start; gap: 5px; padding: 13px; border-radius: 11px; background: #f0f6ff; }
+.app-shell .adjustment-change-facts > div:nth-child(2) { background: #eaf8f2; }
+.app-shell .adjustment-change-facts > div:nth-child(3) { background: #fff6e9; }
+.app-shell .adjustment-change-facts span { color: var(--muted); font-size: 12px; }
+.app-shell .adjustment-change-facts strong { font-size: 16px; }
+.app-shell .adjustment-load-comparison { display: grid; gap: 0; }
+.app-shell .adjustment-load-comparison > strong { margin-bottom: 6px; }
+.app-shell .adjustment-load-comparison > div { display: grid; grid-template-columns: 104px 146px minmax(0,1fr); align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid #edf1f7; font-variant-numeric: tabular-nums; }
+.app-shell .adjustment-load-comparison b { margin: 0 8px; color: #8da0b8; }
+.app-shell .adjustment-preview .adjustment-habit-note { padding: 10px 12px; border-radius: 8px; background: #fff8ec; color: #80613a; }
+.app-shell .adjustment-preview p { margin: 0; font-size: 12px; line-height: 1.65; }
+.app-shell .adjustment-row-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.app-shell .adjustment-row-heading button { border: 0; background: transparent; color: var(--accent); cursor: pointer; font-size: 12px; }
+.app-shell .adjustment-change-list { display: grid; gap: 10px; }
+.app-shell .adjustment-change-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(260px,.95fr); gap: 12px; padding: 13px; border: 1px solid #e3eaf3; border-radius: 11px; background: #fff; }
+.app-shell .adjustment-change-row.is-recovered { background: #f2faf7; border-color: #d9eee5; }
+.app-shell .adjustment-change-row > div:first-child { display: grid; align-content: start; gap: 4px; min-width: 0; }
+.app-shell .adjustment-change-row strong { font-size: 13px; overflow-wrap: anywhere; }
+.app-shell .adjustment-change-label { color: #327760; font-size: 11px; }
+.app-shell .adjustment-date-pair { display: grid; grid-template-columns: minmax(0,1fr) 14px minmax(0,1fr); align-items: center; gap: 9px; font-variant-numeric: tabular-nums; }
+.app-shell .adjustment-date-pair > span { display: grid; gap: 3px; }
+.app-shell .adjustment-date-pair > b { color: #8da0b8; }
+.app-shell .adjustment-preview-notice { color: var(--muted); }
+.app-shell .adjustment-preview-actions { display: grid; gap: 8px; padding-top: 4px; }
+.app-shell .adjustment-preview-actions > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.app-shell .adjustment-preview-actions button { padding: 8px 10px; border: 1px solid #dbe5f5; border-radius: 8px; background: #f7faff; color: #315b99; font-size: 12px; cursor: pointer; transition: background .15s,transform .15s; }
+.app-shell .adjustment-preview-actions button:hover { background: #eaf2ff; transform: translateY(-1px); }
+.app-shell .adjustment-request-editor { display: grid; gap: 14px; padding: 14px; border-radius: 10px; background: #f5f8fe; }
+.app-shell .adjustment-request-editor form { display: flex; align-items: end; flex-wrap: wrap; gap: 10px; }
+.app-shell .adjustment-request-editor label { display: grid; gap: 5px; flex: 1; min-width: 150px; font-size: 12px; }
+.app-shell .adjustment-request-editor input,.app-shell .adjustment-request-editor select { width: 100%; min-width: 0; padding: 8px; border: 1px solid #d7e2f4; border-radius: 7px; background: #fff; font-size: 13px; }
+.app-shell .adjustment-time-controls { grid-column: 1/-1; font-size: 12px; }
+.app-shell .adjustment-time-controls > div { display: flex; gap: 12px; margin: 8px 0; }
+.app-shell .adjustment-time-controls label { display: grid; gap: 4px; width: 150px; }
+.app-shell .adjustment-preview button:disabled { opacity: .55; cursor: wait; }
+.app-shell .recovery-time-review ul { max-height: none; overflow: visible; margin: 0; }
+.recovery-step-note { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.recovery-availability-editor { display: grid; gap: 12px; padding: 16px; border-radius: 12px; background: #f0f6ff; }
+.recovery-availability-editor p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.recovery-availability-editor > div { display: flex; flex-wrap: wrap; gap: 12px; }
+.recovery-availability-editor label { display: grid; gap: 5px; flex: 1; min-width: 160px; font-size: 12px; }
+.recovery-availability-editor input { min-width: 0; padding: 9px; border: 1px solid #c9d9f5; border-radius: 8px; background: #fff; }
+.recovery-availability-editor > footer { display: flex; flex-wrap: wrap; gap: 10px; justify-content: end; }
+@media (max-width: 720px) {
+  .app-shell .adjustment-preview { padding: 13px; gap: 15px; }
+  .app-shell .adjustment-preview > header { flex-direction: column; gap: 3px; }
+  .app-shell .adjustment-preview h3 { font-size: 18px; }
+  .app-shell .adjustment-change-facts { grid-template-columns: 1fr; gap: 6px; }
+  .app-shell .adjustment-change-facts > div { grid-template-columns: 100px minmax(0,1fr); gap: 3px 8px; padding: 10px; }
+  .app-shell .adjustment-change-facts small { grid-column: 2; }
+  .app-shell .adjustment-load-comparison > div { grid-template-columns: 96px minmax(0,1fr); gap: 4px 8px; }
+  .app-shell .adjustment-load-comparison > div > small { grid-column: 1/-1; }
+  .app-shell .adjustment-change-row { grid-template-columns: 1fr; }
+  .app-shell .adjustment-preview-actions button { min-height: 40px; }
+  .app-shell .adjustment-row-heading { align-items: start; }
+}
+@media (prefers-reduced-motion: reduce) { .app-shell .adjustment-preview-actions button { transition: none; transform: none; } }

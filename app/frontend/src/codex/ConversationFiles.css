@@ -1,0 +1,37 @@
+/* The request stays inside the original answer column; no secondary workspace. */
+.conversation-files { max-width: 520px; margin-top: 12px; color: var(--text, #27364b); font-size: 13px; }
+.conversation-file-consent { padding: 12px 14px; border: 1px solid var(--border, #e4e8ed); border-radius: 10px; background: var(--surface-subtle, #f7f9fb); }
+.conversation-file-question { display: flex; gap: 8px; align-items: flex-start; }
+.conversation-file-question > svg { flex: none; margin-top: 2px; color: var(--muted, #617084); }
+.conversation-file-question > div { min-width: 0; }
+.conversation-file-question strong { font-size: 13px; font-weight: 600; }
+.conversation-file-question p { margin: 3px 0 0; color: var(--muted, #617084); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conversation-file-choices { display: flex; gap: 7px; margin: 10px 0 0 24px; align-items: center; flex-wrap: wrap; }
+.conversation-files button { font: inherit; cursor: pointer; }
+.conversation-file-choices button { min-height: 30px; padding: 3px 13px; border: 1px solid var(--border, #dfe5eb); border-radius: 6px; background: white; color: inherit; }
+.conversation-file-choices .file-consent-allow { color: white; background: #2f4358; border-color: #2f4358; }
+.conversation-file-choices .file-consent-reason { border: none; padding: 3px; background: transparent; color: var(--muted, #617084); font-size: 12px; }
+.conversation-files button:hover:not(:disabled) { filter: brightness(.94); }
+.conversation-files button:disabled { cursor: wait; opacity: .65; }
+.conversation-files button:focus-visible, .conversation-files input:focus-visible, .conversation-file-preview:focus-visible { outline: 2px solid #64859d; outline-offset: 3px; }
+.conversation-file-consent .file-consent-reason-input { box-sizing: border-box; width: 100%; min-width: 0; margin-top: 9px; padding: 6px 9px; border: 1px solid var(--border, #dfe5eb); border-radius: 6px; font: inherit; background: white; }
+.conversation-file-note { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; color: var(--muted, #617084); line-height: 1.6; overflow-wrap: anywhere; }
+.conversation-file-note button { border: none; padding: 0; background: none; color: inherit; text-decoration: underline; }
+.conversation-file-complete { display: flex; gap: 6px; align-items: center; margin: 0 0 7px; color: var(--muted, #617084); font-size: 12px; }
+.conversation-file-summary { margin: 0 0 8px; line-height: 1.6; overflow-wrap: anywhere; }
+.conversation-file-result { margin-top: 6px; border: 1px solid var(--border, #e4e8ed); border-radius: 8px; overflow: hidden; }
+.conversation-file-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; min-width: 0; }
+.conversation-file-row > svg { flex: none; color: var(--muted, #617084); }
+.conversation-file-row small { color: var(--muted, #617084); flex: none; font-size: 11px; font-variant-numeric: tabular-nums; }
+.conversation-file-name { display: flex; flex: 1; min-width: 0; gap: 6px; align-items: center; text-align: left; border: none; background: none; padding: 3px 0; color: inherit; }
+.conversation-file-name > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.conversation-file-name > svg { flex: none; }
+.conversation-file-download { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border: none; background: none; border-radius: 6px; color: inherit; }
+.conversation-file-preview { max-height: 260px; overflow: auto; margin: 0; padding: 12px; background: #f7f9fb; font: 12px/1.65 ui-monospace, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .conversation-file-consent { padding: 10px 12px; }
+  .conversation-file-choices { gap: 6px; margin-top: 8px; }
+  .conversation-file-choices button { min-height: 40px; }
+  .conversation-file-download { width: 40px; height: 40px; }
+  .conversation-file-name { min-height: 40px; }
+}

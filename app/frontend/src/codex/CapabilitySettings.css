@@ -1,0 +1,29 @@
+.capability-choice-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin: 16px 0; }
+.capability-choice-grid > label { display: grid; gap: 9px; padding: 15px; border: 1px solid #dce5f2; border-radius: 12px; background: #fff; cursor: pointer; transition: border-color .18s, background .18s; }
+.capability-choice-grid > label.is-selected { border-color: #7ca7f5; background: #f5f9ff; }
+.user-settings-panel .settings-form .capability-choice-grid label > span { display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-size: 13px; text-align: left; }
+.user-settings-panel .settings-form .capability-choice-grid input[type="checkbox"] { flex: 0 0 15px; width: 15px; height: 15px; min-height: 15px; margin: 0; padding: 0; accent-color: #2563eb; }
+.user-settings-panel .settings-form .capability-choice-grid label { grid-column: auto; margin-top: 0; }
+.capability-choice-grid small,.capability-space,.capability-install-note { font-size: 12px; line-height: 1.65; color: #566b86; }
+.capability-space { display: grid; gap: 4px; padding: 12px 0; }
+.capability-space strong { color: #233c5b; font-variant-numeric: tabular-nums; }
+.capability-network { display: flex; gap: 12px; margin: 8px 0 12px; }
+.capability-network label { display: grid; gap: 6px; flex: 1; font-size: 12px; }
+.capability-network select { width: 100%; min-height: 36px; border: 1px solid #dce5f2; border-radius: 8px; background: white; padding: 6px 9px; }
+.capability-progress { margin-top: 16px; padding: 18px; border: 1px solid #dce5f2; border-radius: 14px; background: #fff; }
+.capability-progress-heading { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; line-height: 1.6; }
+.capability-progress-heading > span { flex-shrink: 0; font-size: 12px; color: #566b86; font-variant-numeric: tabular-nums; }
+.capability-stage-list { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); margin: 20px 0 12px; gap: 4px; font-size: 11px; color: #63748b; }
+.capability-stage-list > span { padding-top: 8px; border-top: 3px solid #e6edf6; text-align: center; }
+.capability-stage-list .is-complete { border-color: #8bb2f6; color: #385980; }
+.capability-stage-list .is-current { border-color: #2563eb; color: #1655ca; font-weight: 600; }
+.capability-progress > progress { display: block; width: 100%; height: 8px; margin: 14px 0 20px; accent-color: #2563eb; }
+.capability-transfer { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
+.capability-transfer > span { display: grid; gap: 6px; }
+.capability-transfer small,.capability-progress > small { color: #566b86; font-size: 12px; line-height: 1.6; }
+.capability-transfer strong { font-size: 20px; font-weight: 550; color: #203b5e; font-variant-numeric: tabular-nums; }
+.capability-progress .button { margin-top: 14px; }
+.capability-logs { margin-top: 16px; font-size: 12px; }
+.capability-logs pre { max-height: 220px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; line-height: 1.6; color: #53647b; background: #f6f8fc; padding: 12px; border-radius: 8px; }
+@media(max-width:600px) { .capability-choice-grid { grid-template-columns: 1fr; } .capability-progress { padding: 12px; } .capability-progress-heading { flex-direction: column; gap: 3px; } .capability-transfer strong { font-size: 17px; } }
+@media(prefers-reduced-motion:reduce) { .capability-choice-grid > label { transition: none; } }

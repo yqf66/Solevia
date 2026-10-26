@@ -10,7 +10,7 @@ export function decideRecovery(goalId: string, decision: 'ALLOW_EXTENSION' | 'KE
 
 export function reviseRecoveryPlan(
   goalId: string,
-  input: { missed_dates: string[]; backlog_minutes: number; original_end_date: string; include_non_execution_days: boolean; preview_id?: string; instruction?: string; research_run_id?: string },
+  input: { missed_dates: string[]; backlog_minutes: number; original_end_date: string; include_non_execution_days: boolean; preview_id?: string; instruction?: string; research_run_id?: string; availability_offer?: import('./contracts').RecoveryAvailabilityOffer },
 ): Promise<PlanWorkspace> {
   return request(`/api/goals/${goalId}/execution/recovery/ai`, {
     method: 'POST',

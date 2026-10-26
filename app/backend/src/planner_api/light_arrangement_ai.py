@@ -49,7 +49,7 @@ class LightArrangementProvider:
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         key = settings.llm_api_key.get_secret_value().strip()
-        if not key:
+        if not settings.model_runtime_configured:
             raise ProviderUnavailableError("模型未配置，已保留可手动编辑的草案。")
         self.settings = settings
         suffix = "/responses" if settings.llm_provider == "deepseek" else "/chat/completions"

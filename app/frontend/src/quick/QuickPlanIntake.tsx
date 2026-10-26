@@ -1,4 +1,5 @@
 import { ArrowUpRight } from 'lucide-react'
+import { CodexComposerSettings, useCodexSelectionPending } from '../codex/CodexModelSettings'
 import { localDate } from '../lightApi'
 import { PlanningGuide } from '../ui/PlanningGuide'
 import './QuickPlanIntake.css'
@@ -15,7 +16,8 @@ type Props = {
 }
 
 export function QuickPlanIntake({ input, start, days, busy, onInput, onStart, onDays, onCreate }: Props) {
-  const invalid = busy || !input.trim() || !start || !Number.isInteger(days) || days < 1 || days > 14
+  const modelSelectionPending = useCodexSelectionPending()
+  const invalid = busy || modelSelectionPending || !input.trim() || !start || !Number.isInteger(days) || days < 1 || days > 14
   return <div className="quick-intake-layout">
     <form className="light-input quick-intake" onSubmit={event => { event.preventDefault(); if (!invalid) onCreate(true) }}>
       <div className="quick-input-heading"><label htmlFor="light-input">想做哪些事？</label><span>不用排序，先写下来</span></div>
@@ -31,6 +33,7 @@ export function QuickPlanIntake({ input, start, days, busy, onInput, onStart, on
         </div>
       </div>
       <footer className="light-actions quick-intake-actions">
+        <CodexComposerSettings disabled={busy} />
         <button className="text-button" type="button" disabled={invalid} onClick={() => onCreate(false)}>直接手动安排</button>
         <button className="button primary" type="submit" disabled={invalid}>{busy ? '正在保存…' : '整理成任务'}<ArrowUpRight size={17} aria-hidden="true" /></button>
       </footer>

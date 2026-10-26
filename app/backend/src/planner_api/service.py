@@ -342,6 +342,8 @@ class ClarificationService:
             }
         else:
             material_context = (user_message.metadata_json or {}).get("material_context")
+        from planner_api.codex_runtime.conversation_files import bind_file_message
+        bind_file_message(material_context, user_message)
         previous_assistant = self.session.scalar(
             select(Message)
             .where(

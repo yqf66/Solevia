@@ -40,6 +40,7 @@ class RouteContext:
     requirement_memory: dict[str, object] | None = None
     source_document: str | None = None
     research_context: dict[str, object] | None = None
+    material_context: dict[str, object] | None = None
 
 
 class RouteProvider(Protocol):
@@ -59,6 +60,7 @@ def _route_input(context: RouteContext) -> str:
             "requirement_memory": context.requirement_memory,
             "source_document": context.source_document,
             "research_context": context.research_context,
+            "material_context": context.material_context,
         },
         task_type="ROUTE_REVISION" if context.current_route else "ROUTE_DRAFT",
     )
@@ -86,7 +88,7 @@ class DeepSeekRouteProvider:
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError(
                 "Solevia 暂时无法开始整理路线，请稍后再试。",
             )
@@ -212,7 +214,7 @@ class OpenAICompatibleRouteProvider:
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError(
                 "Solevia 暂时无法开始整理路线，请稍后再试。",
             )
@@ -326,7 +328,7 @@ class NaturalRouteAuthor:
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError("Solevia 暂时无法开始整理路线，请稍后再试。")
         self.provider = settings.llm_provider
         self.endpoint = (
@@ -560,6 +562,10 @@ class FakeRouteProvider:
 def build_route_provider(settings: Settings) -> RouteProvider:
     if settings.llm_provider == "fake":
         return FakeRouteProvider()
+    if settings.llm_provider == "codex":
+        from planner_api.codex_runtime.providers import CodexRouteProvider
+
+        return CodexRouteProvider(settings)
     if settings.llm_provider == "deepseek":
         compiler: RouteProvider = DeepSeekRouteProvider(settings)
     else:

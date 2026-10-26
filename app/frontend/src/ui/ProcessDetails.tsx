@@ -2,6 +2,7 @@ import { Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import './ConversationPresentation.css'
+import { CodexGenerationStatus } from '../codex/CodexGenerationStatus'
 
 export type ProcessStep = { label: string; detail?: string }
 
@@ -44,6 +45,7 @@ export function OperationProgress({ active, label, scope, detail, error }: {
   const running = active || log.status === 'active'
   return <ProcessDetails active={running} attention={log.status === 'error'} title={running ? `${label} · ${log.seconds} 秒` : log.status === 'error' ? '处理未完成' : `处理完成 · ${log.seconds} 秒`} steps={log.steps}>
     {running && <p role="status">{detail || '正在等待处理结果…'}</p>}
+    <CodexGenerationStatus active={running} scope={scope} />
     {!running && error && <p className="inline-error">{error}</p>}
   </ProcessDetails>
 }

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ListChecks, House, Plus, Menu, X, Settings2 } from 'lucide-react'
 import { NavLink, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { UserSettingsPanel } from '../UserSettingsPanel'
+import { KernelSetupPrompt } from '../codex/KernelSelection'
 import { LightCreatePage, LightListPage, LightPlanPage } from '../LightArrangements'
 import { ClarificationPage } from '../planner/ClarificationPage'
 import { RouteReviewPage } from '../planner/RouteReviewPage'
@@ -40,6 +41,12 @@ export function WorkspaceShell() {
   const isPlanDrafting = /^\/goals\/[^/]+\/plan$/.test(location.pathname)
   const { goals, manualPlans, refreshGoals } = useWorkspaceGoals()
   const [userSettingsOpen, setUserSettingsOpen] = useState(false)
+  useEffect(() => {
+    const open = () => { setSettingsInitialTab('MODEL'); setUserSettingsOpen(true) }
+    window.addEventListener('solevia:open-model-settings', open)
+    return () => window.removeEventListener('solevia:open-model-settings', open)
+  }, [])
+  const [settingsInitialTab, setSettingsInitialTab] = useState<'PROFILE' | 'MODEL'>('PROFILE')
   const [navigationAt, setNavigationAt] = useState<string | null>(null)
   const navigationOpen = navigationAt === location.pathname
 
@@ -106,15 +113,17 @@ export function WorkspaceShell() {
           <GoalGroup title="规划中" goals={planningGoals} onChanged={refreshGoals} />
           <GoalGroup title="已结束" goals={endedGoals} onChanged={refreshGoals} initiallyOpen={false} />
           </div>
-          <button className={`sidebar-user-option${userSettingsOpen ? ' active' : ''}`} type="button" aria-expanded={userSettingsOpen} onClick={() => setUserSettingsOpen((current) => !current)}>
+          <KernelSetupPrompt onConfigure={() => { setSettingsInitialTab('MODEL'); setUserSettingsOpen(true) }} />
+          <button className={`sidebar-user-option${userSettingsOpen ? ' active' : ''}`} type="button" aria-expanded={userSettingsOpen} onClick={() => { setSettingsInitialTab('PROFILE'); setUserSettingsOpen((current) => !current) }}>
             <UserAvatar src={localProfile.avatar} /><span><strong>{localProfile.nickname}</strong><small>个人资料与日常偏好</small></span><Settings2 size={17} aria-hidden="true" />
           </button>
-          {userSettingsOpen && <UserSettingsPanel onClose={() => setUserSettingsOpen(false)} />}
+          {userSettingsOpen && <UserSettingsPanel initialTab={settingsInitialTab} onClose={() => setUserSettingsOpen(false)} />}
         </aside>
 
         <main id="workspace-content" tabIndex={-1} ref={contentRef} className={`content${isPlannerStage ? ' planner-content' : ''}${location.pathname === '/' ? ' home-content' : ''}`}>
           <Routes>
             <Route path="/" element={<TodayDashboard />} />
+            <Route path="/projects" element={<Navigate to="/" replace />} />
             <Route path="/new-agent" element={<CreateGoalPage />} />
             <Route path="/quick" element={<LightListPage />} />
             <Route path="/quick/new" element={<LightCreatePage />} />

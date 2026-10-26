@@ -511,6 +511,7 @@ class RouteDraftResult(BaseModel):
 
 class RouteFeedback(BaseModel):
     content: str = Field(min_length=1)
+    material_source_ids: list[str] | None = Field(default=None, max_length=50)
     web_research_enabled: bool = False
     research_run_id: str | None = None
     regenerate: bool = False
@@ -1016,13 +1017,23 @@ class RecoveryDecisionRequest(BaseModel):
     token: str = Field(min_length=1, max_length=64)
 
 
+class RecoveryPreviewOptions(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    action: Literal["SPREAD", "DAILY_LIMIT", "MOVE_TASK"]
+    daily_limit_minutes: int | None = Field(default=None, ge=5, le=1440)
+    source_task_id: str | None = Field(default=None, min_length=1, max_length=36)
+    target_date: date | None = None
+
+
 class PlanFeedback(BaseModel):
     content: str = Field(min_length=1)
+    material_source_ids: list[str] | None = Field(default=None, max_length=50)
     # Research is an explicit per-message opt-in. Keeping the default off
     # preserves the existing local-only discussion behavior.
     web_research_enabled: bool = False
     research_run_id: str | None = Field(default=None, min_length=1, max_length=36)
     regenerate: bool = False
+    recovery_options: RecoveryPreviewOptions | None = None
 
     @field_validator("content")
     @classmethod
@@ -1200,6 +1211,7 @@ class PlanAdjustmentPreviewRead(BaseModel):
     fingerprint: str
     plan: dict[str, Any]
     schedule: list[dict[str, Any]] = Field(default_factory=list)
+    comparison: dict[str, Any] | None = None
     unallocated_count: int = 0
     reason_codes: list[AdjustmentReasonCode] = Field(default_factory=list)
     created_at: datetime
@@ -1578,7 +1590,7 @@ class PlanRevisionRead(BaseModel):
 
 
 class PlanGenerationRequest(BaseModel):
-    mode: Literal["STANDARD", "DEEP"]
+    mode: Literal["STANDARD"] = "STANDARD"
 
 
 class PlanGenerationJobRead(BaseModel):
@@ -1597,7 +1609,7 @@ class PlanGenerationJobRead(BaseModel):
 
 
 class ExplorationWindowRequest(BaseModel):
-    mode: Literal["STANDARD", "DEEP"] = "STANDARD"
+    mode: Literal["STANDARD"] = "STANDARD"
 
 
 class PlanWindowRead(BaseModel):
@@ -2125,7 +2137,7 @@ class WorkspaceEffectiveAvailabilityRead(BaseModel):
 
 
 class ModelConnectionRead(BaseModel):
-    provider: Literal["fake", "deepseek", "openai_compatible"]
+    provider: Literal["fake", "deepseek", "openai_compatible", "codex"]
     base_url: str
     proxy_url: str
     model: str
@@ -2912,6 +2924,11 @@ class RecoveryCatchupApply(BaseModel):
     accept_unallocated: bool = False
 
 
+class RecoveryAvailabilityOffer(BaseModel):
+    from_date: date
+    extra_minutes_per_execution_day: int = Field(ge=5, le=480)
+
+
 class RecoveryAIRequest(BaseModel):
     missed_dates: list[date] = Field(default_factory=list)
     backlog_minutes: int = Field(ge=0)
@@ -2920,6 +2937,7 @@ class RecoveryAIRequest(BaseModel):
     preview_id: str | None = Field(default=None, min_length=1, max_length=36)
     instruction: str = Field(default="", max_length=1000)
     research_run_id: str | None = Field(default=None, min_length=1, max_length=36)
+    availability_offer: RecoveryAvailabilityOffer | None = None
 
 
 class RecoverySplitRequest(BaseModel):

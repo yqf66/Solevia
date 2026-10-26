@@ -89,7 +89,7 @@ class ExecutionCalendarProvider:
     def _generate(self, context, validate, result_type, instructions):
         settings = self.settings
         key = settings.llm_api_key.get_secret_value().strip()
-        if settings.llm_provider == "fake" or not key:
+        if settings.llm_provider == "fake" or not settings.model_runtime_configured:
             raise ProviderUnavailableError(
                 "智能日期排布需要可用的模型连接，你仍可以手动选择执行日期。",
                 code="CALENDAR_MODEL_NOT_CONFIGURED",

@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { X, UserRound, SlidersHorizontal, Clock3, PlugZap } from 'lucide-react'
 import { DialogBackdrop } from './ui/DialogBackdrop'
 import { TimePicker } from './ui/TimePicker'
 import { ProfileEditor } from './profile/ProfileEditor'
+import { KernelConnectionSettings, selectKernel } from './codex/KernelSelection'
+import { invalidateApiModels } from './codex/ApiModelSettings'
+import { request } from './api/client'
+import type { ModelCatalog } from './api/contracts'
 import './profile/SettingsRefinement.css'
 import {
   getModelConnection,
@@ -27,14 +31,53 @@ const routineBlocks: Array<{ enabled: 'breakfast_enabled' | 'lunch_enabled' | 'n
   { enabled: 'dinner_enabled', start: 'dinner_start', end: 'dinner_end', label: '晚餐' },
 ]
 
-export function UserSettingsPanel({ onClose }: { onClose: () => void }) {
-  const [tab, setTab] = useState<Tab>('PROFILE')
+export function UserSettingsPanel({ onClose, initialTab = 'PROFILE' }: { onClose: () => void; initialTab?: Tab }) {
+  const [tab, setTab] = useState<Tab>(initialTab)
   const [profile, setProfile] = useState<WorkspaceScheduleProfile | null>(null)
   const [connection, setConnection] = useState<ModelConnection | null>(null)
   const [apiKey, setApiKey] = useState('')
+  const [catalog, setCatalog] = useState<ModelCatalog | null>(null)
+  const [catalogBusy, setCatalogBusy] = useState(false)
+  const catalogRevision = useRef(0)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+
+  function checkConnectionInput() {
+    if (!connection) return false
+    try {
+      const url = new URL(connection.base_url.trim())
+      if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) throw new Error()
+    } catch { setError('请填写完整的 Base URL，以 https:// 或 http:// 开头，地址中不要包含密钥、查询参数或登录信息。'); return false }
+    if (/\/(chat\/completions|responses|models)\/?$/.test(connection.base_url.trim())) {
+      setError('这里需要服务商的基础地址。请去掉末尾的 /chat/completions、/responses 或 /models 后重试。'); return false
+    }
+    if (connection.proxy_url.trim()) {
+      try { if (!['http:', 'https:'].includes(new URL(connection.proxy_url.trim()).protocol)) throw new Error() }
+      catch { setError('代理地址需以 http:// 或 https:// 开头；不使用代理时请留空。'); return false }
+    }
+    return true
+  }
+
+  useEffect(() => {
+    catalogRevision.current++
+    setCatalog(null); setCatalogBusy(false)
+  }, [connection?.provider, connection?.base_url, connection?.proxy_url, apiKey])
+
+  async function readModels() {
+    if (!connection || catalogBusy) return
+    if (!checkConnectionInput()) return
+    const revision = ++catalogRevision.current
+    setCatalogBusy(true); setError('')
+    try {
+      const result = await request<ModelCatalog>('/api/settings/model/catalog', { method: 'POST', body: JSON.stringify({
+        provider: connection.provider, base_url: connection.base_url, proxy_url: connection.proxy_url,
+        ...(apiKey.trim() ? { api_key: apiKey.trim() } : {}),
+      }) })
+      if (revision === catalogRevision.current) setCatalog(result)
+    } catch (caught) { if (revision === catalogRevision.current) setError(caught instanceof Error ? caught.message : '模型列表读取失败。') }
+    finally { if (revision === catalogRevision.current) setCatalogBusy(false) }
+  }
 
   useEffect(() => {
     let active = true
@@ -50,6 +93,8 @@ export function UserSettingsPanel({ onClose }: { onClose: () => void }) {
 
   async function saveModel() {
     if (!connection) return
+    if (!checkConnectionInput()) return
+    if (!apiKey.trim() && !connection.api_key_configured) { setError('请先填写服务商提供的 API Key，再保存并使用。'); return }
     setBusy(true); setError(''); setNotice('')
     try {
       const saved = await updateModelConnection({
@@ -59,7 +104,7 @@ export function UserSettingsPanel({ onClose }: { onClose: () => void }) {
         model: connection.model,
         ...(apiKey.trim() ? { api_key: apiKey.trim() } : {}),
       })
-      setConnection(saved); setApiKey(''); setNotice('模型连接配置已保存，新请求会立即使用。')
+      setConnection(saved); setApiKey(''); invalidateApiModels(); await selectKernel('api'); setNotice('API 配置已保存，已切换到自配置 API。首次对话会验证模型的实际调用权限。')
     } catch (caught) { setError(caught instanceof Error ? caught.message : '模型配置保存失败。') }
     finally { setBusy(false) }
   }
@@ -96,14 +141,17 @@ export function UserSettingsPanel({ onClose }: { onClose: () => void }) {
         <button className={tab === 'MODEL' ? 'active' : ''} type="button" onClick={() => { setTab('MODEL'); setNotice(''); setError('') }}><PlugZap size={16} />模型连接</button>
       </nav>
       <div className="user-settings-body">
-        {tab === 'PROFILE' ? <ProfileEditor /> : !profile || !connection ? !error && <p className="muted">正在读取设置…</p> : tab === 'MODEL' ? <div className="settings-form model-settings-form">
-          <label><span>接口类型</span><select value={connection.provider} onChange={(event) => setConnection({ ...connection, provider: event.target.value as ModelConnection['provider'] })}><option value="deepseek">DeepSeek Responses</option><option value="openai_compatible">OpenAI 兼容接口</option><option value="fake">本地测试模式</option></select><small>OpenAI 兼容接口使用 Chat Completions 协议。</small></label>
-          <label><span>Base URL</span><input value={connection.base_url} onChange={(event) => setConnection({ ...connection, base_url: event.target.value })} placeholder="https://api.example.com/v1" /></label>
-          <label><span>模型名称</span><input value={connection.model} onChange={(event) => setConnection({ ...connection, model: event.target.value })} placeholder="模型 ID" /></label>
-          <label><span>API Key</span><input type="password" autoComplete="new-password" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={connection.api_key_configured ? `已配置 · ${connection.api_key_hint}` : '输入 API Key'} /><small>留空会保留现有 Key；明文不会由接口回传。</small></label>
+        {tab === 'PROFILE' ? <ProfileEditor /> : !profile || !connection ? !error && <p className="muted">正在读取设置…</p> : tab === 'MODEL' ? <KernelConnectionSettings><div className="settings-form model-settings-form">
+          <div className="connection-quickstart"><strong>三步接入你的 API</strong><p>① 填写服务地址与 Key　② 读取或填写模型 ID　③ 保存并使用。之后可在对话框中随时切换模型。</p></div>
+          <label><span>接口类型</span><select value={connection.provider} onChange={(event) => setConnection({ ...connection, provider: event.target.value as ModelConnection['provider'] })}><option value="deepseek">DeepSeek Responses</option><option value="openai_compatible">OpenAI 兼容接口</option>{connection.provider === 'fake' && <option value="fake" disabled>请选择接口类型</option>}</select><small>OpenAI 兼容接口使用 Chat Completions 协议。</small></label>
+          <label><span>Base URL</span><input value={connection.base_url} onChange={(event) => setConnection({ ...connection, base_url: event.target.value })} placeholder="例如 https://api.example.com/v1" /><small>粘贴服务商提供的基础地址，通常以 /v1 结尾；无需附加 /chat/completions 或 /models。</small></label>
+          <label><span>模型名称</span><input list="api-provider-models" value={connection.model} onChange={(event) => setConnection({ ...connection, model: event.target.value })} placeholder="选择或填写模型 ID" /><datalist id="api-provider-models">{catalog?.models.map(item => <option key={item.id} value={item.id} />)}</datalist></label>
+          <label><span>API Key</span><input aria-label="API Key" type="password" autoComplete="new-password" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={connection.api_key_configured ? `已配置 · ${connection.api_key_hint}` : '输入 API Key'} /><small>留空会保留现有 Key；明文不会由接口回传。</small></label>
+          <div><button className="button" type="button" disabled={busy || catalogBusy || connection.provider === 'fake' || !connection.base_url.trim()} onClick={() => void readModels()}>{catalogBusy ? '正在读取…' : '读取可用模型'}</button><small>部分服务商不提供列表，可直接填写其文档中的模型 ID。读到列表代表列表接口可访问，不代表所有模型均有调用权限。</small>{catalog && <p role="status">{catalog.models.length ? `已读取 ${catalog.models.length} 个模型。` : ''}{catalog.message}</p>}</div>
+          <details className="connection-guide"><summary>配置后无法使用，先检查什么？</summary><ul><li>地址：使用服务商的 API 地址，避免填写官网、控制台或完整的聊天接口地址。</li><li>密钥与模型：检查 Key 是否有效、账号余额，以及是否开通所选模型；模型名称须与服务商提供的 ID 一致。</li><li>网络：确认服务商可访问；需要代理时在下方填写代理地址。Codex 自身的代理配置不会自动用于此处。</li></ul><p>保存配置不会发起付费对话；保存后发送一句简短消息验证即可。</p></details>
           <details><summary>代理设置（可选）</summary><label><span>代理 URL</span><input value={connection.proxy_url} onChange={(event) => setConnection({ ...connection, proxy_url: event.target.value })} placeholder="填写你自己的代理地址（可选）" /></label></details>
-          <button className="button primary" type="button" disabled={busy || !connection.base_url.trim() || !connection.model.trim()} onClick={() => void saveModel()}>{busy ? '保存中…' : '保存模型配置'}</button>
-        </div> : tab === 'ROUTINE' ? <div className="settings-form routine-settings-form">
+          <button className="button primary" type="button" disabled={busy || connection.provider === 'fake' || !connection.base_url.trim() || !connection.model.trim()} onClick={() => void saveModel()}>{busy ? '保存中…' : '保存并使用 API'}</button>
+        </div></KernelConnectionSettings> : tab === 'ROUTINE' ? <div className="settings-form routine-settings-form">
           <div className="settings-intro"><strong>一天的安排边界</strong><p>起床不等于立刻开始工作；“最早可安排”之前不会放入任务。</p></div>
           <div className="routine-boundary-grid">{boundaryFields.map(({ key, label }) => <label key={key}><span>{label}</span><TimePicker value={profile[key]} onChange={(event) => setProfile({ ...profile, [key]: event.target.value })} /></label>)}</div>
           <div className="routine-section-heading"><div><strong>固定活动</strong><small>关闭你没有的活动；启用后会从可用时间中扣除。</small></div></div>

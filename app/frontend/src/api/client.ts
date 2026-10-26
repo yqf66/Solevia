@@ -1,3 +1,4 @@
+import { usesCodexKernel } from './kernelMode'
 import { clearLocalSession, localSession } from './localSession'
 
 
@@ -7,8 +8,10 @@ export async function request<T>(path: string, options?: RequestInit, timeoutMs?
   const forwardAbort = () => controller.abort(callerSignal?.reason)
   if (callerSignal?.aborted) forwardAbort()
   else callerSignal?.addEventListener('abort', forwardAbort, { once: true })
-  const generation = /\/(?:route|plan)\/(?:draft|revise|explain|details)|\/recovery\/ai/.test(path)
-  const limit = timeoutMs ?? (generation ? 600000 : (!options?.method || options.method === 'GET') ? 45000 : 180000)
+  const generation = /\/(?:route|plan)\/(?:draft|revise|explain|details|adjustment\/(?:preview|apply))|\/recovery\/ai|\/messages(?:\/retry)?$|\/discussion\/messages$/.test(path)
+  const codexGeneration = generation && usesCodexKernel()
+  const limit = codexGeneration ? Math.max(timeoutMs ?? 0, 21600000)
+    : timeoutMs ?? (generation ? 600000 : (!options?.method || options.method === 'GET') ? 45000 : 180000)
   let timedOut = false
   const timer = setTimeout(() => { timedOut = true; controller.abort() }, limit)
   try {
@@ -50,10 +53,18 @@ async function requestWithoutDeadline<T>(path: string, options?: RequestInit): P
     } catch {
       detail = null
     }
+    if (detail && typeof detail === 'object' && (detail as { code?: unknown }).code === 'MODEL_CONNECTION_REQUIRED') {
+      const error = new Error(String((detail as { message?: unknown }).message || '还没有连接模型。请先配置 API 或连接本机 Codex。')) as Error & { code: string }
+      error.code = 'MODEL_CONNECTION_REQUIRED'
+      throw error
+    }
     if (detail && typeof detail === 'object' && (detail as { code?: unknown }).code === 'RECOVERY_DECISION_REQUIRED') {
       throw new Error(String((detail as { message?: unknown }).message || '请先处理未完成任务，或明确从今天重新开始。'))
     }
     const knownErrors: Record<string, string> = {
+      '请先保存 API 地址、模型和密钥，再切换到自配置 API。': '请先保存 API 地址、模型和密钥，再切换到自配置 API。',
+      '当前还有生成或资料研究在进行，请等待完成后再切换连接方式。': '当前还有生成或资料研究在进行，请等待完成后再切换连接方式。',
+      'Codex 尚未连接，请先完成本机安装与登录，再点击「检测并连接」。': 'Codex 尚未连接，请先完成本机安装与登录，再点击「检测并连接」。',
       '调整范围内没有尚未开始且日期不早于今天的任务。原计划和建议已保留，请先恢复逾期任务，或重新选择后续任务。': '调整范围内没有尚未开始且日期不早于今天的任务。原计划和建议已保留，请先恢复逾期任务，或重新选择后续任务。',
       'No requirement draft exists': '暂时没有找到整理好的目标，请刷新页面后重试。',
       'Requirement is not awaiting review': '目标内容已经发生变化，请刷新页面查看最新结果。',
@@ -73,6 +84,7 @@ async function requestWithoutDeadline<T>(path: string, options?: RequestInit): P
       throw new Error(knownErrors[detail])
     }
     if (response.status === 503 && typeof detail === 'string') {
+      if (path.startsWith('/api/codex/')) throw new Error(detail)
       throw new Error('Solevia 暂时没有得到完整结果，你已经填写和确认的内容仍然保留，可以稍后重试。')
     }
     if (detail && typeof detail === 'object' && 'message' in detail) {

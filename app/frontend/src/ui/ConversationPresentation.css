@@ -1,4 +1,9 @@
-.assistant-answer { min-width: 0; overflow-wrap: anywhere; line-height: 1.75; }
+.assistant-answer { min-width: 0; max-width: 100%; overflow-wrap: anywhere; line-height: 1.75; }
+/* Grid's automatic minimum otherwise lets a wide answer grow the conversation
+   itself, hiding the table's scrollbar outside the phone viewport. */
+.conversation, .route-discussion-history, .execution-discussion-messages { grid-template-columns: minmax(0, 1fr); }
+.conversation .message, .route-discussion-history .discussion-message, .execution-discussion-messages article { min-width: 0; grid-template-columns: minmax(0, 1fr); overflow-wrap: anywhere; }
+.conversation-scroll, .route-discussion-history, .execution-discussion-scroll { overflow-x: hidden; }
 .assistant-answer > :first-child { margin-top: 0; }
 .assistant-answer > :last-child { margin-bottom: 0; }
 .assistant-answer p { white-space: normal; margin: 0 0 .85em; }
@@ -11,8 +16,17 @@
 .assistant-answer code { padding: .1em .3em; border-radius: 4px; background: var(--surface-subtle); font-size: .9em; }
 .assistant-answer pre code { padding: 0; background: transparent; }
 .assistant-answer blockquote { margin: .8em 0; padding-left: 12px; border-left: 3px solid var(--line); color: var(--muted); }
-.assistant-answer table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin-block: .8em; }
-.assistant-answer th, .assistant-answer td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
+.answer-table-block { min-width: 0; max-width: 100%; margin-block: .8em; }
+.answer-table-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; border: 1px solid var(--line); border-radius: 6px; }
+.answer-table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.assistant-answer table { width: max-content; min-width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.assistant-answer th, .assistant-answer td { min-width: 6rem; max-width: 26rem; border-bottom: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; white-space: normal; }
+.assistant-answer th { font-weight: 600; }
+.assistant-answer tr:last-child td { border-bottom: 0; }
+.assistant-answer .answer-table-hint { margin: 0 0 5px; font-size: 12px; color: var(--muted); }
+@media (max-width: 640px) {
+  .assistant-answer th:first-child, .assistant-answer td:first-child { position: sticky; left: 0; background: var(--surface, #fff); border-right: 1px solid var(--line); }
+}
 .assistant-answer a { color: var(--accent); text-underline-offset: 3px; }
 .answer-reveal-skip { padding: 0; margin-top: 6px; border: 0; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; }
 .process-details { width: fit-content; max-width: min(100%, 660px); min-width: 0; margin: 8px 0; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; justify-self: start; }

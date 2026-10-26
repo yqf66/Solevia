@@ -22,7 +22,7 @@ app/backend/.venv/Scripts/python -m pip install --no-deps -e app/backend
 ```powershell
 cd app/backend
 .venv/Scripts/python -m alembic upgrade head
-.venv/Scripts/python -m uvicorn planner_api.main:app --host 127.0.0.1 --port 8000
+.venv/Scripts/python -m uvicorn planner_api.solevia_main:app --host 127.0.0.1 --port 8000
 ```
 
 在第二个终端运行：

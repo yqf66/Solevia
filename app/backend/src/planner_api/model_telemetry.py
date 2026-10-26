@@ -255,20 +255,27 @@ def observed_model_call(transport, url, headers, payload, timeout):
         builtin = getattr(transport, "__module__", "") == "planner_api.ai" and getattr(
             transport, "__name__", ""
         ) in {"_urllib_json_transport", "proxied_transport"}
+        codex = getattr(transport, "__module__", "") in {
+            "planner_api.codex_runtime.business", "planner_api.codex_runtime.research"}
+        actual_timeout = timeout
+        actual_effort = payload.get("reasoning_effort") or (
+            (payload.get("reasoning") or {}).get("effort") if isinstance(payload.get("reasoning"), dict) else None
+        )
+        if codex and (budget := getattr(transport, "codex_timeout_seconds", None)):
+            actual_timeout = min(timeout, budget) if payload.get("solevia_budget_remaining") else budget
+            actual_effort = getattr(transport, "codex_reasoning_effort", actual_effort)
         node.pending = {
             "attempt": len(node.attempts) + 1,
             "status": "STARTED",
             "failure_category": None,
-            "transport_kind": "BUILTIN_HTTP" if builtin else "INJECTED",
+            "transport_kind": "CODEX_APP_SERVER" if codex else "BUILTIN_HTTP" if builtin else "INJECTED",
             "request_hash": _hash(payload),
             "model_hash": _hash(payload.get("model")),
-            "timeout_seconds": timeout,
+            "timeout_seconds": actual_timeout,
             "max_output_tokens": _number(
                 payload.get("max_output_tokens", payload.get("max_tokens"))
             ),
-            "reasoning_effort": (payload.get("reasoning") or {}).get("effort")
-            if isinstance(payload.get("reasoning"), dict)
-            else None,
+            "reasoning_effort": actual_effort,
         }
         # Only known policy labels; never emit an arbitrary field from the payload.
         if node.pending["reasoning_effort"] not in {

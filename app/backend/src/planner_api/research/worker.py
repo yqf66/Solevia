@@ -50,6 +50,9 @@ class ResearchWorker:
     def run_forever(self) -> None:
         while not self._stop.is_set():
             try:
+                if get_settings().llm_provider == "fake":
+                    self._stop.wait(1)
+                    continue
                 processed = self.run_once()
             except Exception:
                 logger.exception("Research worker iteration failed")

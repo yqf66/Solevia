@@ -43,7 +43,7 @@ describe('capacity conflict negotiation', () => {
     expect(screen.getByText(/还差 320 分钟/)).toBeInTheDocument()
     expect(screen.getByText(/每周可用 2 天/)).toBeInTheDocument()
     expect(screen.getByText(/每周可用 4 天/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /标准生成/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '继续生成计划' })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: '讨论是否可以延长期限' }))
     expect(screen.getByLabelText('你的选择或补充条件')).toHaveValue('请先核对期限是否可协商，不修改固定考试日。')
     expect(fetchMock.mock.calls.some(([input, init]) => init?.method === 'POST' && /plan\/(revise|adjustment|generation)/.test(String(input)))).toBe(false)

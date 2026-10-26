@@ -145,6 +145,9 @@ class ExecutionDiscussionService:
         if not regenerate or not user_message.metadata_json.get("material_context"):
             material_context = MaterialAnalysisService(self.session, build_material_analysis_provider(get_settings())).prepare_conversation_context(goal_id, user_message.content, material_source_ids) if material_source_ids else None
             user_message.metadata_json = {**user_message.metadata_json, "material_source_ids": list(dict.fromkeys(material_source_ids or [])), "material_context": material_context, "material_titles": [source["title"] for source in (material_context or {}).get("sources", [])]}
+        self.session.flush()
+        from planner_api.codex_runtime.conversation_files import bind_file_message
+        bind_file_message(user_message.metadata_json.get("material_context"), user_message)
         goal.last_active_at = utc_now()
         self.session.commit()
         # Persist the in-flight assistant turn before entering the provider.
@@ -315,6 +318,8 @@ class ExecutionDiscussionService:
             }
             self.session.commit()
         material_context = (user_message.metadata_json or {}).get("material_context")
+        from planner_api.codex_runtime.conversation_files import bind_file_message
+        bind_file_message(material_context, user_message)
         if material_context:
             for source_id in material_context.get("source_ids", []):
                 MaterialService(self.session)._active_link(goal.id, source_id)

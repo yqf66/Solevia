@@ -35,7 +35,7 @@ export function TodayDashboard() {
       </div>
     </header>
     <div className="today-opening">
-    <TodayFocus task={nextTask} settled={tasks.length > 0 && completed === tasks.length} loading={loading && !today} error={Boolean(error) && !today} onOpen={openTask} onCreate={() => navigate('/quick/new')} />
+    <TodayFocus task={nextTask} settled={tasks.length > 0 && completed === tasks.length} loading={loading && !today} error={Boolean(error) && !today} completed={completed} total={tasks.length} onOpen={openTask} onCreate={() => navigate('/quick/new')} />
     <TodayCalendar date={today?.date} pending={tasks.length - completed} completed={completed} minutes={remainingMinutes} />
     </div>
     {today && tasks.length > 0 && <div className="today-reading-line"><p>{completed === tasks.length ? '今天的任务已完成，给自己留一点余地。' : `今天还有 ${tasks.length - completed} 项任务，选一件开始推进。`}</p></div>}

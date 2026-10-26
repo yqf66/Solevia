@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -8,8 +8,8 @@ using System.Windows.Forms;
 [assembly:AssemblyTitle("Solevia")]
 [assembly:AssemblyProduct("Solevia · 足下")]
 [assembly:AssemblyCompany("Solevia")]
-[assembly:AssemblyCopyright("Solevia contributors")]
-[assembly:AssemblyVersion("0.1.6.0")]
+[assembly:AssemblyCopyright("Copyright (c) 2026 yqf66")]
+[assembly:AssemblyVersion("0.2.0.0")]
 namespace Solevia.Desktop {
     static class Program {
         [DllImport("user32.dll")]static extern bool SetProcessDPIAware();
@@ -22,11 +22,18 @@ namespace Solevia.Desktop {
                 if(args.Length==2&&args[0]=="--verify-package") {Package.Verify(File.ReadAllBytes(args[1]));return 0;}
                 if(args.Length==2&&args[0]=="--verify-target") {Package.RejectLinks(Path.GetFullPath(args[1]));return 0;}
                 if(args.Length==3&&args[0]=="--extract-package") {Package.Extract(args[1],s=>{});Bootstrap.Prepare(args[1],s=>{});File.WriteAllText(args[2],"verified");return 0;}
-                if(args.Length==2&&args[0]=="--render-installer") {
-                    using(var form=new InstallerForm(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Programs","Solevia"),Package.Embedded)) {
+                if(args.Length==2&&(args[0]=="--render-installer"||args[0]=="--render-capabilities")) {
+                    using(var form=new InstallerForm(Package.Embedded?Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Programs","Solevia"):root,Package.Embedded)) {
                         form.DiagnosticPath=args[1];
                         form.ShowInTaskbar=false;form.Opacity=0;
-                        var timer=new System.Windows.Forms.Timer {Interval=150};timer.Tick+=(s,e)=>{if(form.Ready){timer.Stop();form.PrepareScreenshot();form.Opacity=1;InstallerForm.DrawToBitmapAndSave(form,args[1]);form.Close();}};
+                        var timer=new System.Windows.Forms.Timer {Interval=150};timer.Tick+=(s,e)=>{if(form.Ready){timer.Stop();form.PrepareScreenshot(args[0]=="--render-capabilities"?1:0);form.Opacity=1;InstallerForm.DrawToBitmapAndSave(form,args[1]);form.Close();}};
+                        timer.Start();Application.Run(form);timer.Dispose();return 0;
+                    }
+                }
+                if(args.Length==2&&args[0]=="--render-host") {
+                    using(var form=new Host(root,false)) {
+                        form.ShowInTaskbar=false;form.Opacity=0;
+                        var timer=new System.Windows.Forms.Timer {Interval=300};timer.Tick+=(s,e)=>{timer.Stop();form.PreparePreview();form.Opacity=1;InstallerForm.DrawToBitmapAndSave(form,args[1]);form.ClosePreview();};
                         timer.Start();Application.Run(form);timer.Dispose();return 0;
                     }
                 }
@@ -41,7 +48,7 @@ namespace Solevia.Desktop {
                     if(!created){string url=Product.RunningUrl(root);if(url!=null)ProcessRunner.Open(url);else MessageBox.Show("Solevia 正在启动或管理中，请查看任务栏或托盘图标。","Solevia");return 0;}
                     try{Application.Run(new Host(root));}finally{mutex.ReleaseMutex();}
                 }return 0;
-            }catch(Exception error){if(args.Length>0&&(args[0].StartsWith("--verify-")||args[0]=="--extract-package"))return 1;
+            }catch(Exception error){if(args.Length>0&&(args[0].StartsWith("--verify-")||args[0]=="--extract-package"||args[0].StartsWith("--render-")))return 1;
                 MessageBox.Show(error.Message,"Solevia 提示",MessageBoxButtons.OK,MessageBoxIcon.Error);return 1;}
         }
     }

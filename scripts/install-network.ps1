@@ -68,8 +68,8 @@ function Assert-SoleviaInstallSpace {
     $tempDrive=[IO.DriveInfo]::new([IO.Path]::GetPathRoot([IO.Path]::GetTempPath()))
     $needed=$MinimumMiB*1MB
     if($rootDrive.Name -eq $tempDrive.Name){$needed+=2GB}
-    Write-Host ('[空间] 安装盘可用 {0:0.0} GiB；本次预检至少需要 {1:0.0} GiB（按所选能力最低估算）。' -f ($rootDrive.AvailableFreeSpace/1GB),($needed/1GB))
-    if($rootDrive.AvailableFreeSpace -lt $needed -or ($rootDrive.Name -ne $tempDrive.Name -and $tempDrive.AvailableFreeSpace -lt 2GB)) {throw '[DISK_SPACE] 可用空间不足：安装盘需容纳所选依赖，系统临时目录所在盘另需至少 2 GiB。'}
+    Write-Host ('[空间] 安装盘可用 {0:0.0} GiB；本次预检至少需要 {1:0.0} GiB（按所选能力上限估算，含临时空间）。' -f ($rootDrive.AvailableFreeSpace/1GB),($needed/1GB))
+    if($rootDrive.AvailableFreeSpace -lt $needed -or ($rootDrive.Name -ne $tempDrive.Name -and $tempDrive.AvailableFreeSpace -lt 2GB)) {throw ('[DISK_SPACE] 空间不足。安装盘 '+$rootDrive.Name+' 当前可用 '+[Math]::Round($rootDrive.AvailableFreeSpace/1GB,1)+' GiB，需预留 '+[Math]::Round($needed/1GB,1)+' GiB；临时盘 '+$tempDrive.Name+' 需另留 2 GiB（同盘已计入）。请换盘、清理空间或减少可选能力。')}
     try {
         $memory=Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
         Write-Host ('[内存] 本机物理内存约 {0:0.0} GiB，当前可用约 {1:0.0} GiB。磁盘预检与内存检查分开进行。' -f ($memory.TotalVisibleMemorySize/1MB),($memory.FreePhysicalMemory/1MB))

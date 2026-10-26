@@ -1,6 +1,6 @@
 {
   "name": "solevia-web-research",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Solevia local web search and page reading service.",
@@ -12,6 +12,9 @@
   "dependencies": {
     "open-websearch": "2.1.11",
     "playwright-core": "1.63.0"
+  },
+  "overrides": {
+    "zod": "4.6.6"
   },
   "engines": {
     "node": ">=20"

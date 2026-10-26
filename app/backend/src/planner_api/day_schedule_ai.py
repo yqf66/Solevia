@@ -117,7 +117,7 @@ class _HTTPDayScheduleProvider:
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError("Solevia 暂时无法请求当天排课建议，请稍后再试。")
         self.api_key = api_key
         self.model = settings.llm_model

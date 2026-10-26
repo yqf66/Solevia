@@ -68,7 +68,7 @@ export function applyAllocation(preview: AllocationPreview): Promise<UnifiedToda
 
 export function draftExplorationWindow(
   goalId: string,
-  mode: 'STANDARD' | 'DEEP' = 'STANDARD',
+  mode: 'STANDARD' = 'STANDARD',
 ): Promise<PlanWorkspace> {
   return request(`/api/goals/${goalId}/plan/exploration/draft`, {
     method: 'POST',

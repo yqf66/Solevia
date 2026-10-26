@@ -1,0 +1,429 @@
+[
+  {
+    "asset": "adjustment.webp",
+    "case": "beijing",
+    "capture": "adjustment-preview.png",
+    "size": [
+      1440,
+      1000
+    ],
+    "processing": "format compression only; synthetic data, no text/content edits",
+    "source_bytes": 116644,
+    "source_sha256": "a8178da0d14c7de5d94d24aa523be345a09e95b74b487096d4246395b9bd7516"
+  },
+  {
+    "asset": "calendar-beijing.webp",
+    "case": "beijing",
+    "captured_on": "2026-10-25",
+    "capture": "calendar-beijing.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 140444,
+    "source_sha256": "9bfe7a67bc36c3d564e3620ce32b15b463793cdc82d3c14c2de46bac957027b8"
+  },
+  {
+    "asset": "calendar.webp",
+    "case": "balcony",
+    "captured_on": "2026-10-25",
+    "capture": "calendar.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 143108,
+    "source_sha256": "c394b6f1baae628b6b05138c0d926c9f8a419f113c02afe7938d391fd18033b4"
+  },
+  {
+    "asset": "clarification-beijing.webp",
+    "case": "beijing",
+    "captured_on": "2026-10-25",
+    "capture": "clarification-beijing.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 197365,
+    "source_sha256": "fe35880af321cb542463ef9325fc6cec4b4e4bae87936499fddb329cc6dedbab"
+  },
+  {
+    "asset": "clarification.webp",
+    "case": "agent",
+    "captured_on": "2026-10-25",
+    "capture": "clarification.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 167294,
+    "source_sha256": "9e1e7c92dc63d9b66a2351351c8de2c3c705db4a29683e46e5ae2673f7e21fd5"
+  },
+  {
+    "asset": "discussion-expanded.webp",
+    "case": "balcony",
+    "captured_on": "2026-10-25",
+    "capture": "discussion-expanded.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 144198,
+    "source_sha256": "58de45019fe4d0be494864e1cc5492789e5d2bf6282ea23cd7f524a644f2bedc"
+  },
+  {
+    "asset": "discussion.webp",
+    "case": "balcony",
+    "captured_on": "2026-10-25",
+    "capture": "discussion.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 160871,
+    "source_sha256": "62dc31f7afc103d70eaed8b33aa6bfaa1358ad46dbd56a7e9ddde4b02c2cae7a"
+  },
+  {
+    "asset": "execution-agent.webp",
+    "case": "agent",
+    "captured_on": "2026-10-25",
+    "capture": "execution-agent.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 141333,
+    "source_sha256": "41bc6ad5f8653a872a5043b9cc884e52d164a01856fd529db0f9f180aec0699d"
+  },
+  {
+    "asset": "execution-beijing.webp",
+    "case": "beijing",
+    "captured_on": "2026-10-25",
+    "capture": "execution-beijing.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 140436,
+    "source_sha256": "c6e11a9008e4ff0ff1ef1367192c0a906ef7b063d0411e52406ad7656249fafe"
+  },
+  {
+    "asset": "execution.webp",
+    "case": "balcony",
+    "captured_on": "2026-10-25",
+    "capture": "execution.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 145673,
+    "source_sha256": "312543b395a6c60d83d19a0b332501e0cba5a8729ee03cd4a1f58cd6d9dcb2b7"
+  },
+  {
+    "asset": "exploration.webp",
+    "case": "balcony",
+    "captured_on": "2026-10-25",
+    "capture": "exploration.jpg",
+    "processing": "JPEG to WebP compression only; synthetic demonstration data; no text or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 122500,
+    "source_sha256": "db1afbbd31af9e9ceae3ba2a3862f6e3a28e1a686831cee77d3beadf44070573"
+  },
+  {
+    "asset": "files-import.webp",
+    "case": "synthetic-interview",
+    "captured_on": "2026-10-25",
+    "capture": "files-import.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 135992,
+    "source_sha256": "b303a449df49f215a50f1dae4f787a5fd86e41cfe4ede73759a2773a7a19c624"
+  },
+  {
+    "asset": "files.webp",
+    "case": "synthetic-interview",
+    "captured_on": "2026-10-25",
+    "capture": "files.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 133263,
+    "source_sha256": "bdf3ed2772fd81ff8bc33506d65253e6407824c758e841b447e408a0a31f1b6b"
+  },
+  {
+    "asset": "focus-panel.webp",
+    "case": "balcony",
+    "captured_on": "2026-10-25",
+    "capture": "focus-panel.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 142896,
+    "source_sha256": "d5318e301155cc2a10bb360c56bdab613f1730f0a8ce8003bd99e8ec175e7c1c"
+  },
+  {
+    "asset": "focus.webp",
+    "case": "balcony",
+    "captured_on": "2026-10-25",
+    "capture": "focus.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      2048,
+      1152
+    ],
+    "source_bytes": 52953,
+    "source_sha256": "548fd94b3a7d36ae8a8b5481010214048a80a8b023715e4a70d6882bbe248a93"
+  },
+  {
+    "asset": "kernel.webp",
+    "case": "connection",
+    "captured_on": "2026-10-25",
+    "capture": "kernel.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 66464,
+    "source_sha256": "0ad219918914027bda1a9fb67d11094607268dc61557abe3392b1d6ecb4f62c7"
+  },
+  {
+    "asset": "models.webp",
+    "case": "api-model-catalog",
+    "captured_on": "2026-10-25",
+    "capture": "models.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 147860,
+    "source_sha256": "b5027bb4e05a21e396f8b37ef909d5fbfcb8df8477cde1ca99240c9aacb9caab"
+  },
+  {
+    "asset": "overview.webp",
+    "case": "workspace",
+    "captured_on": "2026-10-25",
+    "capture": "overview.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 117404,
+    "source_sha256": "d622a81c270367aed49b85fdc8a480e1b43f389c3f89858b7b33f194539520e7"
+  },
+  {
+    "asset": "plan-week.webp",
+    "case": "beijing",
+    "captured_on": "2026-10-25",
+    "capture": "plan-week.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 135968,
+    "source_sha256": "b944f1697e088f2b9b88e753ec9234aaa83517a32300507d4fddd97125419aa8"
+  },
+  {
+    "asset": "plan.webp",
+    "case": "beijing",
+    "captured_on": "2026-10-25",
+    "capture": "plan.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 149289,
+    "source_sha256": "a915fa0a8301fc6492aba675e54feca396dcc6def3f96f4580f3cdf9a9f34d31"
+  },
+  {
+    "asset": "quick.webp",
+    "case": "quick",
+    "captured_on": "2026-10-25",
+    "capture": "quick.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 59744,
+    "source_sha256": "1b69d2939eca7808cfcfcfb56dbaac5436ffb35508bff159025f1b5c37815dfa"
+  },
+  {
+    "asset": "research.webp",
+    "case": "balcony",
+    "capture": "research-sources.png",
+    "size": [
+      1440,
+      1000
+    ],
+    "processing": "format compression only; synthetic data, no text/content edits",
+    "source_bytes": 122406,
+    "source_sha256": "6496e3e9a1b05cbb133c163cbfbbb3ad28240b034dc103919ec7ca056851e96c"
+  },
+  {
+    "asset": "route-detail.webp",
+    "case": "agent",
+    "captured_on": "2026-10-25",
+    "capture": "route-detail.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 132672,
+    "source_sha256": "6c26df798a2d1732e0823941b51ec25d85b2e7b6b5675ac024cad81f598a650e"
+  },
+  {
+    "asset": "route-overview.webp",
+    "case": "agent",
+    "captured_on": "2026-10-25",
+    "capture": "route-overview.jpg",
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 166625,
+    "source_sha256": "e88dab6855dfa3d29001abe3048e4bfef12cd28c23095255c6b9565cc27d5327"
+  },
+  {
+    "asset": "route.webp",
+    "case": "agent",
+    "captured_on": "2026-10-25",
+    "capture": "route.jpg",
+    "processing": "JPEG to WebP compression only; synthetic demonstration data; no text or content edits",
+    "size": [
+      1382,
+      956
+    ],
+    "source_bytes": 138758,
+    "source_sha256": "99ce38ce39c196662555bfb586305a9f22d9960e5ead30515d761ebabda679e0"
+  },
+  {
+    "asset": "service-manager.webp",
+    "case": "native-desktop",
+    "captured_on": "2026-10-25",
+    "capture": "after-host.png",
+    "processing": "Complete real WinForms window rendered with DrawToBitmap; format compression only; no installation, mock data or content edits",
+    "size": [
+      680,
+      541
+    ],
+    "source_bytes": 24995,
+    "source_sha256": "b16e1a69c87e6ac81d630000dd458f8713c458945699b1a703387c40ee3d2c53"
+  },
+  {
+    "asset": "installer.webp",
+    "case": "guided-minimal-install",
+    "captured_on": "2026-10-26",
+    "capture": "01-installer.png",
+    "size": [
+      760,
+      660
+    ],
+    "processing": "Complete native installer window; format compression only; no content edits",
+    "source_sha256": "1289bab7581678e1ef3b0f0cdec2b55b09d72d0cb69467f32919331b93d4a885",
+    "source_bytes": 34564
+  },
+  {
+    "asset": "installer-capabilities.webp",
+    "case": "guided-minimal-install",
+    "captured_on": "2026-10-26",
+    "capture": "02-capabilities.png",
+    "size": [
+      760,
+      660
+    ],
+    "processing": "Complete native installer window; format compression only; no content edits",
+    "source_sha256": "28b8ea9b7bf7cead1764519f10a076100ebb62272bcbfbb6be965839ee750d5a",
+    "source_bytes": 43759
+  },
+  {
+    "asset": "capabilities-web.webp",
+    "case": "fresh-minimal-install-web-supplement",
+    "captured_on": "2026-10-26",
+    "capture": "08-web-capability-choices.png",
+    "size": [
+      1440,
+      1000
+    ],
+    "processing": "Complete real browser viewport during actual OCR supplement installation; format compression only; no cropping or content edits",
+    "source_sha256": "bbdd38e124825e52940b0af1c93d9f752b8dfd62eea83d692a85ea5294fbf34c",
+    "source_bytes": 233326
+  },
+  {
+    "asset": "capabilities-progress.webp",
+    "case": "fresh-minimal-install-web-supplement",
+    "captured_on": "2026-10-26",
+    "capture": "09-web-live-speed.png",
+    "size": [
+      1440,
+      1000
+    ],
+    "processing": "Complete real browser viewport during actual OCR supplement installation; format compression only; no cropping or content edits",
+    "source_sha256": "683212801082a087ee424e770bd331d89355e46e72078e637f17fb6b8d67904e",
+    "source_bytes": 203236
+  },
+  {
+    "asset": "install-progress.webp",
+    "case": "final-native-cold-install",
+    "captured_on": "2026-10-26",
+    "capture": "13-native-live-speed.png",
+    "size": [
+      760,
+      660
+    ],
+    "processing": "Complete actual native installer window during a clean installation; format compression only; no cropping or content edits",
+    "source_bytes": 26260,
+    "source_sha256": "3cf930fe65231787d39179f1d9ff338e9a9ac40d04b0fbd2b6d45db099ec8d12"
+  },
+  {
+    "asset": "recovery-summary.webp",
+    "case": "reading-recovery",
+    "capture": "recovery-summary.jpg",
+    "captured_on": "2026-10-26",
+    "size": [
+      1280,
+      720
+    ],
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "source_bytes": 96242,
+    "source_sha256": "c793ac7d61018696842f3102cf0547cd93254a44b10b4616e52742fb4d39b846"
+  },
+  {
+    "asset": "recovery-comparison.webp",
+    "case": "reading-recovery",
+    "capture": "recovery-comparison.jpg",
+    "captured_on": "2026-10-26",
+    "size": [
+      1382,
+      956
+    ],
+    "processing": "Complete browser viewport; format compression only; synthetic demonstration data; no cropping or content edits",
+    "source_bytes": 126676,
+    "source_sha256": "07fafe53ee907ff556d4c2e17b6b73064525d5bdc0006b8d4214ccf5f12ecb04"
+  }
+]

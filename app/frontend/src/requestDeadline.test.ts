@@ -4,6 +4,15 @@ import { request } from './api'
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks() })
 
 describe('request connection lifecycle', () => {
+  it('shows actionable kernel setup and busy errors without masking them as generation failures', async () => {
+    const missing = '请先保存 API 地址、模型和密钥，再切换到自配置 API。'
+    const busy = '当前还有生成或资料研究在进行，请等待完成后再切换连接方式。'
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ detail: missing }), { status: 422 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ detail: busy }), { status: 409 })))
+    await expect(request('/api/settings/kernel', { method: 'PUT', body: '{"mode":"api"}' })).rejects.toThrow(missing)
+    await expect(request('/api/settings/kernel', { method: 'PUT', body: '{"mode":"api"}' })).rejects.toThrow(busy)
+  })
   it('ends a stalled write with an actionable warning and never resends it', async () => {
     const fetch = vi.fn((_path, options: RequestInit) => new Promise((_resolve, reject) => {
       options.signal!.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')))

@@ -34,7 +34,7 @@ def test_confirmed_update_rejects_changed_release_before_download(monkeypatch):
 
 @pytest.fixture
 def executable():
-    release = ROOT / 'distribution/release.json'
+    release = ROOT / 'release.json'
     if not release.exists():
         release = ROOT / 'release.json'
     version = json.loads(release.read_text(encoding='utf8'))['version']
@@ -108,7 +108,7 @@ def native_process_driver(tmp_path):
     if os.name != 'nt':
         pytest.skip('Windows PowerShell runner')
     compiler = Path(os.environ['WINDIR']) / 'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
-    source_root = ROOT / 'distribution/desktop'
+    source_root = ROOT / 'desktop'
     if not source_root.exists():
         source_root = ROOT / 'desktop'
     driver = tmp_path / 'Driver.cs'

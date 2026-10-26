@@ -1,3 +1,4 @@
+from planner_api.model_connection import model_required
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -13,6 +14,7 @@ SessionDependency = Annotated[Session, Depends(get_db_session)]
 
 
 @router.post("", response_model=ResearchResponseRead, status_code=202)
+@model_required
 def create(goal_id: str, payload: ResearchResponseCreate, session: SessionDependency, request: Request):
     from .readiness import readiness_snapshot
 
@@ -35,6 +37,7 @@ def get(goal_id: str, request_id: str, session: SessionDependency):
 
 
 @router.post("/{request_id}/{action}", response_model=ResearchResponseRead)
+@model_required
 def act(goal_id: str, request_id: str,
         action: Literal["cancel", "ordinary", "retry-answer", "retry-research"], session: SessionDependency):
     return ResearchResponseService(session).action(goal_id, request_id, action)

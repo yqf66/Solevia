@@ -32,6 +32,9 @@ class ClarificationAnalysisWorker:
     def run_forever(self):
         while not self._stop.is_set():
             try:
+                if get_settings().llm_provider == "fake":
+                    self._stop.wait(1)
+                    continue
                 if self.run_once():
                     continue
             except Exception:

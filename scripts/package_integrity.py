@@ -32,13 +32,113 @@ def safe_path(name):
     return path
 
 
+def strip_gif_metadata(data):
+    """Keep animation/image bytes, dropping comments and unrelated app metadata."""
+    if len(data) < 14 or data[:6] not in {b'GIF87a', b'GIF89a'}:
+        raise ValueError('Invalid GIF header')
+    offset = 13
+    if data[10] & 0x80:
+        offset += 3 * (2 ** ((data[10] & 7) + 1))
+    if offset >= len(data):
+        raise ValueError('Truncated GIF palette')
+    output = bytearray(data[:offset])
+
+    def blocks(position):
+        while position < len(data):
+            size = data[position]
+            position += 1
+            if position + size > len(data):
+                break
+            position += size
+            if not size:
+                return position
+        raise ValueError('Truncated GIF block')
+
+    while offset < len(data):
+        start = offset
+        marker = data[offset]
+        offset += 1
+        if marker == 0x3B:
+            if offset != len(data):
+                raise ValueError('Unexpected data after GIF trailer')
+            output.append(marker)
+            return bytes(output)
+        if marker == 0x2C:
+            if offset + 9 > len(data):
+                raise ValueError('Truncated GIF image')
+            packed = data[offset + 8]
+            offset += 9
+            if packed & 0x80:
+                offset += 3 * (2 ** ((packed & 7) + 1))
+            offset = blocks(offset + 1)  # LZW minimum code size, then image data.
+            output.extend(data[start:offset])
+        elif marker == 0x21:
+            if offset >= len(data):
+                raise ValueError('Truncated GIF extension')
+            label = data[offset]
+            offset += 1
+            payload = offset
+            offset = blocks(offset)
+            if label == 0xF9:
+                if offset - payload != 6 or data[payload] != 4:
+                    raise ValueError('Invalid GIF graphics control')
+                output.extend(data[start:offset])
+            elif label == 0xFF and data[payload:payload + 12] in {
+                    b'\x0bNETSCAPE2.0', b'\x0bANIMEXTS1.0'}:
+                if offset - payload != 17 or data[payload + 12:payload + 14] != b'\x03\x01':
+                    raise ValueError('Invalid GIF animation loop')
+                output.extend(data[start:offset])
+            elif label not in {0xFE, 0xFF}:
+                raise ValueError('Unsupported GIF extension')
+        else:
+            raise ValueError('Invalid GIF block')
+    raise ValueError('Missing GIF trailer')
+
+
 def scan_text(name,data,private_values=()):
+    if PurePosixPath(name).suffix.lower() == '.gif':
+        if strip_gif_metadata(data) != data:
+            raise ValueError('Unexpected GIF metadata in '+name)
+        return
     if PurePosixPath(name).suffix.lower() in {'.png','.webp','.woff2','.ttf','.ico'}:return
     text=data.decode('utf-8-sig')
     for kind,pattern in PRIVATE_PATTERNS.items():
         if pattern.search(text):raise ValueError('Privacy scan blocked '+kind+' in '+name)
     for value in private_values:
         if value and value in text:raise ValueError('Privacy scan blocked a local-only value in '+name)
+
+
+
+def scan_manifest(data):
+    # Digests and byte counts are verified structured data, not free text. A
+    # random checksum can contain the same four digits as a private proxy port.
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('Duplicate manifest field')
+            result[key] = value
+        return result
+    manifest = json.loads(data, object_pairs_hook=unique)
+    if (not isinstance(manifest, dict) or 'files' not in manifest
+            or set(manifest) - {'product', 'version', 'files'}
+            or not isinstance(manifest['files'], list)):
+        raise ValueError('Invalid manifest structure')
+    for field in ('product', 'version'):
+        if field in manifest:
+            if not isinstance(manifest[field], str):
+                raise ValueError('Invalid manifest text field')
+            scan_text('manifest-field.txt', manifest[field].encode('utf8'))
+    for row in manifest['files']:
+        if (not isinstance(row, dict) or set(row) != {'path', 'bytes', 'sha256'}
+                or not isinstance(row['path'], str)
+                or type(row['bytes']) is not int or not 0 <= row['bytes'] <= MAX_FILE
+                or not isinstance(row['sha256'], str)
+                or re.fullmatch(r'[0-9a-f]{64}', row['sha256']) is None):
+            raise ValueError('Invalid manifest file record')
+        safe_path(row['path'])
+        scan_text('manifest-path.txt', row['path'].encode('utf8'))
+    return manifest
 
 
 def verify_zip(filename):
@@ -58,7 +158,10 @@ def verify_zip(filename):
             if identity in seen:raise ValueError('Duplicate archive entry')
             seen.add(identity)
             if info.file_size>MAX_FILE or info.flag_bits&1 or (info.external_attr>>16)&0o170000==0o120000:raise ValueError('Unsafe archive entry')
-            data=archive.read(info);scan_text(relative,data);files[relative]=data
+            data=archive.read(info)
+            if relative == 'MANIFEST.json':scan_manifest(data)
+            else:scan_text(relative,data)
+            files[relative]=data
         manifest=json.loads(files['MANIFEST.json'])
         expected={row['path']:row for row in manifest['files']}
         if len(expected)!=len(manifest['files']) or set(files)!=set(expected)|{'MANIFEST.json'}:raise ValueError('Archive manifest does not match exact file list')

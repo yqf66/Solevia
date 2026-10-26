@@ -1,11 +1,12 @@
 ﻿[CmdletBinding()]
 param(
-    [ValidateSet('Minimal','Standard','Full')][string]$Profile = 'Standard',
+    [ValidateSet('Minimal','Standard','Full')][string]$Profile = 'Minimal',
     [switch]$NonInteractive,
     [switch]$ChooseFeatures,
     [switch]$Repair,
     [switch]$PlanOnly,
     [switch]$BootstrapOnly,
+    [ValidateSet('Keep','Codex','Api')][string]$Kernel='Keep',
     [ValidateSet('Direct','System')][string]$NetworkMode='Direct',
     [ValidateSet('China','Official')][string]$DownloadSource='China',
     [ValidateRange(-1,1)][int]$Web=-1,
@@ -36,7 +37,7 @@ $browserCandidates = @(
 $existingBrowser = $browserCandidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
 $cachedBrowser = Get-ChildItem -Path (Join-Path $Runtime 'browsers\chromium-*\chrome-win*\chrome.exe') -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($PlanOnly) {
-    [pscustomobject]@{profile=$Profile; python=$Release.python; node=$Release.node.version; modelKeysIncluded=$false; automaticProgramUpdates=$false; capabilities=@(Get-SoleviaCapabilities); plan=(Get-SoleviaInstallPlan $features (-not ($existingBrowser -or $cachedBrowser)))} | ConvertTo-Json -Depth 6
+    [pscustomobject]@{kernel=$Kernel;profile=$Profile; python=$Release.python; node=$Release.node.version; modelKeysIncluded=$false; automaticProgramUpdates=$false; capabilities=@(Get-SoleviaCapabilities); plan=(Get-SoleviaInstallPlan $features (-not ($existingBrowser -or $cachedBrowser)))} | ConvertTo-Json -Depth 6
     exit 0
 }
 $manifest = Get-Content -LiteralPath (Join-Path $SoleviaRoot 'MANIFEST.json') -Raw | ConvertFrom-Json
@@ -73,12 +74,12 @@ Write-Host ('  首次下载粗估：'+(Format-SoleviaRange $plan.downloadMiB))
 Write-Host ('  磁盘粗估：'+(Format-SoleviaRange $plan.diskMiB)+'，含缓存；安装临时解压建议另留 2 GiB。')
 Write-Host ('  '+$plan.memoryNote)
 Write-Host '  这些是容量规划范围，不是已测得的内存值；安装结束将报告实际文件占用。'
-Write-Host '  以后可用 Models.cmd 补装；取消已安装能力只会停用，不会自动删除已有依赖或释放磁盘。'
+Write-Host '  以后可在桌面工作台点击「补装与管理能力」，或用 Models.cmd 补装；取消已安装能力只会停用，不会自动删除已有依赖或释放磁盘。'
 if (-not $NonInteractive -and -not (Read-SoleviaChoice '确认开始安装 / 修复？' $true)) {
     Write-Host '已取消，尚未下载或安装组件。'; exit 0
 }
 Set-SoleviaInstallNetwork $NetworkMode $DownloadSource
-Assert-SoleviaInstallSpace $plan.diskMiB[0]
+Assert-SoleviaInstallSpace $plan.diskMiB[1]
 Write-Host '[说明] 下载安装工具、Python、Node.js、依赖、浏览器和模型是不同步骤。下载大小与内存占用不同；出现问题请保留安装目录与详细日志。'
 Set-LocalRuntime
 $installGuard=$null;$serviceGuard=$null
@@ -166,19 +167,20 @@ if ($features.ocr -or $features.semantic) {
 Write-Host '[6/6] 准备个人工作区与数据库...'
 $config = Join-Path $Data '.env'
 if (-not (Test-Path -LiteralPath $config)) { Copy-Item -LiteralPath (Join-Path $SoleviaRoot 'backend.env.example') -Destination $config }
+if ($Kernel -ne 'Keep') { Invoke-Checked $python @((Join-Path $PSScriptRoot 'connection_setup.py'),'--root',$SoleviaRoot,'--kernel',$Kernel.ToLowerInvariant()) }
 $installed = @{version=$Release.version;features=$features;installedAt=[DateTime]::UtcNow.ToString('o')}
 $temporaryState = $stateFile+'.new'
 $installed | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $temporaryState -Encoding utf8
 $serviceGuard.Dispose();$serviceGuard=$null
 Invoke-Checked $python @((Join-Path $PSScriptRoot 'launcher.py'),'--migrate-only','--state-file',$temporaryState)
-if (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'build-desktop.ps1')) {
+if ((Test-Path -LiteralPath (Join-Path $PSScriptRoot 'build-desktop.ps1')) -and -not (Test-Path -LiteralPath (Join-Path $SoleviaRoot 'Solevia.exe'))) {
     & (Join-Path $PSScriptRoot 'build-desktop.ps1')
 }
 Move-Item -LiteralPath $temporaryState -Destination $stateFile -Force
 $runtimeBytes = Get-SoleviaFolderBytes $Runtime
 $appBytes = Get-SoleviaFolderBytes (Join-Path $SoleviaRoot 'app')
 Write-Host ('实际文件占用：运行环境、模型与缓存 '+(Format-SoleviaSize ($runtimeBytes/1MB))+'；应用与依赖 '+(Format-SoleviaSize ($appBytes/1MB))+'。不含个人资料；共享文件按逻辑大小统计。')
-Write-Host '安装完成！双击 Solevia.exe 打开 Solevia，在「模型连接」中填写自己的模型服务。' -ForegroundColor Green
+Write-Host '安装完成！双击 Solevia.exe 打开工作台。所选连接方式已保存；Codex 使用本机登录，API 在「模型连接」中配置。' -ForegroundColor Green
 } catch {
     $failure=Get-SoleviaFailure $_.Exception.Message
     Write-Host ('['+$failure.code+'] '+$failure.advice)

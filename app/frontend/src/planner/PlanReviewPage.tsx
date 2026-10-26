@@ -1,13 +1,15 @@
+import { ConnectionAwareError } from '../ui/ConnectionAwareError'
 import { RequirementSummary } from '../ui/RequirementSummary'
 import { TimePicker } from '../ui/TimePicker'
+import { AdjustmentPreview } from '../ui/AdjustmentPreview'
 import { submitOnEnter } from '../ui/submitOnEnter'
 import './ReviewPages.css'
 import './PlanIdentity.css'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Globe2 } from 'lucide-react'
+import { Globe2, Maximize2, Minimize2 } from 'lucide-react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { applyPlanAdjustment, applyExplorationWindow, confirmPlan, deferRecovery, discardPlanAdjustment, discardExplorationWindow, draftExplorationWindow, explainPlan, getPlan, previewPlanAdjustment, revisePlan, restorePlanVersion, startPlanGeneration, type PlanAdjustmentPreview, type PlanWorkspace } from '../api'
+import { applyPlanAdjustment, applyExplorationWindow, confirmPlan, deferRecovery, discardPlanAdjustment, discardExplorationWindow, draftExplorationWindow, explainPlan, getPlan, previewPlanAdjustment, revisePlan, restorePlanVersion, startPlanGeneration, type PlanAdjustmentPreview, type PlanWorkspace, type GoalMaterial } from '../api'
 import { useResearchResponse } from '../ui/useResearchResponse'
 import { ResearchProgress } from '../ui/ResearchProgress'
 import { useWebResearch } from '../ui/useWebResearch'
@@ -16,10 +18,12 @@ import { StageTransition, PlannerStepper } from '../ui/PlannerStage'
 import { scheduleTypeLabels, ASSISTANT_NAME, displayMessageContent } from '../ui/plannerPresentation'
 import { AnswerResearch } from '../ui/AnswerResearch'
 import { AssistantAnswer, useFreshAnswers } from '../ui/AssistantAnswer'
+import { AutoResizeTextarea } from '../ui/AutoResizeTextarea'
 import { OperationProgress, ProcessDetails } from '../ui/ProcessDetails'
 import { HybridPlanReview } from './plan-review/HybridPlanReview'
 import { PlanDayCard } from './plan-review/PlanDayCard'
 import { MaterialWorkspacePanel } from '../ui/MaterialWorkspacePanel'
+import { CodexComposerSettings, useCodexSelectionPending } from '../codex/CodexModelSettings'
 import { CapacityNegotiationPanel, CapacitySummary } from './plan-review/CapacityNegotiationPanel'
 import { decideRecovery } from '../api'
 import { RecoveryDecisions } from '../ui/RecoveryDecisions'
@@ -37,11 +41,11 @@ export function PlanReviewPage() {
       : ''
   const [workspace, setWorkspace] = useState<PlanWorkspace | null>(null)
   const [error, setError] = useState('')
+  const [attachedMaterials, setAttachedMaterials] = useState<GoalMaterial[]>([])
+  const attachmentsPending = attachedMaterials.some(item => item.latest_revision?.status !== 'READY')
+  useEffect(() => { setAttachedMaterials([]) }, [goalId])
   const [isGenerating, setIsGenerating] = useState(false)
   const [generationPollRun, setGenerationPollRun] = useState(0)
-  const [selectedGenerationMode, setSelectedGenerationMode] = useState<'STANDARD' | 'DEEP'>(
-    'STANDARD',
-  )
   const [isExplorationWindowBusy, setIsExplorationWindowBusy] = useState(false)
   const [viewMode, setViewMode] = useState<'STAGE' | 'WEEK' | 'DAY'>('STAGE')
   const [planFeedbackDrafts, setPlanFeedbackDrafts] = useState({ REVISE: recoveryDraft, EXPLAIN: '' })
@@ -52,9 +56,11 @@ export function PlanReviewPage() {
     planQuery.get('discussion') === '1' || shouldShowIncomingAdjustment,
   )
   const [localResponding, setIsPlanResponding] = useState(false)
+  const [isPlanDiscussionExpanded, setIsPlanDiscussionExpanded] = useState(false)
   const freshAnswer = useFreshAnswers(goalId, workspace?.goal_id === goalId ? workspace?.messages : undefined)
   const research = useResearchResponse(goalId, ['PLAN', 'RECOVERY'], getPlan, setWorkspace)
-  const isPlanResponding = localResponding || research.busy
+  const modelSelectionPending = useCodexSelectionPending()
+  const isPlanResponding = localResponding || research.busy || modelSelectionPending
   const [isConfirmingPlan, setIsConfirmingPlan] = useState(false)
   const [pendingPlanIntent, setPendingPlanIntent] = useState<'REVISE' | 'EXPLAIN' | 'APPLY' | 'RESTORE' | null>(null)
   const [pendingPlanFeedback, setPendingPlanFeedback] = useState('')
@@ -64,6 +70,7 @@ export function PlanReviewPage() {
   const [acceptAdjustmentUnallocated, setAcceptAdjustmentUnallocated] = useState(false)
   const [showRecoveryGate, setShowRecoveryGate] = useState(false)
   const planFeedbackInputRef = useRef<HTMLTextAreaElement>(null)
+  const previewRequestRef = useRef<{ text: string; options: import('../api').RecoveryPreviewOptions } | null>(null)
   const planDiscussionEndRef = useRef<HTMLDivElement>(null)
   const planChangeSummaryRef = useRef<HTMLDivElement>(null)
   const pendingAdjustmentNoticeRef = useRef<HTMLElement>(null)
@@ -112,6 +119,7 @@ export function PlanReviewPage() {
     setEditedAdjustmentSchedule([])
     setAcceptAdjustmentUnallocated(false)
     setShowRecoveryGate(false)
+    previewRequestRef.current = null
     setIsPlanDiscussionOpen(planQuery.get('discussion') === '1' || shouldShowIncomingAdjustment)
     return () => { activeGoalIdRef.current = undefined }
   }, [goalId])
@@ -144,6 +152,18 @@ export function PlanReviewPage() {
   }
 
   useEffect(() => {
+    const incoming = location.state as { adjustmentRequest?: string; recoveryOptions?: import('../api').RecoveryPreviewOptions } | null
+    const request = incoming?.adjustmentRequest
+    if (!request) return
+    setPlanFeedbackDrafts(current => ({ ...current, REVISE: request }))
+    setPlanFeedbackIntent('REVISE')
+    previewRequestRef.current = incoming?.recoveryOptions ? { text: request, options: incoming.recoveryOptions } : null
+    setIsPlanDiscussionOpen(true)
+    navigate(`${location.pathname}${location.search}`, { replace: true, state: null })
+    window.requestAnimationFrame(() => planFeedbackInputRef.current?.focus())
+  }, [location.state, location.pathname, location.search, navigate])
+
+  useEffect(() => {
     if (!isPlanDiscussionOpen) return
     if (typeof planDiscussionEndRef.current?.scrollIntoView === 'function') {
       planDiscussionEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -173,7 +193,7 @@ export function PlanReviewPage() {
     intent: 'REVISE' | 'EXPLAIN',
     regenerate = false,
   ) {
-    if (!goalId || !content.trim() || isPlanResponding || workspace?.status === 'COMPLETED') return
+    if (!goalId || !content.trim() || isPlanResponding || workspace?.status === 'COMPLETED' || attachmentsPending) return
     const cleanContent = content.trim()
     setPendingPlanFeedback(cleanContent)
     setPendingPlanIntent(intent)
@@ -181,14 +201,15 @@ export function PlanReviewPage() {
     setPlanDiscussionError('')
     setIsPlanResponding(true)
     try {
-      if (webResearchEnabled) {
+      const recoveryOptions = previewRequestRef.current?.text === cleanContent ? previewRequestRef.current.options : undefined
+      if (webResearchEnabled && !recoveryOptions) {
         const recovery = Boolean(recoveryLevel || workspace?.messages.some((message) => message.metadata?.recovery_brief_id))
-        await research.start(cleanContent, recovery ? 'RECOVERY' : 'PLAN', intent)
+        await research.start(cleanContent, recovery ? 'RECOVERY' : 'PLAN', intent, attachedMaterials.map(item => item.source_id))
         return
       }
       const result = intent === 'EXPLAIN'
-        ? await explainPlan(goalId, cleanContent, false, undefined, regenerate)
-        : await revisePlan(goalId, cleanContent, false, undefined, regenerate)
+        ? await explainPlan(goalId, cleanContent, false, undefined, regenerate, attachedMaterials.map(item => item.source_id))
+        : await revisePlan(goalId, cleanContent, false, undefined, regenerate, attachedMaterials.map(item => item.source_id), recoveryOptions)
       if (activeGoalIdRef.current !== goalId) return
       const latestMessage = result.messages?.at(-1)
       setWorkspace(result)
@@ -320,7 +341,7 @@ export function PlanReviewPage() {
         goalId,
         planAdjustmentPreview.id,
         acceptAdjustmentUnallocated,
-        editedAdjustmentSchedule.map((item) => ({
+        editedAdjustmentSchedule.filter((item, index) => item.start !== planAdjustmentPreview.schedule[index]?.start || item.end !== planAdjustmentPreview.schedule[index]?.end).map((item) => ({
           scheduled_date: item.date,
           title: item.title,
           start_local: item.start,
@@ -460,13 +481,12 @@ export function PlanReviewPage() {
     }
   }, [goalId, generationPollRun])
 
-  async function beginGeneration(mode: 'STANDARD' | 'DEEP') {
+  async function beginGeneration() {
     if (!goalId || isGenerating) return
-    setSelectedGenerationMode(mode)
     setError('')
     setIsGenerating(true)
     try {
-      setWorkspace(await startPlanGeneration(goalId, mode))
+      setWorkspace(await startPlanGeneration(goalId, 'STANDARD'))
       setGenerationPollRun((run) => run + 1)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : '暂时无法开始生成。')
@@ -475,7 +495,7 @@ export function PlanReviewPage() {
   }
 
   if (error && !workspace) {
-    return <section className="page narrow error-state"><h1>时间规划暂时无法打开</h1><p role="alert">{error}</p>
+    return <section className="page narrow error-state"><h1>时间规划暂时无法打开</h1><ConnectionAwareError message={error} />
       <button className="button" type="button" onClick={() => { setError(''); setGenerationPollRun((run) => run + 1) }}>重新读取</button></section>
   }
   if (!workspace && !isGenerating) {
@@ -487,12 +507,11 @@ export function PlanReviewPage() {
     const hasOutline = Boolean(workspace?.plan)
     const generatedWeeks = workspace?.generated_weeks ?? 0
     const totalWeeks = workspace?.generation_target_weeks ?? workspace?.total_weeks ?? 0
-    const mode = workspace?.generation_job?.mode ?? selectedGenerationMode
     const repair = workspace?.generation_repair
     const completedNote = hasOutline && totalWeeks > 0 ? `已经安排好 ${generatedWeeks} / ${totalWeeks} 周` : '正在整理整体节奏'
     return <StageTransition current={2}
-      title={repair ? '正在修正安排' : mode === 'DEEP' ? '正在更仔细地安排时间' : '正在安排时间'}
-      detail={repair?.message ?? (mode === 'DEEP' ? 'Solevia 会多花一些时间权衡任务量和先后顺序。你可以离开页面，稍后再回来。' : 'Solevia 会先整理整体节奏，再逐周补充每天要做的事。你可以离开页面，已经完成的内容不会丢失。')}
+      title={repair ? '正在修正安排' : '正在安排时间'}
+      detail={repair?.message ?? 'Solevia 会先整理整体节奏，再逐周补充每天要做的事。你可以离开页面，已经完成的内容不会丢失。'}
       checkpoints={['整理整体阶段和周期', '安排每周重点', '补充每天要做的事']} activeIndex={hasOutline ? 2 : 0}
       progressNote={repair ? `${completedNote} · 第 ${repair.attempt} / ${repair.maximum_attempts} 次生成` : completedNote} />
   }
@@ -503,29 +522,21 @@ export function PlanReviewPage() {
     const failedMessage = workspace.generation_job?.status === 'FAILED'
       ? workspace.generation_job.error_message
       : error
-    const modes = workspace.available_generation_modes ?? ['STANDARD']
     const capacityFailure = workspace.generation_job?.status === 'FAILED'
       && ['PLAN_TEMPORAL_SEGMENT_MINUTES_INVALID', 'PLAN_TEMPORAL_SEGMENT_CAPACITY_INVALID'].includes(workspace.generation_job.error_code ?? '')
     return <section className="page narrow generation-mode-page">
       <p className="eyebrow">第 3 步 · 安排时间</p>
-      <h1>{workspace.capacity_negotiation ? '一起调整可行的时间安排' : workspace.plan ? '继续生成剩余计划' : '选择计划生成方式'}</h1>
+      <h1>{workspace.capacity_negotiation ? '一起调整可行的时间安排' : workspace.plan ? '继续生成剩余计划' : '准备安排时间'}</h1>
       {workspace.plan && <p>已经完成 {workspace.generated_weeks} / {workspace.generation_target_weeks} 周，只会补齐缺失部分。</p>}
       {failedMessage && <p className="inline-error" role="alert">{failedMessage}</p>}
       {capacityFailure && <button className="button secondary" type="button" onClick={() => navigate(`/goals/${workspace.goal_id}/clarify`)}>复核需求与时间</button>}
       {workspace.capacity_negotiation && <CapacityNegotiationPanel workspace={workspace} draft={planFeedbackDrafts.REVISE} busy={isPlanResponding} progress={planDiscussionProgress.message} error={planDiscussionError} preview={planAdjustmentPreview} onDraft={value => setPlanFeedbackDraft('REVISE', value)} onSubmit={() => void submitPlanDiscussion(planFeedbackDrafts.REVISE, 'REVISE')} onPreview={() => void applyPendingAdjustment()} onDiscard={() => void discardPendingAdjustment()} />}
       {!workspace.plan && <div className="planning-strategy-summary"><strong>{workspace.planning_mode === 'EXPLORATORY' ? '先试试看' : '直接固定规划'} · {scheduleTypeLabels[workspace.schedule_type]}</strong><span>{workspace.schedule_type === 'OUTCOME' ? '按弹性成果窗口设置目标与检查点，不指定某天必须行动。' : workspace.schedule_type === 'RHYTHM' ? '按效果所需频率形成稳定节奏，不锁死具体钟点。' : '围绕已确认期限倒排，并在开始前映射到日历。'}</span></div>}
-      <h2 className="generation-quality-heading">生成质量</h2>
-      <div className="generation-mode-grid">
-        <button className="generation-mode-card" type="button" disabled={isPlanResponding || Boolean(workspace.pending_adjustment) || workspace.capacity_negotiation?.classification === 'CONSTRAINT_CONFLICT'} onClick={() => void beginGeneration('STANDARD')}>
-          <strong>{capacityFailure ? '继续自动修正' : '标准生成'}</strong>
-          <span>{capacityFailure ? '保留已完成周，重新生成尚未通过校验的部分。' : '速度优先，适合已经确认路线后的每日任务细化。'}</span>
-          <em>推荐默认</em>
-        </button>
-        {modes.includes('DEEP') && <button className="generation-mode-card" type="button" disabled={isPlanResponding || Boolean(workspace.pending_adjustment) || workspace.capacity_negotiation?.classification === 'CONSTRAINT_CONFLICT'} onClick={() => void beginGeneration('DEEP')}>
-          <strong>深度思考</strong>
-          <span>进行更充分的推理，可能需要几分钟，可以离开页面后再回来。</span>
-        </button>}
-      </div>
+      <p>{capacityFailure ? '保留已完成内容，只修正尚未通过校验的部分。' : '将按已确认的路线与可用时间生成安排，并校验任务、日期和容量。'}</p>
+      <CodexComposerSettings disabled={isPlanResponding} />
+      <button className="button primary" type="button" disabled={isPlanResponding || Boolean(workspace.pending_adjustment) || workspace.capacity_negotiation?.classification === 'CONSTRAINT_CONFLICT'} onClick={() => void beginGeneration()}>
+        {capacityFailure ? '继续自动修正' : workspace.plan ? '继续生成计划' : '开始生成计划'}
+      </button>
     </section>
   }
   if (!workspace.plan) {
@@ -550,7 +561,7 @@ export function PlanReviewPage() {
     setError('')
     try {
       const result = action === 'DRAFT'
-        ? await draftExplorationWindow(goalId, selectedGenerationMode)
+        ? await draftExplorationWindow(goalId, 'STANDARD')
         : action === 'APPLY'
           ? await applyExplorationWindow(goalId)
           : await discardExplorationWindow(goalId)
@@ -603,10 +614,10 @@ export function PlanReviewPage() {
               <div><p className="eyebrow">规划调整 · {workspace.pending_adjustment.needs_clarification ? '有待处理事项' : '等你确认'}</p><h3>调整建议已经整理好，但尚未改变当前计划</h3><p>页面下方展示当前采用的版本。调整预览通过校验并由你确认后，新安排才会生效；已经完成的内容会保留。</p></div>
               <button className="button primary" type="button" onClick={revealPendingAdjustment}>查看并确认调整</button>
             </section>}
-            {plan.planning_mode === 'EXPLORATORY' && <section className="rolling-plan-panel">
+            {executionStarted && plan.planning_mode === 'EXPLORATORY' && <section className="rolling-plan-panel">
               <header><div><p className="eyebrow">探索式规划</p><h3>{workspace.pending_exploration_window ? `第 ${workspace.pending_exploration_window.start_week}-${workspace.pending_exploration_window.end_week} 周草案待确认` : plan.next_unplanned_week > plan.total_weeks ? '体验路线已全部展开' : `当前体验安排已展开到第 ${Math.max(1, plan.next_unplanned_week - 1)} 周`}</h3></div><span>按成果阶段展开</span></header>
               <p>{workspace.pending_exploration_window ? '这份草案使用了目前的完成状态、近期反馈和固定时间约束。确认前，正在执行的版本不会变化。' : workspace.pending_adjustment ? `第 ${plan.next_unplanned_week} 周及之后尚未生成；本次确认的新规则会在后续展开时继续沿用，不代表调整要等到第 ${plan.next_unplanned_week} 周才生效。` : workspace.can_extend_exploration ? `第 ${plan.next_unplanned_week} 周及之后尚未生成。准备好后可根据当前执行效果展开到下一个可观察成果；系统不会改写已经执行的内容。` : '先完成当前体验阶段并记录真实反馈，系统会据此判断后续安排。'}</p>
-              {error && <p className="inline-error">{error}</p>}
+              {error && <ConnectionAwareError message={error} />}
               <div className="rolling-plan-actions">
                 {workspace.pending_exploration_window ? <><button className="button" type="button" disabled={isExplorationWindowBusy} onClick={() => void handleExplorationWindow('DISCARD')}>放弃草案</button><button className="button primary" type="button" disabled={isExplorationWindowBusy} onClick={() => void handleExplorationWindow('APPLY')}>{isExplorationWindowBusy ? '正在处理…' : '确认并接入执行'}</button></> : workspace.can_extend_exploration ? <button className="button primary" type="button" disabled={isExplorationWindowBusy} onClick={() => void handleExplorationWindow('DRAFT')}>{isExplorationWindowBusy ? '正在结合执行效果生成…' : '展开下一成果阶段'}</button> : null}
               </div>
@@ -645,13 +656,14 @@ export function PlanReviewPage() {
             <div className="plan-draft-boundary"><strong>{completedPlan ? '本轮规划已完成' : explorationDraft ? '这是待确认的下一阶段草案' : executionStarted ? '这是你正在执行的计划' : isHybridPlan ? '规则和每日草案采用同一套安排逻辑' : planIsConfirmed ? '这份安排已经确认' : '确认前还可以继续调整'}</strong><p>{completedPlan ? '完成记录已经保存，本轮结束后不会自动生成后续规划。' : explorationDraft ? '确认接入前，当前执行安排和完成记录保持原样。请先接入或放弃这份草案，再提出新的计划调整。' : executionStarted ? '你可以放心查看。提出修改后，Solevia 会先说明准备怎么调，只有你确认后才会改变接下来的安排。' : isHybridPlan ? '按阶段和按周用于检查规则，按执行日用于检查具体怎么做；确认后仍会根据真实开始日和日历重新映射。' : planIsConfirmed ? '回看不会改变任何内容；返回准备开始后可以继续选择具体日期。' : '确认后再选择实际开始时间。现在展开任一阶段或周，就能查看每天的详细安排。'}</p></div>
           </div>
         </div>
-        <section className={`route-discussion-dock plan-discussion-dock${isPlanDiscussionOpen ? ' open' : ''}`} aria-label="计划讨论">
+        <section className={`route-discussion-dock plan-discussion-dock${isPlanDiscussionOpen ? ' open' : ''}${isPlanDiscussionExpanded ? ' is-expanded' : ''}`} aria-label="计划讨论">
           <header className="route-discussion-bar">
             <button className="discussion-toggle" type="button" aria-expanded={isPlanDiscussionOpen} onClick={() => setIsPlanDiscussionOpen((current) => !current)}>
               <span>计划讨论</span>
               <small>{planFeedback ? '内容已准备，可编辑后发送' : workspace.messages?.length ? '查看最近解释与问题' : '解释安排或调整时间强度'}</small>
             </button>
             <div className="discussion-bar-actions">
+              {isPlanDiscussionOpen && <button className="icon-button" type="button" aria-label={isPlanDiscussionExpanded ? '恢复讨论区域' : '展开讨论区域'} title={isPlanDiscussionExpanded ? '恢复讨论区域' : '展开阅读'} onClick={() => setIsPlanDiscussionExpanded((current) => !current)}>{isPlanDiscussionExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}</button>}
               <button className="button" type="button" disabled={completedPlan} onClick={() => {
                 setIsPlanDiscussionOpen(true)
                 window.requestAnimationFrame(() => planFeedbackInputRef.current?.focus())
@@ -691,7 +703,7 @@ export function PlanReviewPage() {
                 ) : (
                   <article className={`discussion-message ${message.role === 'USER' ? 'user' : 'assistant'}`} key={message.id}>
                     <strong>{message.role === 'USER' ? '你' : ASSISTANT_NAME}</strong>
-                    {message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content)} animate={message.generation_status === 'SUCCEEDED' && freshAnswer(message.id)} /> : <p>{message.content}</p>}
+                    {message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content)} animate={message.generation_status === 'SUCCEEDED' && freshAnswer(message.id)} onPresented={() => freshAnswer.markPresented(message.id, message.content)} /> : <p>{message.content}</p>}
                     <AnswerResearch message={message} summary={workspace.latest_research} research={research} />
                     {message.role === 'ASSISTANT' && message.generation_status === 'SUCCEEDED' && index === workspace.messages.length - 1 && <div className="message-actions"><button type="button" disabled={isPlanResponding} onClick={() => regeneratePlanDiscussion(index)}>{isPlanResponding ? '正在生成…' : '重新生成'}</button></div>}
                   </article>
@@ -715,14 +727,10 @@ export function PlanReviewPage() {
                     {workspace.pending_adjustment.needs_clarification && workspace.pending_adjustment.clarifying_question && <p className="proposal-question">{workspace.pending_adjustment.clarifying_question}</p>}
                     <RecoveryDecisions review={workspace.recovery_review} busy={isPlanResponding} onDecision={decision => void confirmRecoveryDecision(decision)} />
                     {isPlanResponding && pendingPlanIntent === 'APPLY' && !planAdjustmentPreview && <section className="adjustment-time-preview adjustment-time-preview-loading" role="status" aria-live="polite"><strong>正在生成调整预览…</strong><small>正在按新的日期、任务依赖和可用时间逐日试算，当前计划不会改变。</small><span className="typing-dots"><i /><i /><i /></span></section>}
-                    {planAdjustmentPreview && <section className="adjustment-time-preview" aria-label="调整后的时间预览">
-                      <strong>调整后的时间安排</strong>
-                      <small>这是试算结果。你可以逐项修改起止时间，确认发布时系统会重新校验窗口、冲突和前置关系。</small>
-                      <AdjustmentScheduleEditor schedule={editedAdjustmentSchedule} onChange={setEditedAdjustmentSchedule} />
-                      {planAdjustmentPreview.schedule.length === 0 && <small>{isHybridPlan ? '这次先确认工作项、窗口和依赖；具体日期会在开始计划前单独预览。' : '这次调整没有产生可展示的时间段；任务仍保留在日期规划中，请检查可用时间或确认保持自由安排。'}</small>}
-                      {planAdjustmentPreview.schedule.length > 12 && <small>还有 {planAdjustmentPreview.schedule.length - 12} 项安排未展开。</small>}
-                      {planAdjustmentPreview.unallocated_count > 0 && <label className="proposal-question"><input type="checkbox" checked={acceptAdjustmentUnallocated} onChange={(event) => setAcceptAdjustmentUnallocated(event.target.checked)} /> 有 {planAdjustmentPreview.unallocated_count} 项任务暂时没有可用时段，确认保留为待安排状态</label>}
-                    </section>}
+                    {planAdjustmentPreview && <>
+                      <AdjustmentPreview preview={planAdjustmentPreview} schedule={editedAdjustmentSchedule} onChange={setEditedAdjustmentSchedule} disabled={isPlanResponding} onRequestChange={(request, options) => { previewRequestRef.current = options ? { text: request, options } : null; preparePlanFeedback(request) }} />
+                      {planAdjustmentPreview.unallocated_count > 0 && <label className="proposal-question"><input type="checkbox" checked={acceptAdjustmentUnallocated} onChange={event => setAcceptAdjustmentUnallocated(event.target.checked)} /> 有 {planAdjustmentPreview.unallocated_count} 项任务暂时没有可用时段，确认保留为待安排状态</label>}
+                    </>}
                     {showRecoveryGate && workspace.recovery_guard?.required && <section className="adjustment-recovery-gate" role="alert">
                       <strong>发布前先处理未完成任务</strong>
                       <p>{workspace.recovery_guard.message}</p>
@@ -758,6 +766,8 @@ export function PlanReviewPage() {
                   <button className={planFeedbackIntent === 'REVISE' ? 'selected' : ''} type="button" onClick={() => setPlanFeedbackIntent('REVISE')}>调整计划</button>
                   <button className={planFeedbackIntent === 'EXPLAIN' ? 'selected' : ''} type="button" onClick={() => setPlanFeedbackIntent('EXPLAIN')}>只做解释</button>
                 </div>
+                <details className="plan-feedback-options">
+                  <summary>快捷{planFeedbackIntent === 'REVISE' ? '调整' : '提问'}与范围</summary>
                 {planFeedbackIntent === 'REVISE' ? (
                   <>
                     <div className="plan-feedback-shortcuts" aria-label="常用计划调整">
@@ -766,7 +776,7 @@ export function PlanReviewPage() {
                       <button type="button" onClick={() => preparePlanFeedback('当前总周期对我来说太长，请说明可以怎样压缩，以及需要接受什么取舍。')}>总周期太长</button>
                       <button type="button" onClick={() => preparePlanFeedback('我希望增加一些缓冲，避免偶尔有事就打乱整体计划。请尽量保持路线不变。')}>增加缓冲</button>
                     </div>
-                    <p className="feedback-scope-hint">调整范围跟随上方“按阶段 / 按周”的查看方式：</p>
+                    <p className="feedback-scope-hint">{viewMode === 'STAGE' ? '选择阶段准备反馈：' : '选择周次准备反馈：'}</p>
                     <div className="plan-feedback-shortcuts" aria-label={viewMode === 'STAGE' ? '选择要调整的计划阶段' : '选择要调整的计划周'}>
                       {viewMode === 'STAGE' ? plan.milestones.map((milestone) => (
                         <button type="button" key={milestone.id} onClick={() => preparePlanFeedback(`请调整阶段 M${milestone.stage_order}「${milestone.title}」在第 ${milestone.start_week}${milestone.end_week === milestone.start_week ? '' : `–${milestone.end_week}`} 周的安排。我的具体想法是：`)}>M{milestone.stage_order} · {milestone.title}</button>
@@ -785,11 +795,14 @@ export function PlanReviewPage() {
                     ))}
                   </div>
                 )}
-                <label htmlFor="plan-feedback">{planFeedbackIntent === 'EXPLAIN' ? '想了解什么？' : '希望怎样调整？'}</label>
-                <div className="composer-input-well"><textarea ref={planFeedbackInputRef} id="plan-feedback" onKeyDown={submitOnEnter} title="Enter 发送，Shift + Enter 换行" value={planFeedback} onChange={(event) => setPlanFeedbackDraft(planFeedbackIntent, event.target.value)} placeholder={planFeedbackIntent === 'EXPLAIN' ? '例如：为什么第三阶段需要三周？' : '例如：每周六天有些密，希望调整为五天……'} />
+                </details>
+                <label className="sr-only" htmlFor="plan-feedback">{planFeedbackIntent === 'EXPLAIN' ? '想了解什么？' : '希望怎样调整？'}</label>
+                {attachedMaterials.length > 0 && <div className="material-attachment-strip">{attachedMaterials.map(item => <span key={item.source_id}>{item.title}{item.latest_revision?.status !== 'READY' ? ' · 解析中' : ''}<button type="button" disabled={isPlanResponding} aria-label={`移除附件 ${item.title}`} onClick={() => setAttachedMaterials(current => current.filter(material => material.source_id !== item.source_id))}>×</button></span>)}</div>}
+                  <div className="composer-input-well"><AutoResizeTextarea ref={planFeedbackInputRef} id="plan-feedback" onKeyDown={submitOnEnter} title="Enter 发送，Shift + Enter 换行" value={planFeedback} onChange={(event) => setPlanFeedbackDraft(planFeedbackIntent, event.target.value)} placeholder={planFeedbackIntent === 'EXPLAIN' ? '想了解这份安排的哪一部分？' : '说说想调整的地方…'} />
                 <div className="discussion-composer-toolbar">
-                  <MaterialWorkspacePanel goalId={goalId} compact />
-                  <button
+                  <MaterialWorkspacePanel goalId={goalId} compact selectedSourceIds={attachedMaterials.map(item => item.source_id)} onSelectionChange={setAttachedMaterials} disabled={isPlanResponding} />
+                  <CodexComposerSettings disabled={isPlanResponding} />
+                  {webConnection.available && <button
                     className={`research-toggle-button${webResearchEnabled ? ' active' : ''}`}
                     type="button"
                     aria-label={webResearchEnabled ? '关闭联网检索' : '开启联网检索'}
@@ -797,7 +810,7 @@ export function PlanReviewPage() {
                     title={webResearchEnabled ? '已允许模型判断并调用联网检索，点击关闭' : '允许模型判断是否需要联网检索'}
                     disabled={isPlanResponding}
                     onClick={() => setWebResearchEnabled((current) => !current)}
-                  ><Globe2 size={16} aria-hidden="true" /></button>
+                  ><Globe2 size={16} aria-hidden="true" /></button>}
                 <button className="button primary" type="submit" disabled={completedPlan || !planFeedback.trim() || isPlanResponding}>{isPlanResponding ? '正在整理…' : '发送'}</button></div></div>
                 <ResearchConnectionStatus connection={webConnection} />
                 {planDiscussionError && <p className="inline-error">{planDiscussionError}</p>}

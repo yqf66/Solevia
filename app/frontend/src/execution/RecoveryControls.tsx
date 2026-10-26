@@ -198,7 +198,7 @@ export function RecoveryCatchupDialog({ goalId, anchorDate, previewOnly = false,
   previewOnly?: boolean
   onClose: () => void
   onApplied: () => Promise<void> | void
-  onRequestAI: (preview: RecoveryCatchupPreview) => Promise<void> | void
+  onRequestAI: (preview: RecoveryCatchupPreview, instruction?: string, offer?: import('../api').RecoveryAvailabilityOffer) => Promise<void> | void
 }) {
   const [preview, setPreview] = useState<RecoveryCatchupPreview | null>(null)
   const [includeNonExecutionDays, setIncludeNonExecutionDays] = useState(false)
@@ -213,6 +213,9 @@ export function RecoveryCatchupDialog({ goalId, anchorDate, previewOnly = false,
   const [splitTaskId, setSplitTaskId] = useState<string | null>(null)
   const [splitMinutes, setSplitMinutes] = useState('')
   const [requestingDiscussion, setRequestingDiscussion] = useState(false)
+  const [showAvailability, setShowAvailability] = useState(false)
+  const [extraMinutes, setExtraMinutes] = useState('20')
+  const [availableFrom, setAvailableFrom] = useState(anchorDate ?? dateInputValue(new Date()))
 
   function nextScopeRequest() { return ++scopeRequest.current }
 
@@ -295,13 +298,14 @@ export function RecoveryCatchupDialog({ goalId, anchorDate, previewOnly = false,
     setError('')
   }
 
-  async function requestDiscussion() {
+  async function requestDiscussion(instruction?: string, offer?: import('../api').RecoveryAvailabilityOffer) {
     if (!preview || busy || scopeDirty || previewOnly || splitTaskId) return
     setBusy(true)
     setRequestingDiscussion(true)
     setError('')
     try {
-      await onRequestAI(preview)
+      if (instruction) await onRequestAI(preview, instruction, offer)
+      else await onRequestAI(preview)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : '生成失败，可以缩小范围后重新预览。')
     } finally {
@@ -341,6 +345,7 @@ export function RecoveryCatchupDialog({ goalId, anchorDate, previewOnly = false,
   return <DialogBackdrop className="recovery-overlay" onDismiss={onClose}> <section className="recovery-dialog catchup-dialog" role="dialog" aria-modal="true" aria-labelledby="catchup-dialog-title">
     <header><div><p className="eyebrow">{previewOnly ? '压力测试预览' : '保持最终日期'}</p><h2 id="catchup-dialog-title">把遗留工作接回后续安排</h2></div><button type="button" aria-label="关闭追赶方案" disabled={busy} onClick={onClose}>×</button></header>
     <div className="catchup-dialog-body">
+      <p className="recovery-step-note">先选择要补回的任务，再查看能否放下。预览和讨论都不会直接改动当前计划。</p>
       {!preview && !error && <div className="recovery-loading"><i aria-hidden="true" /><p>正在计算追赶成本…</p></div>}
       {error && <div className="recovery-error"><p className="form-error" role="alert">{error}</p><button className="button" type="button" disabled={busy || Boolean(preview?.recovery_scope && !selectedTaskIds.length)} onClick={() => void reloadPreview()}>按当前选择重试</button>{preview?.recovery_scope && <button className="button" type="button" disabled={busy} onClick={() => void reloadPreview(includeNonExecutionDays, true)}>重新读取全部积压</button>}</div>}
       {preview && <>
@@ -355,7 +360,18 @@ export function RecoveryCatchupDialog({ goalId, anchorDate, previewOnly = false,
         {splitPreview && <div className="recovery-split-confirm" role="dialog" aria-label="确认任务拆分"><strong>确认拆分“{splitPreview.title}”</strong><p>{splitPreview.original_minutes} 分钟 → {splitPreview.part_minutes.join(' + ')} 分钟。拆分后仍是同一项任务的连续分片，不会增加完成次数；日期安排需要重新预览。</p><button className="button" type="button" disabled={busy} onClick={() => { setSplitPreview(null); setSplitTaskId(null) }}>取消</button><button className="button primary" type="button" disabled={busy} onClick={() => void confirmSplit()}>确认拆分</button></div>}
         {!scopeDirty && <div className="catchup-facts"><span>本次纳入<strong>{preview.backlog_tasks} 项 · {preview.backlog_minutes} 分钟</strong></span><span>剩余执行日<strong>{preview.remaining_execution_days} 天</strong></span><span>原结束日期<strong>{friendlyDate(preview.original_end_date)}</strong></span></div>}
         {(preview.reason_codes ?? []).length > 0 && <p className="recovery-reason-codes">调整依据：{(preview.reason_codes ?? []).map((code) => adjustmentReasonLabels[code] ?? code).join('、')}</p>}
-        {!scopeDirty && <RecoveryTimeReview goalId={goalId} preview={preview.time_preview} accepted={acceptUnallocated} onAccept={setAcceptUnallocated} disabled={busy} />}
+        {!scopeDirty && <RecoveryTimeReview preview={preview.time_preview} accepted={acceptUnallocated} onAccept={setAcceptUnallocated} disabled={busy} onReviewAvailability={previewOnly ? undefined : () => setShowAvailability(true)} />}
+        {showAvailability && <form className="recovery-availability-editor" aria-label="补充追赶可用时间" onSubmit={event => {
+          event.preventDefault()
+          if (!Number.isInteger(Number(extraMinutes)) || Number(extraMinutes) < 5 || Number(extraMinutes) > 480 || !availableFrom || availableFrom < (anchorDate ?? dateInputValue(new Date())) || (preview.original_end_date && availableFrom > preview.original_end_date)) {
+            setError('请选择今天至原结束日期内的日期，额外时间为每天 5–480 分钟。'); return
+          }
+          void requestDiscussion(`我希望保持最终日期 ${preview.original_end_date}。从 ${availableFrom} 起到该日期，在原计划用时之外，每个执行日最多额外投入 ${extraMinutes} 分钟，用来补回本次所选任务。请按此上限重新核对容量和前置关系，清楚列出补回任务的原日期、新日期及每天总用时；放不下就说明缺口，不得擅自超出或删除任务。先生成可确认的建议，不发布。`, { from_date: availableFrom, extra_minutes_per_execution_day: Number(extraMinutes) })
+        }}>
+          <strong>你能额外投入多少时间？</strong><p>指在每天原有任务之外，多留给补回任务的时间。将带入恢复讨论，重新校验后再让你预览确认。</p>
+          <div><label>从哪天起<input type="date" required min={anchorDate ?? dateInputValue(new Date())} max={preview.original_end_date ?? undefined} value={availableFrom} disabled={busy} onChange={event => setAvailableFrom(event.target.value)} /></label><label>每个执行日额外分钟<input type="number" required min="5" max="480" step="1" value={extraMinutes} disabled={busy} onChange={event => setExtraMinutes(event.target.value)} /></label></div>
+          <footer><button className="button" type="button" disabled={busy} onClick={() => setShowAvailability(false)}>取消</button><button className="button primary" type="submit" disabled={busy || scopeDirty || Boolean(splitTaskId)}>按这个投入讨论补回方案</button></footer>
+        </form>}
         <label className="rest-day-consent"><input type="checkbox" checked={includeNonExecutionDays} disabled={busy} onChange={(event) => void changeNonExecutionDays(event.target.checked)} />可以考虑使用非执行日补任务</label>
         <p className="catchup-consent-note">{includeNonExecutionDays ? '程序会同时考虑后续执行日和非执行日，按日期与可用容量尽早分摊，不会只使用非执行日。' : '当前只把积压任务分摊到后续执行日。'}</p>
         {!scopeDirty && (preview.programmatic_feasible ? <>

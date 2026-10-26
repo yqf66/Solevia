@@ -97,6 +97,31 @@ def test_flexible_task_policy_is_structured_and_defaults_to_exact_day():
     assert flexible.scheduling_policy_data["window"] == "本周内"
 
 
+def test_codex_keeps_program_facts_without_serial_advisory_model_calls(session_factory, monkeypatch):
+    from planner_api.generation_orchestration import ModelSpecialistProvider
+
+    def unexpected_call(*args, **kwargs):
+        raise AssertionError('Codex must plan directly without advisory model calls')
+    monkeypatch.setattr(ModelSpecialistProvider, 'analyze', unexpected_call)
+    monkeypatch.setattr(ModelSpecialistProvider, 'analyze_scoped', unexpected_call)
+    with session_factory() as session:
+        goal = Goal(title='Codex 规划', raw_input='保留完成记录和容量约束')
+        session.add(goal)
+        session.commit()
+        source = {'locked_execution': {'day_ids': ['day-1'], 'task_ids': ['task-1']},
+                  'requirements': {'available_capacity': '每天20分钟'},
+                  'notes': '冲突需要由主规划核对'}
+        prepared = GenerationOrchestrator(session, settings=Settings(_env_file=None, llm_provider='codex')).prepare(
+            goal.id, 'RECOVERY_PLANNING', source, minimum_tier='L3')
+        assert prepared['decision']['execution_strategy'] == 'CODEX_NATIVE_WITH_LOCAL_GUARDS'
+        assert prepared['decision']['roles'] == []
+        assert prepared['specialist_reports'] == []
+        assert 'arithmetic_checks' in prepared['program_facts']
+        assert 'derived_buffer_conflicts' in prepared['program_facts']
+        assert prepared['write_authority'] == 'MAIN_AGENT_THEN_LOCAL_VALIDATION'
+        assert source['locked_execution']['task_ids'] == ['task-1']
+
+
 def test_intent_report_reuses_unchanged_facts_but_invalidates_on_user_change(session_factory):
     provider = CountingSpecialist()
     settings = Settings(_env_file=None, llm_provider="fake", multi_agent_max_roles=1)

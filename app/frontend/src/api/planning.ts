@@ -13,7 +13,7 @@ export function draftRoute(goalId: string): Promise<RouteWorkspace> {
 export function reviseRoute(
   goalId: string,
   content: string,
-  options: { webResearchEnabled?: boolean; researchRunId?: string; regenerate?: boolean } = {},
+  options: { webResearchEnabled?: boolean; researchRunId?: string; regenerate?: boolean; materialSourceIds?: string[] } = {},
 ): Promise<RouteWorkspace> {
   return request(`/api/goals/${goalId}/route/revise`, {
     method: 'POST',
@@ -22,6 +22,7 @@ export function reviseRoute(
       ...(options.webResearchEnabled ? { web_research_enabled: true } : {}),
       ...(options.researchRunId ? { research_run_id: options.researchRunId } : {}),
       ...(options.regenerate ? { regenerate: true } : {}),
+      ...(options.materialSourceIds?.length ? { material_source_ids: options.materialSourceIds } : {}),
     }),
   })
 }
@@ -29,7 +30,7 @@ export function reviseRoute(
 export function explainRoute(
   goalId: string,
   content: string,
-  options: { webResearchEnabled?: boolean; researchRunId?: string; regenerate?: boolean } = {},
+  options: { webResearchEnabled?: boolean; researchRunId?: string; regenerate?: boolean; materialSourceIds?: string[] } = {},
 ): Promise<RouteWorkspace> {
   return request(`/api/goals/${goalId}/route/explain`, {
     method: 'POST',
@@ -38,6 +39,7 @@ export function explainRoute(
       ...(options.webResearchEnabled ? { web_research_enabled: true } : {}),
       ...(options.researchRunId ? { research_run_id: options.researchRunId } : {}),
       ...(options.regenerate ? { regenerate: true } : {}),
+      ...(options.materialSourceIds?.length ? { material_source_ids: options.materialSourceIds } : {}),
     }),
   })
 }
@@ -68,7 +70,7 @@ export function draftNextPlanDetails(goalId: string): Promise<PlanWorkspace> {
 
 export function startPlanGeneration(
   goalId: string,
-  mode: 'STANDARD' | 'DEEP',
+  mode: 'STANDARD' = 'STANDARD',
 ): Promise<PlanWorkspace> {
   return request(`/api/goals/${goalId}/plan/generation/start`, {
     method: 'POST',
@@ -82,6 +84,7 @@ export function explainPlan(
   webResearchEnabled = false,
   researchRunId?: string,
   regenerate = false,
+  materialSourceIds?: string[],
 ): Promise<PlanWorkspace> {
   return request(`/api/goals/${goalId}/plan/explain`, {
     method: 'POST',
@@ -90,6 +93,7 @@ export function explainPlan(
       ...(webResearchEnabled ? { web_research_enabled: true } : {}),
       ...(researchRunId ? { research_run_id: researchRunId } : {}),
       ...(regenerate ? { regenerate: true } : {}),
+      ...(materialSourceIds?.length ? { material_source_ids: materialSourceIds } : {}),
     }),
   })
 }
@@ -100,6 +104,8 @@ export function revisePlan(
   webResearchEnabled = false,
   researchRunId?: string,
   regenerate = false,
+  materialSourceIds?: string[],
+  recoveryOptions?: import('./contracts').RecoveryPreviewOptions,
 ): Promise<PlanWorkspace> {
   return request(`/api/goals/${goalId}/plan/revise`, {
     method: 'POST',
@@ -108,6 +114,8 @@ export function revisePlan(
       ...(webResearchEnabled ? { web_research_enabled: true } : {}),
       ...(researchRunId ? { research_run_id: researchRunId } : {}),
       ...(regenerate ? { regenerate: true } : {}),
+      ...(materialSourceIds?.length ? { material_source_ids: materialSourceIds } : {}),
+      ...(recoveryOptions ? { recovery_options: recoveryOptions } : {}),
     }),
   })
 }

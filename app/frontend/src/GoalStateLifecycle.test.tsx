@@ -123,7 +123,7 @@ it('finishes publication with the active version, cleared recovery URL and updat
     recovery_review: published ? null : { token: 'confirmed', decisions: [], extension_dates: [], extension_days: 0, is_recovery: true },
     pending_adjustment: published ? null : pending })
   window.history.pushState({}, '', '/goals/a/plan?recovery=1&discussion=1&adjustment=1')
-  vi.spyOn(globalThis, 'fetch').mockImplementation(input => {
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(input => {
     const path = String(input)
     if (path === '/api/goals' || path === '/api/goals/status-check') return Promise.resolve(response([goal('a', published ? 'ACTIVE' : 'RECOVERY_REQUIRED')]))
     if (path.endsWith('/plan/adjustment/preview')) return Promise.resolve(response({ id: 'preview', schedule: [], unallocated_count: 0 }))
@@ -133,12 +133,70 @@ it('finishes publication with the active version, cleared recovery URL and updat
   })
   render(<App />)
   fireEvent.click(await screen.findByRole('button', { name: '先预览日期与时间' }))
+  await screen.findByRole('button', { name: '确认并发布调整' })
+  for (let index = 0; index < 2; index++) {
+    fireEvent.click(screen.getByRole('button', { name: /^计划讨论/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^计划讨论/ }))
+    expect(screen.getByRole('button', { name: '确认并发布调整' })).toBeVisible()
+  }
+  expect(fetchMock.mock.calls.filter(([input]) => String(input).endsWith('/plan/adjustment/preview'))).toHaveLength(1)
+  expect(fetchMock.mock.calls.filter(([input]) => String(input).endsWith('/plan/adjustment/apply'))).toHaveLength(0)
   fireEvent.click(await screen.findByRole('button', { name: '确认并发布调整' }))
   expect(await screen.findByText('计划 v1.2 已生效')).toBeInTheDocument()
   expect(screen.queryByText('当前恢复草案')).not.toBeInTheDocument()
   expect(await screen.findByRole('link', { name: /规划a\s*正在执行/ })).toHaveAttribute('href', '/goals/a/today')
   expect(window.location.search).toBe('')
   expect(sessionStorage.getItem('planner:recovery-view:a')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: '写反馈' }))
+  fireEvent.click(screen.getByRole('button', { name: /^计划讨论/ }))
+  fireEvent.click(screen.getByRole('button', { name: /^计划讨论/ }))
+  expect(screen.queryByRole('button', { name: '确认并发布调整' })).not.toBeInTheDocument()
+  expect(fetchMock.mock.calls.filter(([input]) => String(input).endsWith('/plan/adjustment/preview'))).toHaveLength(1)
+  expect(fetchMock.mock.calls.filter(([input]) => String(input).endsWith('/plan/adjustment/apply'))).toHaveLength(1)
+})
+
+it.each(['EXPLAIN', 'REVISE'])('does not repeat %s or publish a plan when discussion is closed before its response and opened again', async intent => {
+  let finish!: (value: Response) => void
+  const pendingRequest = new Promise<Response>(resolve => { finish = resolve })
+  const pending = { assistant_message: '已保存的调整建议，等待确认。', can_apply: true, needs_clarification: false,
+    scope: 'WEEK', affected_stage_orders: [], affected_weeks: [1], downstream_affected_weeks: [],
+    proposed_changes: ['降低本周强度'], tradeoffs: [], unchanged_guarantees: [], total_weeks_change: 0 }
+  window.history.pushState({}, '', '/goals/a/plan?discussion=1')
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((input, options) => {
+    const path = String(input)
+    if (path === '/api/goals' || path === '/api/goals/status-check') return Promise.resolve(response([goal('a')]))
+    if (path.endsWith(intent === 'EXPLAIN' ? '/plan/explain' : '/plan/revise') && options?.method === 'POST') return pendingRequest
+    if (path.endsWith('/plan')) return Promise.resolve(response(workspace('a')))
+    return Promise.resolve(response([]))
+  })
+  render(<App />)
+  const editor = await screen.findByLabelText('希望怎样调整？')
+  if (intent === 'EXPLAIN') fireEvent.click(screen.getByRole('button', { name: '只做解释' }))
+  fireEvent.change(editor, { target: { value: '想了解降低强度会怎样安排' } })
+  fireEvent.click(screen.getByRole('button', { name: '发送' }))
+  const toggle = () => screen.getByRole('button', { name: /^计划讨论/ })
+  fireEvent.click(toggle())
+  expect(screen.queryByLabelText('希望怎样调整？')).not.toBeInTheDocument()
+  const content = '已保存的回复正文。'.repeat(80)
+  await act(async () => { finish(response({ ...workspace('a'),
+    pending_adjustment: intent === 'REVISE' ? pending : null,
+    messages: [{ id: 'a1', role: 'ASSISTANT', content, generation_status: 'SUCCEEDED' }],
+  })) })
+  fireEvent.click(toggle())
+  expect(screen.getByRole('button', { name: '显示全文' })).toBeInTheDocument()
+  // Closing during presentation must consume only the display animation.
+  fireEvent.click(toggle())
+  fireEvent.click(toggle())
+  expect(document.querySelector('.assistant-answer')).toHaveAttribute('aria-busy', 'false')
+  expect(document.querySelector('.assistant-answer')).toHaveTextContent(content)
+  if (intent === 'REVISE') {
+    expect(screen.getByRole('button', { name: '先预览日期与时间' })).toBeVisible()
+    expect(screen.getByText('降低本周强度')).toBeVisible()
+  }
+  expect(screen.getByText('a的已保存安排')).toBeInTheDocument()
+  const mutationPaths = fetchMock.mock.calls.filter(([, options]) => options?.method === 'POST')
+    .map(([input]) => String(input)).filter(path => /\/plan\//.test(path))
+  expect(mutationPaths).toEqual([`/api/goals/a/plan/${intent === 'EXPLAIN' ? 'explain' : 'revise'}`])
 })
 
 it.each([true, false])('takes Today proposals to saved preview or decisions without publishing (can_apply=%s)', async canApply => {

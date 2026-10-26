@@ -286,10 +286,14 @@ def configured_json_transport(
     settings: Settings,
     transport: JSONTransport,
 ) -> JSONTransport:
-    """Apply an app-scoped proxy only to the built-in HTTP transport.
+    """Select the app runtime only for the built-in transport.
 
     Injected transports used by tests or callers remain untouched.
     """
+    if settings.llm_provider == "codex" and transport is _urllib_json_transport:
+        from planner_api.codex_runtime.business import codex_json_transport
+
+        return codex_json_transport(settings)
     proxy_url = settings.llm_proxy_url.strip()
     if not proxy_url or transport is not _urllib_json_transport:
         return transport
@@ -331,7 +335,7 @@ class DeepSeekClarificationProvider:
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError(
                 "Solevia 暂时无法开始回复，请稍后再试。",
             )
@@ -539,7 +543,7 @@ class OpenAICompatibleClarificationProvider:
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError(
                 "Solevia 暂时无法开始回复，请稍后再试。",
             )
@@ -688,6 +692,10 @@ class OpenAICompatibleClarificationProvider:
 def build_clarification_provider(settings: Settings) -> ClarificationProvider:
     if settings.llm_provider == "fake":
         return FakeClarificationProvider()
+    if settings.llm_provider == "codex":
+        from planner_api.codex_runtime.providers import CodexClarificationProvider
+
+        return CodexClarificationProvider(settings)
     if settings.llm_provider == "deepseek":
         return DeepSeekClarificationProvider(settings)
     return OpenAICompatibleClarificationProvider(settings)

@@ -1,4 +1,14 @@
 .planner-stage-page.route-review-page, .planner-stage-page.plan-review-page { grid-template-columns: minmax(0, 1fr) 290px; }
+/* Discussion uses the companion's compact type scale, not the plan's headings. */
+.app-shell :is(.route-review-page,.plan-review-page) .route-discussion-panel .discussion-message { font-size: 13px; line-height: 1.7; }
+.app-shell :is(.route-review-page,.plan-review-page) .route-discussion-panel .discussion-message > strong { font-size: 12px; }
+.app-shell :is(.route-review-page,.plan-review-page) .route-discussion-panel .composer-input-well { padding: 10px 12px; gap: 6px; }
+.app-shell :is(.route-review-page,.plan-review-page) .route-discussion-panel .composer-input-well > textarea { box-sizing: border-box; min-height: 26px; max-height: 132px; margin: 0; padding: 1px 2px; border: 0; resize: none; font-size: 13px; line-height: 24px; }
+.app-shell :is(.route-review-page,.plan-review-page) .route-discussion-panel .composer-input-well > textarea:focus-visible { outline: none; box-shadow: none; }
+.app-shell :is(.route-review-page,.plan-review-page) .route-discussion-panel .assistant-answer table { font-size: 12px; }
+@media (max-width: 480px) {
+  .app-shell :is(.route-review-page,.plan-review-page) .route-discussion-panel .composer-input-well > textarea { font-size: 16px; }
+}
 :is(.route-review-page,.plan-review-page) .planner-stage-header .stage-heading h1 { white-space: normal; font-size: 24px; }
 :is(.route-review-page,.plan-review-page) .planner-stage-header { grid-template-columns: minmax(0, 1fr) minmax(260px, 1fr); gap: 24px; }
 .route-review-page .route-main, .plan-review-page .relative-plan-main { width: min(820px, calc(100% - 64px)); padding-top: 30px; }

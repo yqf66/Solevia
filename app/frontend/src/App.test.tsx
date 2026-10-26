@@ -855,7 +855,7 @@ describe('App', () => {
     expect(screen.getByRole('textbox', { name: '希望怎样调整？' })).toHaveValue('')
     fireEvent.change(screen.getByRole('textbox', { name: '希望怎样调整？' }), { target: { value: '' } })
     fireEvent.click(screen.getByRole('button', { name: '先预览日期与时间' }))
-    expect(await screen.findByText('调整后的时间安排')).toBeInTheDocument()
+    expect(await screen.findByText('这次安排，具体改了什么')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '确认并发布调整' }))
     expect(await screen.findByRole('heading', { name: '这份安排包含的更新' })).toBeInTheDocument()
     expect(screen.getByText('第一周减少可选任务。')).toBeInTheDocument()
@@ -944,7 +944,7 @@ describe('App', () => {
     }
     const initial = {
       ...base, generation_phase: 'OUTLINE', generated_weeks: 0, total_weeks: 0,
-      plan: null, available_generation_modes: ['STANDARD', 'DEEP'], generation_job: null,
+      plan: null, available_generation_modes: ['STANDARD'], generation_job: null,
     }
     const queued = {
       ...initial, generation_job: {
@@ -964,8 +964,9 @@ describe('App', () => {
     })
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: '选择计划生成方式' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /标准生成/ }))
+    expect(await screen.findByRole('heading', { name: '准备安排时间' })).toBeInTheDocument()
+    expect(screen.queryByText('深度思考')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '开始生成计划' }))
     expect(await screen.findByRole('heading', { name: '查看相对时间计划' })).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/goals/goal-1/plan/generation/start',
@@ -991,7 +992,7 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: '时间规划暂时无法打开' })).toBeInTheDocument()
     expect(screen.getByRole('alert')).toHaveTextContent('连接暂时中断')
     fireEvent.click(screen.getByRole('button', { name: '重新读取' }))
-    expect(await screen.findByRole('heading', { name: '选择计划生成方式' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '准备安排时间' })).toBeInTheDocument()
     expect(planReads).toBe(2)
   })
 
@@ -1017,9 +1018,9 @@ describe('App', () => {
     })
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: '选择计划生成方式' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '准备安排时间' })).toBeInTheDocument()
     expect(screen.getByText('模型网关等待超时。需求和路线已经保存，可以稍后重试。')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /标准生成/ })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '开始生成计划' })).toBeEnabled()
   })
 
   it('shows automatic correction progress while background generation is running', async () => {

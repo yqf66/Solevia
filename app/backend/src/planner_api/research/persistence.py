@@ -49,6 +49,11 @@ class ResearchRunService:
         max_recovery_attempts: int = 3,
     ) -> None:
         self.session = session
+        if orchestrator is None:
+            from planner_api.config import get_settings
+            if get_settings().llm_provider == "codex":
+                from planner_api.codex_runtime.research import CodexResearchOrchestrator
+                orchestrator = CodexResearchOrchestrator()
         self.orchestrator = orchestrator or ResearchOrchestrator()
         self.lease_seconds = max(30, lease_seconds)
         self.max_recovery_attempts = max(1, max_recovery_attempts)

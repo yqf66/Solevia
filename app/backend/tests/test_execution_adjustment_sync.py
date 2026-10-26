@@ -8,10 +8,84 @@ from planner_api.ai import ProviderUnavailableError
 from planner_api.api import get_plan_service
 from planner_api.execution_discussion_service import ExecutionDiscussionService
 from planner_api.execution_service import ExecutionService
-from planner_api.models import Goal, Message, PlanActivation, PlanDay, PlanDaySchedule, PlanTask, ProgressEvent, RouteVersion
+from planner_api.models import Goal, Message, PlanActivation, PlanDay, PlanDaySchedule, PlanTask, ProgressEvent, RequirementVersion, RouteVersion
 from planner_api.plan_discussion_ai import FakePlanDiscussionProvider
 from planner_api.schemas import PlanRevisionResult
 from test_execution_discussion import _started_goal
+
+
+@pytest.mark.parametrize("scenario", ["insert", "repair_old_mapping", "week_full", "deadline"])
+def test_hybrid_calendar_revision_stays_in_its_week_and_before_deadline(client, session_factory, scenario):
+    goal_id = _started_goal(client)
+    with session_factory() as session:
+        service = get_plan_service(session)
+        goal = session.get(Goal, goal_id)
+        source = service._current_plan(goal_id)
+        source.execution_model_version = "HYBRID_WORK_ITEM"
+        source.schedule_type = "CALENDAR"
+        source.compiler_report_json = {**source.compiler_report_json, "week_basis": "ROLLING_START"}
+        activation = session.scalar(select(PlanActivation).where(PlanActivation.plan_version_id == source.id))
+        anchor = activation.requested_start_date
+        activation.execution_weekdays_json = list(range(7))
+        source_days = list(session.scalars(select(PlanDay).where(PlanDay.plan_version_id == source.id)))
+        by_id = {day.id: day for day in source_days}
+        schedules = list(session.scalars(select(PlanDaySchedule).where(PlanDaySchedule.activation_id == activation.id)))
+        for schedule in schedules:
+            day = by_id[schedule.plan_day_id]
+            schedule.scheduled_date = anchor + timedelta(days=(day.week_index - 1) * 7 + day.day_index - 1)
+        activation.projected_end_date = max(row.scheduled_date for row in schedules)
+        first = min(source_days, key=lambda day: (day.week_index, day.day_index))
+        recorded = session.scalar(select(PlanTask).where(PlanTask.plan_day_id == first.id))
+        recorded.status = "COMPLETED"
+        requirement = session.get(RequirementVersion, goal.current_requirement_version_id)
+        requirement.snapshot_json = {**requirement.snapshot_json, "deadline": str(anchor + timedelta(days=source.total_weeks * 7 - 1)), "temporal_context": {}}
+        target_week = 2
+        week_days = [day for day in source_days if day.week_index == target_week]
+        extra_index = max(day.day_index for day in week_days) + 1
+        assert extra_index <= 7
+        expected = anchor + timedelta(days=7 + extra_index - 1)
+        payload = deepcopy(service._plan_payload(source))
+        extra = deepcopy(next(day for day in payload["days"] if day["week_index"] == target_week))
+        extra.update(day_index=extra_index, primary_goal="拆分后的独立交付")
+        payload["days"].append(extra)
+        payload["days"].sort(key=lambda day: (day["week_index"], day["day_index"]))
+        payload["weekly_execution_days"] = max(source.weekly_execution_days, extra_index)
+        payload["change_summary"] = ["拆分第二周的未执行任务"]
+        if scenario == "week_full":
+            activation.excluded_dates_json = [str(expected + timedelta(days=i)) for i in range(7 - extra_index + 1)]
+        elif scenario == "deadline":
+            # A date inside the old three-day grace must still respect a hard deadline.
+            requirement.snapshot_json = {**requirement.snapshot_json, "deadline": str(expected - timedelta(days=1))}
+        if scenario == "repair_old_mapping":
+            original_extra = PlanDay(plan_version_id=source.id, milestone_id=week_days[0].milestone_id,
+                stage_order=week_days[0].stage_order, week_index=target_week, day_index=extra_index,
+                primary_goal=extra["primary_goal"], suggested_minutes=extra["suggested_minutes"])
+            session.add(original_extra)
+            session.flush()
+            session.add(PlanDaySchedule(activation_id=activation.id, plan_day_id=original_extra.id,
+                scheduled_date=activation.projected_end_date + timedelta(days=1)))
+            source.weekly_execution_days = payload["weekly_execution_days"]
+        session.flush()
+        route = session.get(RouteVersion, source.route_version_id)
+        revised = service._persist_revision(goal, route, service._route_stages(route.id), source,
+            PlanRevisionResult.model_validate(payload), "calendar regression")
+        if scenario in {"week_full", "deadline"}:
+            with pytest.raises(ProviderUnavailableError) as caught:
+                service._migrate_active_execution(goal, source, revised)
+            assert caught.value.code == ("ADJUSTMENT_WEEK_DATES_EXHAUSTED" if scenario == "week_full" else "ADJUSTMENT_DEADLINE_EXCEEDED")
+            assert session.scalar(select(PlanActivation).where(PlanActivation.plan_version_id == revised.id)) is None
+        else:
+            service._migrate_active_execution(goal, source, revised)
+            new_activation = session.scalar(select(PlanActivation).where(PlanActivation.plan_version_id == revised.id))
+            new_day = session.scalar(select(PlanDay).where(PlanDay.plan_version_id == revised.id,
+                PlanDay.week_index == target_week, PlanDay.day_index == extra_index))
+            scheduled = session.scalar(select(PlanDaySchedule).where(PlanDaySchedule.activation_id == new_activation.id,
+                PlanDaySchedule.plan_day_id == new_day.id))
+            assert scheduled.scheduled_date == expected
+            migrated = session.scalar(select(PlanTask).where(PlanTask.plan_version_id == revised.id,
+                PlanTask.source_task_id == recorded.id))
+            assert migrated.status == "COMPLETED"
+        session.rollback()
 
 
 @pytest.mark.parametrize("change_recorded_action", [False, True])

@@ -1,0 +1,69 @@
+/* The execution companion has its own reading scale, separate from full-page chat. */
+.app-shell .execution-discussion-panel {
+  --discussion-body-size: 13px;
+  width: min(440px, calc(100vw - 32px));
+  height: min(700px, calc(100dvh - 112px));
+  max-height: calc(100dvh - 112px);
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  border-radius: 20px;
+  font-size: var(--discussion-body-size);
+}
+.app-shell .execution-discussion-panel.is-expanded {
+  --discussion-body-size: 14px;
+  width: min(800px, calc(100vw - 48px));
+  height: min(820px, calc(100dvh - 112px));
+}
+.app-shell .execution-discussion-panel > header { gap: 12px; padding: 16px 18px 8px; }
+.app-shell .execution-discussion-panel > header h2 { margin-top: 4px; font-size: 17px; line-height: 1.4; }
+.app-shell .execution-discussion-panel .eyebrow { font-size: 11px; line-height: 1.5; }
+.execution-discussion-actions { display: flex; flex-shrink: 0; align-items: center; gap: 4px; }
+.app-shell .execution-discussion-actions .icon-button { width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); transition: background 160ms, color 160ms; }
+.app-shell .execution-discussion-actions .icon-button:hover { background: var(--surface-blue); color: var(--accent); }
+.app-shell .execution-discussion-context { padding: 0 18px 12px; font-size: 11px; line-height: 1.5; }
+.app-shell .execution-discussion-scroll { min-height: 0; padding: 0 16px 12px; overscroll-behavior-y: contain; scrollbar-width: thin; scrollbar-color: var(--control-line) transparent; }
+.app-shell .execution-discussion-messages { gap: 16px; }
+.app-shell .execution-discussion-messages article.assistant { width: 100%; max-width: 100%; }
+.app-shell .execution-discussion-panel .assistant-answer { padding: 12px; font-size: var(--discussion-body-size); line-height: 1.7; }
+.app-shell .execution-discussion-panel .assistant-answer p { line-height: inherit; margin-bottom: .75em; }
+.app-shell .execution-discussion-panel .assistant-answer > :last-child { margin-bottom: 0; }
+.app-shell .execution-discussion-messages article > p { font-size: 13px; line-height: 1.65; }
+.app-shell .execution-discussion-panel .assistant-answer table { width: 100%; min-width: 100%; font-size: 12px; line-height: 1.6; }
+.app-shell .execution-discussion-panel .assistant-answer :is(th, td) { min-width: 6rem; max-width: 14rem; padding: 8px 9px; overflow-wrap: anywhere; }
+.app-shell .execution-discussion-panel .answer-table-hint { font-size: 11px; line-height: 1.5; }
+.app-shell .execution-discussion-panel .execution-retry { min-height: 32px; padding: 6px 10px; font-size: 12px; }
+.app-shell .execution-discussion-panel .execution-discussion-compose {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  margin: 0 14px 12px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  transition: border-color 160ms, box-shadow 160ms;
+}
+.app-shell .execution-discussion-panel .execution-discussion-compose:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 8%, transparent); }
+.app-shell .execution-discussion-compose > textarea { box-sizing: border-box; min-height: 26px; max-height: 132px; margin: 0; padding: 1px 2px; border: 0; border-radius: 0; resize: none; background: transparent; font-size: 13px; line-height: 24px; }
+.app-shell .execution-discussion-compose > textarea:focus-visible { outline: none; box-shadow: none; }
+.execution-discussion-toolbar { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.execution-discussion-toolbar > .codex-composer-settings { flex: 1; max-width: none; }
+.execution-discussion-toolbar > .material-workspace-panel { flex-shrink: 0; }
+.app-shell .execution-discussion-toolbar > button { flex: 0 0 32px; width: 32px; height: 32px; border-radius: 10px; }
+.app-shell .execution-discussion-toolbar > button[type="submit"] { margin-left: auto; color: var(--accent-contrast); }
+.app-shell .execution-discussion-panel > .research-connection { margin: -4px 18px 10px; font-size: 11px; }
+@media (max-width: 720px) {
+  .app-shell .execution-discussion-panel,
+  .app-shell .execution-discussion-panel.is-expanded { right: 10px; bottom: 74px; width: calc(100vw - 20px); height: min(700px, calc(100dvh - 90px)); max-height: calc(100dvh - 90px); }
+  .app-shell .execution-discussion-panel.is-expanded { --discussion-body-size: 13px; }
+  .app-shell .execution-discussion-actions .execution-discussion-expand { display: none; }
+}
+@media (max-width: 480px) {
+  .app-shell .execution-discussion-panel > header { padding-inline: 14px; }
+  .app-shell .execution-discussion-context { padding-inline: 14px; }
+  .app-shell .execution-discussion-scroll { padding-inline: 12px; }
+  .app-shell .execution-discussion-panel .execution-discussion-compose { margin-inline: 10px; padding: 10px; }
+  .app-shell .execution-discussion-compose > textarea { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .execution-discussion-panel .execution-discussion-compose,
+  .app-shell .execution-discussion-actions .icon-button { transition: none; }
+}

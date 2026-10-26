@@ -8,6 +8,13 @@ $script:Release = Get-Content -LiteralPath (Join-Path $script:SoleviaRoot 'relea
 
 function Invoke-Checked {
     param([string]$File, [string[]]$Arguments)
+    # Meter actual child network traffic once Python exists. No TLS interception,
+    # no global proxy change, and no guessed byte total for third-party tools.
+    $meterPython=Get-InstalledPython
+    if((Test-Path -LiteralPath $meterPython) -and (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'install_transfer.py'))) {
+        $Arguments=@((Join-Path $PSScriptRoot 'install_transfer.py'),$File)+$Arguments
+        $File=$meterPython
+    }
     $tail=[Collections.Generic.Queue[string]]::new()
     $previousPreference=$ErrorActionPreference
     try {

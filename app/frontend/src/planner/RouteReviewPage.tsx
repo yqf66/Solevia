@@ -1,3 +1,4 @@
+import { ConnectionAwareError } from '../ui/ConnectionAwareError'
 import { submitOnEnter } from '../ui/submitOnEnter'
 import './ReviewPages.css'
 import { RouteStageMap } from './RouteStageMap'
@@ -5,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Globe2 } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
-import { confirmRoute, draftRoute, explainRoute, getRoute, reviseRoute, type RouteWorkspace } from '../api'
+import { confirmRoute, draftRoute, explainRoute, getRoute, reviseRoute, type RouteWorkspace, type GoalMaterial } from '../api'
 import { useResearchResponse } from '../ui/useResearchResponse'
 import { ResearchProgress } from '../ui/ResearchProgress'
 import { useWebResearch } from '../ui/useWebResearch'
@@ -15,19 +16,25 @@ import { ASSISTANT_NAME, displayMessageContent } from '../ui/plannerPresentation
 import { RequirementSummary } from '../ui/RequirementSummary'
 import { AnswerResearch } from '../ui/AnswerResearch'
 import { AssistantAnswer, useFreshAnswers } from '../ui/AssistantAnswer'
+import { AutoResizeTextarea } from '../ui/AutoResizeTextarea'
 import { OperationProgress } from '../ui/ProcessDetails'
 import { MaterialWorkspacePanel } from '../ui/MaterialWorkspacePanel'
+import { CodexComposerSettings, useCodexSelectionPending } from '../codex/CodexModelSettings'
 
 export function RouteReviewPage() {
   const { goalId } = useParams()
   const [workspace, setWorkspace] = useState<RouteWorkspace | null>(null)
   const [error, setError] = useState('')
+  const [attachedMaterials, setAttachedMaterials] = useState<GoalMaterial[]>([])
+  const attachmentsPending = attachedMaterials.some(item => item.latest_revision?.status !== 'READY')
+  useEffect(() => { setAttachedMaterials([]) }, [goalId])
   const [routeFeedbackDrafts, setRouteFeedbackDrafts] = useState({ REVISE: '', EXPLAIN: '' })
   const [isGenerating, setIsGenerating] = useState(false)
   const [localRevising, setIsRevising] = useState(false)
   const freshAnswer = useFreshAnswers(goalId, workspace?.goal_id === goalId ? workspace?.messages : undefined)
   const research = useResearchResponse(goalId, ['ROUTE'], getRoute, setWorkspace)
-  const isRevising = localRevising || research.busy
+  const modelSelectionPending = useCodexSelectionPending()
+  const isRevising = localRevising || research.busy || modelSelectionPending
   const [isConfirming, setIsConfirming] = useState(false)
   const [isDiscussionOpen, setIsDiscussionOpen] = useState(false)
   const [feedbackIntent, setFeedbackIntent] = useState<'REVISE' | 'EXPLAIN'>('REVISE')
@@ -126,7 +133,7 @@ export function RouteReviewPage() {
     submittedIntent: 'REVISE' | 'EXPLAIN',
     regenerate = false,
   ) {
-    if (!goalId || !submittedFeedback.trim() || isRevising) return
+    if (!goalId || !submittedFeedback.trim() || isRevising || attachmentsPending) return
     const cleanFeedback = submittedFeedback.trim()
     setPendingRouteFeedback(cleanFeedback)
     setRouteFeedbackDraft(submittedIntent, '')
@@ -134,12 +141,12 @@ export function RouteReviewPage() {
     setError('')
     try {
       if (webResearchEnabled) {
-        await research.start(cleanFeedback, 'ROUTE', submittedIntent)
+        await research.start(cleanFeedback, 'ROUTE', submittedIntent, attachedMaterials.map(item => item.source_id))
         return
       }
       const revised = submittedIntent === 'EXPLAIN'
-        ? await explainRoute(goalId, cleanFeedback, { regenerate })
-        : await reviseRoute(goalId, cleanFeedback, { regenerate })
+        ? await explainRoute(goalId, cleanFeedback, { regenerate, materialSourceIds: attachedMaterials.map(item => item.source_id) })
+        : await reviseRoute(goalId, cleanFeedback, { regenerate, materialSourceIds: attachedMaterials.map(item => item.source_id) })
       const latestMessage = revised.messages.at(-1)
       if (latestMessage?.generation_status === 'FAILED') {
         setWorkspace(revised)
@@ -164,7 +171,7 @@ export function RouteReviewPage() {
   }
 
   function retryFailedMessage(messageIndex: number, editOnly = false) {
-    if (!workspace || isRevising) return
+    if (!workspace || isRevising || attachmentsPending) return
     const failed = workspace.messages[messageIndex]
     const original = workspace.messages[messageIndex - 1]
     if (failed?.generation_status !== 'FAILED' || original?.role !== 'USER') return
@@ -180,7 +187,7 @@ export function RouteReviewPage() {
   }
 
   function regenerateMessage(messageIndex: number) {
-    if (!workspace || isRevising) return
+    if (!workspace || isRevising || attachmentsPending) return
     const assistant = workspace.messages[messageIndex]
     const original = workspace.messages[messageIndex - 1]
     if (assistant?.role !== 'ASSISTANT' || assistant.generation_status !== 'SUCCEEDED' || original?.role !== 'USER') return
@@ -368,7 +375,7 @@ export function RouteReviewPage() {
             ))}
           </div>
 
-          {error && <p className="form-error route-action-error" role="alert">{error}</p>}
+          {error && <ConnectionAwareError message={error} />}
 
           {(route.tradeoffs.length > 0 || route.assumptions.length > 0) && (
             <div className="route-notes">
@@ -416,7 +423,7 @@ export function RouteReviewPage() {
                     <article className={`discussion-message ${message.role.toLowerCase()}${failed ? ' failed' : ''}`} key={message.id}>
                       <strong>{message.role === 'USER' ? '你' : ASSISTANT_NAME}</strong>
                       {failed && <b>这次没有完成，但当前路线没有变化</b>}
-                      {message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content, failed)} animate={!failed && freshAnswer(message.id)} /> : <p>{message.content}</p>}
+                      {message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content, failed)} animate={!failed && freshAnswer(message.id)} onPresented={() => freshAnswer.markPresented(message.id, message.content)} /> : <p>{message.content}</p>}
                       <AnswerResearch message={message} summary={workspace.latest_research} research={research} />
                       {failed && (
                         <div className="failure-actions">
@@ -454,10 +461,12 @@ export function RouteReviewPage() {
                     </div>
                   )}
                   <label htmlFor="route-feedback">{feedbackIntent === 'EXPLAIN' ? '想了解什么？' : '哪里需要调整？'}</label>
-                  <div className="composer-input-well"><textarea ref={feedbackInputRef} id="route-feedback" onKeyDown={submitOnEnter} title="Enter 发送，Shift + Enter 换行" value={feedback} onChange={(event) => setRouteFeedbackDraft(feedbackIntent, event.target.value)} placeholder={feedbackIntent === 'EXPLAIN' ? '例如：为什么必须先完成第二阶段？' : '例如：第二阶段我已经会了；整体太难；希望先做一个小成果……'} />
+                  {attachedMaterials.length > 0 && <div className="material-attachment-strip">{attachedMaterials.map(item => <span key={item.source_id}>{item.title}{item.latest_revision?.status !== 'READY' ? ' · 解析中' : ''}<button type="button" disabled={isRevising} aria-label={`移除附件 ${item.title}`} onClick={() => setAttachedMaterials(current => current.filter(material => material.source_id !== item.source_id))}>×</button></span>)}</div>}
+                  <div className="composer-input-well"><AutoResizeTextarea ref={feedbackInputRef} id="route-feedback" onKeyDown={submitOnEnter} title="Enter 发送，Shift + Enter 换行" value={feedback} onChange={(event) => setRouteFeedbackDraft(feedbackIntent, event.target.value)} placeholder={feedbackIntent === 'EXPLAIN' ? '想了解路线的哪一部分？' : '说说想调整的地方…'} />
                   <div className="discussion-composer-toolbar">
-                    <MaterialWorkspacePanel goalId={workspace.goal_id} compact />
-                    <button
+                    <MaterialWorkspacePanel goalId={workspace.goal_id} compact selectedSourceIds={attachedMaterials.map(item => item.source_id)} onSelectionChange={setAttachedMaterials} disabled={isRevising} />
+                    <CodexComposerSettings disabled={isRevising} />
+                    {webConnection.available && <button
                       className={`research-toggle-button${webResearchEnabled ? ' active' : ''}`}
                       type="button"
                       aria-label={webResearchEnabled ? '关闭联网检索' : '开启联网检索'}
@@ -465,10 +474,10 @@ export function RouteReviewPage() {
                       title={webResearchEnabled ? '已允许模型判断并调用联网检索，点击关闭' : '允许模型判断是否需要联网检索'}
                       disabled={isRevising}
                       onClick={() => setWebResearchEnabled((current) => !current)}
-                    ><Globe2 size={16} aria-hidden="true" /></button>
-                  <button className="button primary" type="submit" disabled={!feedback.trim() || isRevising}>{isRevising ? routeProgress.message : feedbackIntent === 'EXPLAIN' ? '发送问题' : '提交调整需求'}</button></div></div>
+                    ><Globe2 size={16} aria-hidden="true" /></button>}
+                  <button className="button primary" type="submit" disabled={!feedback.trim() || isRevising || attachmentsPending}>{isRevising ? routeProgress.message : feedbackIntent === 'EXPLAIN' ? '发送问题' : '提交调整需求'}</button></div></div>
                   <ResearchConnectionStatus connection={webConnection} />
-                  {error && <p className="form-error" role="alert">{error}</p>}
+                  {error && <ConnectionAwareError message={error} />}
                   <div className="review-actions">
                     <span>{feedbackIntent === 'EXPLAIN' ? '只回答你的问题，路线不会变化。' : 'Solevia 会先给出建议，你确认后路线才会变化。'}</span>
 

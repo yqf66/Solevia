@@ -237,7 +237,7 @@ class _RealPlanDiscussionProvider:
         sleeper: Callable[[float], None],
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError("Solevia 暂时无法开始回复，请稍后再试。")
         self.api_key = api_key
         self.base_url = settings.llm_base_url.rstrip("/")

@@ -32,6 +32,7 @@ class RouteExplanationContext:
     question: str
     conversation_memory: dict[str, object] | None = None
     research_context: dict[str, object] | None = None
+    material_context: dict[str, object] | None = None
 
 
 class RouteExplanationProvider(Protocol):
@@ -47,6 +48,7 @@ def _explanation_input(context: RouteExplanationContext) -> str:
             "user_question": context.question,
             "conversation_memory": context.conversation_memory,
             "research_context": context.research_context,
+            "material_context": context.material_context,
         },
         task_type="ROUTE_EXPLANATION",
     )
@@ -120,7 +122,7 @@ class DeepSeekRouteExplanationProvider:
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError("Solevia 暂时无法开始回复，请稍后再试。")
         self.endpoint = f"{settings.llm_base_url.rstrip('/')}/responses"
         self.headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
@@ -196,7 +198,7 @@ class OpenAICompatibleRouteExplanationProvider:
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError("Solevia 暂时无法开始回复，请稍后再试。")
         self.endpoint = f"{settings.llm_base_url.rstrip('/')}/chat/completions"
         self.headers = {

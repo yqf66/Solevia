@@ -800,7 +800,7 @@ class _PlanProviderBase:
         sleeper: Callable[[float], None],
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError("Solevia 暂时无法开始安排时间，请稍后再试。")
         self.api_key = api_key
         self.base_url = settings.llm_base_url.rstrip("/")
@@ -1200,7 +1200,7 @@ class NaturalPlanOutlineAuthor:
         sleeper: Callable[[float], None] = time.sleep,
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError("Solevia 暂时无法开始安排时间，请稍后再试。")
         self.provider = settings.llm_provider
         self.endpoint = (
@@ -1973,6 +1973,10 @@ class FakePlanProvider:
 def build_plan_provider(settings: Settings) -> PlanProvider:
     if settings.llm_provider == "fake":
         return FakePlanProvider()
+    if settings.llm_provider == "codex":
+        from planner_api.codex_runtime.providers import CodexPlanProvider
+
+        return CodexPlanProvider(settings)
     if settings.llm_provider == "deepseek":
         compiler: PlanProvider = DeepSeekPlanProvider(settings)
     else:

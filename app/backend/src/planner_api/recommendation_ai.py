@@ -91,7 +91,7 @@ def _content(response: dict[str, object]) -> str:
 class RecommendationProvider:
     def __init__(self, settings: Settings, *, transport=_urllib_json_transport):
         key = settings.llm_api_key.get_secret_value().strip()
-        if settings.llm_provider == "fake" or not key:
+        if settings.llm_provider == "fake" or not settings.model_runtime_configured:
             raise ProviderConfigurationError("真实模型未配置")
         self.settings = settings
         self.key = key

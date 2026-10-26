@@ -1,3 +1,5 @@
+import { ConnectionAwareError, isModelConnectionMessage } from '../ui/ConnectionAwareError'
+import { usesCodexKernel } from '../api/kernelMode'
 import { submitOnEnter } from '../ui/submitOnEnter'
 import { useNotebookDrawer } from './useNotebookDrawer'
 import { ClarificationNotebook } from './ClarificationNotebook'
@@ -18,10 +20,10 @@ import { AnswerResearch } from '../ui/AnswerResearch'
 import { AssistantAnswer, useFreshAnswers } from '../ui/AssistantAnswer'
 import { OperationProgress } from '../ui/ProcessDetails'
 import { MaterialWorkspacePanel } from '../ui/MaterialWorkspacePanel'
+import { CodexComposerSettings, useCodexSelectionPending } from '../codex/CodexModelSettings'
 
 const CLARIFICATION_RETRY_POLL_MS = 1500
 
-const CLARIFICATION_RETRY_MAX_WAIT_MS = 120_000
 
 async function waitForClarificationRetryResult(
   goalId: string,
@@ -30,7 +32,7 @@ async function waitForClarificationRetryResult(
   watch: { cancelled: boolean },
   onWorkspace: (workspace: ClarificationWorkspace) => void,
 ): Promise<ClarificationWorkspace> {
-  const deadline = Date.now() + CLARIFICATION_RETRY_MAX_WAIT_MS
+  const deadline = Date.now() + (usesCodexKernel() ? 21_600_000 : 120_000)
   while (Date.now() < deadline) {
     await new Promise<void>((resolve) => window.setTimeout(resolve, CLARIFICATION_RETRY_POLL_MS))
     if (watch.cancelled) throw new Error('Clarification retry polling cancelled')
@@ -59,7 +61,8 @@ export function ClarificationPage() {
   const [localSending, setIsSending] = useState(false)
   const freshAnswer = useFreshAnswers(goalId, workspace?.goal_id === goalId ? workspace?.messages : undefined)
   const research = useResearchResponse(goalId, ['CLARIFICATION'], getClarification, setWorkspace)
-  const isSending = localSending || research.busy
+  const modelSelectionPending = useCodexSelectionPending()
+  const isSending = localSending || research.busy || modelSelectionPending
   const webConnection = useWebResearch(goalId)
   const { enabled: webResearchEnabled, setEnabled: setWebResearchEnabled } = webConnection
   const [loadError, setLoadError] = useState('')
@@ -448,9 +451,11 @@ export function ClarificationPage() {
                 <article className={`message ${message.role.toLowerCase()}${message.generation_status === 'PENDING' ? ' processing-message' : ''}`} key={message.id}>
                   {message.role === 'ASSISTANT' && <span className="agent-identity"><SoleviaMark />{ASSISTANT_NAME}</span>}
                   {message.role === 'USER' && Array.isArray(message.metadata?.material_titles) && <div className="message-materials">{message.metadata.material_titles.filter((title): title is string => typeof title === 'string').map((title) => <span key={title}><FileText size={14} />{title}</span>)}</div>}
-                  {message.generation_status === 'PENDING'
+                  {message.generation_status === 'PENDING' && isModelConnectionMessage(actionError)
+                    ? <ConnectionAwareError message={actionError} onRetry={() => { initialReplyStartedRef.current = null; setInitialReplyRetryKey(value => value + 1) }} />
+                    : message.generation_status === 'PENDING'
                     ? <p><span className="typing-dots" aria-hidden="true"><i /><i /><i /></span>正在理解你的想法，准备从最有帮助的地方聊起…</p>
-                    : message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content, message.generation_status === 'FAILED')} animate={message.generation_status === 'SUCCEEDED' && freshAnswer(message.id)} /> : <p>{message.content}</p>}
+                    : message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content, message.generation_status === 'FAILED')} animate={message.generation_status === 'SUCCEEDED' && freshAnswer(message.id)} onPresented={() => freshAnswer.markPresented(message.id, message.content)} /> : <p>{message.content}</p>}
                   <AnswerResearch message={message} summary={workspace.latest_research} research={research} />
                   {message.generation_status === 'FAILED' && messageIndex === workspace.messages.length - 1 && (
                     <div className="failed-message-actions">
@@ -464,9 +469,9 @@ export function ClarificationPage() {
                 </article>
               ))}
               <ResearchProgress research={research} />
-              <OperationProgress active={(localSending && !research.busy) || isStartingInitialReply || isPreparingReview || isConfirming || isRetryingAnalysis} scope={`${goalId}:${research.current?.id ?? ''}`}
-                label={isPreparingReview ? '正在整理目标确认内容' : isConfirming ? '正在保存已确认的目标' : isRetryingAnalysis ? '正在更新讨论记录' : '正在结合对话生成回答'} error={actionError} />
-              {pendingInitialMessage && actionError && (
+              {!isModelConnectionMessage(actionError) && <OperationProgress active={(localSending && !research.busy) || isStartingInitialReply || isPreparingReview || isConfirming || isRetryingAnalysis} scope={`${goalId}:${research.current?.id ?? ''}`}
+                label={isPreparingReview ? '正在整理目标确认内容' : isConfirming ? '正在保存已确认的目标' : isRetryingAnalysis ? '正在更新讨论记录' : '正在结合对话生成回答'} error={actionError} />}
+              {pendingInitialMessage && actionError && !isModelConnectionMessage(actionError) && (
                 <div className="initial-reply-error" role="alert"><span>{actionError}</span><button type="button" disabled={isStartingInitialReply} onClick={() => { initialReplyStartedRef.current = null; setInitialReplyRetryKey((value) => value + 1) }}>{isStartingInitialReply ? '正在重试…' : '重新连接'}</button></div>
               )}
               {pendingReply && (
@@ -583,7 +588,7 @@ export function ClarificationPage() {
                     </div>
                     {workspace.selected_schedule_type && <p className="planning-approach-confirmed">已选择“{scheduleTypeLabels[workspace.selected_schedule_type]}”，路线与后续计划都会采用对应逻辑。</p>}
                   </section>}
-                  {actionError && <p className="form-error" role="alert">{actionError}</p>}
+                  {actionError && !(pendingInitialMessage && isModelConnectionMessage(actionError)) && <ConnectionAwareError message={actionError} />}
                   {requirementsChanged ? (
                     <div className="requirements-changed-notice" role="status">
                       <div>
@@ -642,7 +647,8 @@ export function ClarificationPage() {
                 />
                 <div className="discussion-composer-toolbar">
                   <MaterialWorkspacePanel goalId={workspace.goal_id} compact selectedSourceIds={attachedMaterials.map((material) => material.source_id)} onSelectionChange={setAttachedMaterials} disabled={isSending} />
-                  <button
+                  <CodexComposerSettings disabled={isSending} />
+                  {webConnection.available && <button
                     className={`research-toggle-button${webResearchEnabled ? ' active' : ''}`}
                     type="button"
                     aria-label={webResearchEnabled ? '关闭联网检索' : '开启联网检索'}
@@ -650,12 +656,12 @@ export function ClarificationPage() {
                     title={webResearchEnabled ? '已允许模型判断并调用联网检索，点击关闭' : '允许模型判断是否需要联网检索'}
                     disabled={isSending}
                     onClick={() => setWebResearchEnabled((current) => !current)}
-                  ><Globe2 size={16} aria-hidden="true" /></button>
+                  ><Globe2 size={16} aria-hidden="true" /></button>}
                 <button className="button primary" type="submit" disabled={!reply.trim() || isSending || attachedMaterialsPending}>
                     {isSending ? '正在回应…' : '发送'}
                   </button></div></div>
                 <ResearchConnectionStatus connection={webConnection} />
-                {actionError && <p className="form-error" role="alert">{actionError}</p>}
+                {actionError && !(pendingInitialMessage && isModelConnectionMessage(actionError)) && <ConnectionAwareError message={actionError} />}
                 
               </form>
             </div>

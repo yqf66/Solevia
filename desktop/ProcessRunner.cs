@@ -8,6 +8,8 @@ namespace Solevia.Desktop {
     public static class ProcessRunner {
         public static string Quote(string value) { return "\"" + value.Replace("\"", "\\\"") + "\""; }
         public static ProcessStartInfo Info(string file, string arguments, string root) {
+            if(String.Equals(file,"powershell.exe",StringComparison.OrdinalIgnoreCase))
+                file=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),@"WindowsPowerShell\v1.0\powershell.exe");
             var info = new ProcessStartInfo(file, arguments) { WorkingDirectory=root, UseShellExecute=false,
                 CreateNoWindow=true, RedirectStandardOutput=true, RedirectStandardError=true, RedirectStandardInput=true,
                 StandardOutputEncoding=Encoding.UTF8, StandardErrorEncoding=Encoding.UTF8 };

@@ -151,6 +151,7 @@ class RouteService:
         research_run_id: str | None = None,
         regenerate: bool = False,
         use_saved_research: bool = True,
+        material_source_ids: list[str] | None = None,
     ) -> RouteWorkspace:
         require_clarification_analysis_complete(self.session, goal_id)
         goal, requirement = self._get_goal_and_requirement(goal_id)
@@ -161,7 +162,14 @@ class RouteService:
             raise HTTPException(status_code=409, detail="No route draft exists")
         conversation = self._ensure_route_conversation(goal_id)
         clean_feedback = feedback.strip()
+        from planner_api.materials.conversation import resolve_discussion_sources, remember_discussion_sources
+        material_source_ids = resolve_discussion_sources(self.session, conversation, clean_feedback, "REVISE", material_source_ids, regenerate=regenerate)
+        from planner_api.materials.analysis_ai import build_material_analysis_provider
+        from planner_api.materials.analysis_service import MaterialAnalysisService
+        material_context = MaterialAnalysisService(self.session, build_material_analysis_provider(get_settings())).prepare_conversation_context(
+            goal_id, clean_feedback, material_source_ids) if material_source_ids else None
         retry_message = self._prepare_exchange(conversation, clean_feedback, "REVISE", allow_existing=regenerate)
+        remember_discussion_sources(self.session, conversation, material_source_ids, material_context)
         goal.last_active_at = utc_now()
         self.session.commit()
 
@@ -188,6 +196,7 @@ class RouteService:
                 user_feedback=clean_feedback,
                 requirement_memory=build_requirement_memory(self.session, goal_id),
                 research_context=research_context,
+                material_context=material_context,
             ),
             retry_message=retry_message,
             intent="REVISE",
@@ -223,6 +232,7 @@ class RouteService:
         research_run_id: str | None = None,
         regenerate: bool = False,
         use_saved_research: bool = True,
+        material_source_ids: list[str] | None = None,
     ) -> RouteWorkspace:
         goal, requirement = self._get_goal_and_requirement(goal_id)
         if goal.status != "ROUTE_REVIEW":
@@ -232,7 +242,14 @@ class RouteService:
             raise HTTPException(status_code=409, detail="No route draft exists")
         conversation = self._ensure_route_conversation(goal_id)
         clean_question = question.strip()
+        from planner_api.materials.conversation import resolve_discussion_sources, remember_discussion_sources
+        material_source_ids = resolve_discussion_sources(self.session, conversation, clean_question, "EXPLAIN", material_source_ids, regenerate=regenerate)
+        from planner_api.materials.analysis_ai import build_material_analysis_provider
+        from planner_api.materials.analysis_service import MaterialAnalysisService
+        material_context = MaterialAnalysisService(self.session, build_material_analysis_provider(get_settings())).prepare_conversation_context(
+            goal_id, clean_question, material_source_ids) if material_source_ids else None
         retry_message = self._prepare_exchange(conversation, clean_question, "EXPLAIN", allow_existing=regenerate)
+        remember_discussion_sources(self.session, conversation, material_source_ids, material_context)
         goal.last_active_at = utc_now()
         self.session.commit()
 
@@ -258,6 +275,7 @@ class RouteService:
                     conversation_memory={**build_requirement_memory(self.session, goal_id).get("route_review", {}),
                         "long_term_memory": build_requirement_memory(self.session, goal_id, clean_question).get("long_term_memory", [])},
                     research_context=research_context,
+                    material_context=material_context,
                 )
             )
         except ClarificationProviderError as error:

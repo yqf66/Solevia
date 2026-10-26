@@ -1,3 +1,4 @@
+import { ConnectionAwareError } from './ui/ConnectionAwareError'
 import { TimePicker } from './ui/TimePicker'
 import { DialogBackdrop } from './ui/DialogBackdrop'
 import { useConfirmation } from './ui/useConfirmation'
@@ -119,7 +120,7 @@ export function LightCreatePage() {
       {result.full_planning_recommended && <p className="light-notice">这份安排包含较复杂的目标，可在发布后升级为完整规划。</p>}
       <footer className="light-actions"><button className="button" type="button" disabled={busy || !result.title.trim() || invalid} onClick={() => void save()}>保存草案</button><button className="button primary" type="button" disabled={busy || !result.title.trim() || invalid} onClick={() => void save(true)}>{busy ? '正在处理…' : '确认安排'}</button></footer>
     </>}
-    {error && <p className="form-error" role="alert">{error}</p>}
+    {error && <ConnectionAwareError message={error} />}
   </section>
 }
 
@@ -142,7 +143,7 @@ export function LightListPage() {
     finally { setBusy(false) }
   }
   return <section className="page light-page">{confirmationDialog}<header className="light-header"><div><p className="eyebrow">快速安排</p><h1>近期要做的事</h1></div><Link className="button primary" to="/quick/new"><Plus size={16} /> 新建安排</Link></header>
-    {error && <p className="form-error" role="alert">{error}</p>}
+    {error && <ConnectionAwareError message={error} />}
     {!plans.length && !drafts.length && <p className="muted">还没有近期安排。</p>}
     {!!drafts.length && <section className="light-plan-list"><h2>未发布草案</h2>{drafts.map(draft => <div className="light-draft-row" key={draft.id}><Link to={`/quick/drafts/${draft.id}`}><strong>{draft.result.title}</strong><span>{draft.start_date} · {draft.result.tasks.length} 项</span></Link><button className="icon-button" title="丢弃草案" aria-label={`丢弃 ${draft.result.title}`} disabled={busy || draft.status === 'GENERATING'} onClick={() => void discard(draft)}><Trash2 size={16} /></button></div>)}</section>}
     <section className="light-plan-list">{plans.filter(plan => plan.status === 'ACTIVE').map(plan => <Link key={plan.id} to={`/quick/${plan.id}`}><strong>{plan.title}</strong><span>{plan.tasks.length} 项{plan.arrangement?.start_date ? ` · ${plan.arrangement.start_date}` : ''}</span></Link>)}</section>
@@ -305,7 +306,7 @@ function LightPlanWorkspace() {
     })}</div>
     {plan && !tasks.length && <p className="muted">这个日期没有任务。</p>}
     {!!others.length && <details className="light-assumptions"><summary>其他日期与历史事项 · {others.length}</summary>{others.map(task => <button className="light-future-task" key={task.id} onClick={() => { if (task.scheduled_date) setDate(task.scheduled_date) }}>{task.scheduled_date || '未定日期'} · {task.title} · {task.status === 'COMPLETED' ? '已完成' : task.status === 'SKIPPED' ? '已跳过' : task.recurrence === 'ONCE' ? '待办' : '重复事项'}</button>)}</details>}
-    {error && <p className="form-error" role="alert">{error}</p>}
+    {error && <ConnectionAwareError message={error} />}
     {allocation && board && <AllocationDialog today={board} manualPlanId={planId} onClose={() => setAllocation(false)} onApplied={setBoard} />}
     {editing && <DialogBackdrop className="inline-dialog-backdrop" onDismiss={() => setEditing(null)}> <form ref={dialogRef} className="inline-dialog" role="dialog" aria-modal="true" aria-label="编辑快速安排任务" onSubmit={event => { event.preventDefault(); void saveTask() }}>
       <header><h2>{editing.id ? '编辑任务' : '添加任务'}</h2><button className="icon-button" type="button" aria-label="关闭编辑" disabled={busy} onClick={() => setEditing(null)}><X size={18} /></button></header>

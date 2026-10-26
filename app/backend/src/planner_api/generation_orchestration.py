@@ -195,7 +195,7 @@ class ModelSpecialistProvider:
     def _analyze(self, role, task_type, context, *, cache_scope=None, deadline=None):
         settings = self.settings
         key = settings.llm_api_key.get_secret_value().strip()
-        if settings.llm_provider == "fake" or not key:
+        if settings.llm_provider == "fake" or not settings.model_runtime_configured:
             return DeterministicSpecialistProvider().analyze(role, task_type, context)
         reads = build_advisory_reads(
             # Leave space for the compiler manifest and transport wrapper; the
@@ -714,6 +714,11 @@ class GenerationOrchestrator:
         all_roles = ROLE_MAP[task_type]
         role_count = 0 if tier in {"L0", "L1"} else 1 if tier == "L2" else len(all_roles)
         roles = all_roles[: min(role_count, self.settings.multi_agent_max_roles)]
+        codex_native = self.settings.llm_provider == "codex" and isinstance(self.provider, ModelSpecialistProvider)
+        if codex_native:
+            # Codex owns semantic planning. Keep program facts and final business
+            # validation without serial model calls that merely restate context.
+            roles = ()
         run = GenerationRun(
             goal_id=goal_id,
             plan_version_id=plan_version_id,
@@ -727,6 +732,7 @@ class GenerationOrchestrator:
                 "reasons": reasons,
                 "roles": list(roles),
                 "fallback": "MAIN_AGENT_WITH_COMPILED_CONTEXT",
+                "execution_strategy": "CODEX_NATIVE_WITH_LOCAL_GUARDS" if codex_native else "SPECIALIST_ADVISORY",
             },
         )
         self.session.add(run)

@@ -1,3 +1,4 @@
+import { usesCodexKernel } from '../api/kernelMode'
 import { useEffect, useRef, useState } from 'react'
 import { actResearchResponse, createResearchResponse, getResearchResponse, getResearchReadiness, listResearchResponses, type ResearchReadiness, type ResearchResponsePhase, type ResearchResponseRequest } from '../api'
 
@@ -81,7 +82,7 @@ export function useResearchResponse<T>(
   useEffect(() => {
     if (!goalId || !requestId || requestGoal !== goalId || !requestStatus || !activeStatuses.has(requestStatus)) return
     let active = true
-    const deadline = Date.now() + 15 * 60 * 1000
+    const deadline = Date.now() + (usesCodexKernel() ? 6 * 60 * 60 * 1000 : 15 * 60 * 1000)
     let timer: ReturnType<typeof setTimeout>
     async function poll() {
       const revision = mutation.current
@@ -111,6 +112,7 @@ export function useResearchResponse<T>(
     const fingerprint = JSON.stringify([goalId, question, phase, intent, sources])
     if (outbox.current?.fingerprint !== fingerprint) outbox.current = { fingerprint, id: crypto.randomUUID() }
     try {
+      if (!usesCodexKernel()) {
       setPreparing(true)
       const deadline = Date.now() + 120000
       while (true) {
@@ -125,6 +127,7 @@ export function useResearchResponse<T>(
         if (goalRef.current !== goalId || revision !== mutation.current) return
       }
       setPreparing(false)
+      }
       const next = await createResearchResponse(goalId, {
         question, phase, intent, material_source_ids: sources, idempotency_key: outbox.current.id,
       })

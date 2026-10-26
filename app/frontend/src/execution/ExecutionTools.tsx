@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { getWorkspaceHolidays, type ExecutionCalendar, type FocusSession, type QuickCapture, type TodayWorkspace, type HolidayCalendarDay } from '../api'
 import { parseLocalDate, dateInputValue, friendlyDate } from '../ui/plannerPresentation'
+import { CalendarDayPreview } from './CalendarDayPreview'
 
 const calendarWeekdays = ['一', '二', '三', '四', '五', '六', '日']
 
@@ -60,6 +61,25 @@ export function ExecutionCalendarWidget({ calendar, selectedDate, onSelectDate }
     return new Date(selected.getFullYear(), selected.getMonth(), 1)
   })
   const [holidayDays, setHolidayDays] = useState<HolidayCalendarDay[]>([])
+  const [preview, setPreview] = useState<{ date: string; anchor: HTMLButtonElement } | null>(null)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const previewId = useId()
+
+  function keepPreview() {
+    clearTimeout(closeTimer.current)
+  }
+
+  function closePreview() {
+    keepPreview()
+    setPreview(null)
+  }
+
+  function leavePreview() {
+    keepPreview()
+    closeTimer.current = setTimeout(() => setPreview(null), 240)
+  }
+
+  useEffect(() => () => clearTimeout(closeTimer.current), [])
 
   useEffect(() => {
     const first = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1)
@@ -81,6 +101,7 @@ export function ExecutionCalendarWidget({ calendar, selectedDate, onSelectDate }
   })
 
   function moveMonth(offset: number) {
+    closePreview()
     setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1))
   }
 
@@ -112,18 +133,25 @@ export function ExecutionCalendarWidget({ calendar, selectedDate, onSelectDate }
               type="button"
               aria-label={`${value}，${holiday ? `${holiday.local_name}，${holiday.kind === 'HOLIDAY' ? '法定休息日' : '调休工作日'}，` : ''}${scheduled ? `${bindingLabel ? `${bindingLabel}，` : ''}${statusLabel}：${scheduled.primary_goal}${taskStageLabel ? `；${taskStageLabel}` : ''}` : '无任务'}`}
               aria-pressed={value === selectedDate}
+              aria-describedby={preview?.date === value ? previewId : undefined}
+              onMouseEnter={(event) => { keepPreview(); setPreview({ date: value, anchor: event.currentTarget }) }}
+              onMouseLeave={leavePreview}
+              onFocus={(event) => { keepPreview(); setPreview({ date: value, anchor: event.currentTarget }) }}
+              onBlur={leavePreview}
               onClick={() => onSelectDate(value)}
               key={value}
             >
               <span>{cell.getDate()}</span>
               {holiday && <em aria-hidden="true">{holiday.kind === 'HOLIDAY' ? '休' : '班'}</em>}
               {scheduled && <i aria-hidden="true" />}
-              <div className="calendar-tooltip" role="tooltip">
+              {preview?.date === value && <CalendarDayPreview id={previewId} anchor={preview.anchor}
+                date={value} expanded={(scheduled?.tasks.length ?? 0) + (scheduled?.changes?.length ?? 0) > 5}
+                onEnter={keepPreview} onLeave={leavePreview} onClose={closePreview}>
                 {holiday && <div className={`holiday-tooltip-label ${holiday.kind.toLowerCase()}`}><b>{holiday.local_name}</b><span>{holiday.kind === 'HOLIDAY' ? '法定休息日' : '调休工作日'}</span></div>}
                 <strong>{scheduled ? `日历位置：${scheduled.code} · ${bindingLabel ? `${bindingLabel} · ` : ''}${statusLabel}` : '留白日'}</strong>
                 {taskStageLabel && <p>{taskStageLabel}</p>}
                 <p>{scheduled?.primary_goal ?? '当天没有安排任务'}</p>
-                {scheduled && <ul>{scheduled.tasks.map((task) => <li key={task.id}><span>{task.status === 'COMPLETED' ? '✓' : task.status === 'CARRIED_OVER' ? '↗' : '·'}</span>{task.title}<small>{task.origin_stage_order != null && `原属 M${task.origin_stage_order} · `}{calendarPolicyLabels[task.scheduling_policy ?? 'EXACT_DAY']} · {task.status === 'CARRIED_OVER' ? `已转入后续 · ${task.estimate_minutes} 分钟` : `${task.estimate_minutes} 分钟`}</small></li>)}</ul>}
+                {scheduled && <ul>{scheduled.tasks.map((task) => <li key={task.id}><span>{task.status === 'COMPLETED' ? '✓' : task.status === 'CARRIED_OVER' ? '↗' : '·'}</span><span>{task.title}</span><small>{task.origin_stage_order != null && `原属 M${task.origin_stage_order} · `}{calendarPolicyLabels[task.scheduling_policy ?? 'EXACT_DAY']} · {task.status === 'CARRIED_OVER' ? `已转入后续 · ${task.estimate_minutes} 分钟` : `${task.estimate_minutes} 分钟`}</small></li>)}</ul>}
                 {scheduled?.changes?.map((change, index) => {
                   const directionLabels = {
                     MOVED_FROM: '从当天移出',
@@ -134,7 +162,7 @@ export function ExecutionCalendarWidget({ calendar, selectedDate, onSelectDate }
                   }
                   return <section className="calendar-change" key={`${change.direction}-${index}`}><b>{directionLabels[change.direction]}{change.counterpart_date ? ` · ${friendlyDate(change.counterpart_date)}` : ''}</b><span>{change.summary}</span><small>原因：{change.rationale}</small></section>
                 })}
-              </div>
+              </CalendarDayPreview>}
             </button>
           )
         })}

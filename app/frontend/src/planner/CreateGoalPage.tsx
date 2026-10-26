@@ -1,4 +1,7 @@
+import { ConnectionAwareError } from '../ui/ConnectionAwareError'
 import { useRef, useState } from 'react'
+import { CodexComposerSettings, useCodexSelectionPending } from '../codex/CodexModelSettings'
+import { useKernelSelection } from '../codex/KernelSelection'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { initializeGoal } from '../api'
@@ -9,6 +12,8 @@ import { GoalStartingPoints } from './GoalStartingPoints'
 import './CreateGoalPage.css'
 
 export function CreateGoalPage() {
+  const isCodex = useKernelSelection().mode === 'codex'
+  const modelSelectionPending = useCodexSelectionPending()
   const navigate = useNavigate()
   const [rawInput, setRawInput] = useState('')
   const [webResearchEnabled, setWebResearchEnabled] = useState(false)
@@ -18,12 +23,12 @@ export function CreateGoalPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!rawInput.trim() || isSubmitting) return
+    if (!rawInput.trim() || isSubmitting || modelSelectionPending) return
 
     setIsSubmitting(true)
     setError('')
     try {
-      const workspace = await initializeGoal(rawInput, detectedTimezone(), { webResearchEnabled })
+      const workspace = await initializeGoal(rawInput, detectedTimezone(), { webResearchEnabled: !isCodex && webResearchEnabled })
       window.dispatchEvent(new Event('planner:goals-changed'))
       navigate(`/goals/${workspace.goal_id}/clarify`)
     } catch (caught) {
@@ -47,10 +52,11 @@ export function CreateGoalPage() {
           aria-label="目标描述"
           required
         />
-        {error && <p className="form-error" role="alert">{error}</p>}
-        <label className="plan-research-toggle"><input type="checkbox" checked={webResearchEnabled} onChange={(event) => setWebResearchEnabled(event.target.checked)} />本次规划启用联网检索<span>需要外部资料时使用</span></label>
+        {error && <ConnectionAwareError message={error} />}
+        {!isCodex && <label className="plan-research-toggle"><input type="checkbox" checked={webResearchEnabled} onChange={(event) => setWebResearchEnabled(event.target.checked)} />本次规划启用联网检索<span>需要外部资料时使用</span></label>}
         <div className="goal-create-footer"><p>我们会先理解目标和路线，不会立刻生成密密麻麻的日程。</p>
-          <button className="button primary" type="submit" disabled={isSubmitting || !rawInput.trim()}>
+          <CodexComposerSettings disabled={isSubmitting} />
+          <button className="button primary" type="submit" disabled={isSubmitting || modelSelectionPending || !rawInput.trim()}>
             {isSubmitting ? '正在进入…' : '开始规划 →'}
           </button>
         </div>

@@ -1,9 +1,9 @@
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import type { ExecutionCalendar } from '../api'
 import { ExecutionCalendarWidget } from './ExecutionTools'
 
-afterEach(() => { cleanup(); vi.restoreAllMocks() })
+afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.useRealTimers() })
 
 it('distinguishes calendar position from mixed and carried-over task stages', async () => {
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ days: [] })))
@@ -19,11 +19,44 @@ it('distinguishes calendar position from mixed and carried-over task stages', as
   ] }
   render(<ExecutionCalendarWidget calendar={calendar} selectedDate="2026-10-20" onSelectDate={vi.fn()} />)
   const mixed = screen.getByRole('button', { name: /2026-10-20.*当天任务来自 M2、M3/ })
-  expect(within(mixed).getByText(/日历位置：M3-W2-D3/)).toBeInTheDocument()
-  expect(within(mixed).getByText(/原属 M2/)).toBeInTheDocument()
-  expect(within(mixed).getByText(/原属 M3/)).toBeInTheDocument()
+  fireEvent.focus(mixed)
+  const mixedPreview = screen.getByRole('tooltip')
+  expect(within(mixedPreview).getByText(/日历位置：M3-W2-D3/)).toBeInTheDocument()
+  expect(within(mixedPreview).getByText(/原属 M2/)).toBeInTheDocument()
+  expect(within(mixedPreview).getByText(/原属 M3/)).toBeInTheDocument()
   const carried = screen.getByRole('button', { name: /2026-10-21.*当天任务来自 M2/ })
-  expect(within(carried).getByText(/日历位置：M4-W3-D1/)).toBeInTheDocument()
-  expect(within(carried).getByText('当天任务来自 M2')).toBeInTheDocument()
+  fireEvent.focus(carried)
+  expect(within(screen.getByRole('tooltip')).getByText(/日历位置：M4-W3-D1/)).toBeInTheDocument()
+  expect(within(screen.getByRole('tooltip')).getByText('当天任务来自 M2')).toBeInTheDocument()
   expect(screen.getByText(/M 编号表示日历中的阶段位置/)).toBeInTheDocument()
+})
+
+it('keeps a busy day open when the pointer moves into its card and dismisses with Escape', () => {
+  vi.useFakeTimers()
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ days: [] })))
+  const calendar: ExecutionCalendar = { first_date: '2026-10-20', last_date: '2026-10-20', days: [
+    { plan_day_id: 'busy', scheduled_date: '2026-10-20', code: 'M1-W1-D1', primary_goal: '多项安排',
+      status: 'PLANNED', suggested_minutes: 120, changes: [],
+      tasks: Array.from({ length: 12 }, (_, index) => ({ id: String(index), title: `可核验任务 ${index + 1}`,
+        status: 'NOT_STARTED', is_required: true, estimate_minutes: 10 })) },
+  ] }
+  const onSelect = vi.fn()
+  render(<ExecutionCalendarWidget calendar={calendar} selectedDate="2026-10-20" onSelectDate={onSelect} />)
+  const day = screen.getByRole('button', { name: /2026-10-20/ })
+  fireEvent.mouseEnter(day)
+  const card = screen.getByRole('tooltip')
+  expect(within(card).getAllByRole('listitem')).toHaveLength(12)
+  expect(day).toHaveAttribute('aria-describedby', card.id)
+  fireEvent.mouseLeave(day)
+  act(() => vi.advanceTimersByTime(100))
+  fireEvent.mouseEnter(card)
+  act(() => vi.advanceTimersByTime(300))
+  expect(card).toBeInTheDocument()
+  fireEvent.click(card)
+  expect(onSelect).not.toHaveBeenCalled()
+  fireEvent.keyDown(document, { key: 'Escape' })
+  expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+  fireEvent.focus(day)
+  fireEvent.pointerDown(document.body)
+  expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
 })

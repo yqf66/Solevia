@@ -254,7 +254,7 @@ class ModelResearchIntentAnalyzer:
         transport: JSONTransport = _urllib_json_transport,
     ) -> None:
         key = settings.llm_api_key.get_secret_value().strip()
-        if not key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError("联网检索分析需要先配置模型 API。")
         self.settings = settings
         suffix = "/responses" if settings.llm_provider == "deepseek" else "/chat/completions"

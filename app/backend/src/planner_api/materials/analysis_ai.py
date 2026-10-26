@@ -161,7 +161,7 @@ class RealMaterialAnalysisProvider:
         sleeper=time.sleep,
     ) -> None:
         api_key = settings.llm_api_key.get_secret_value().strip()
-        if not api_key:
+        if not settings.model_runtime_configured:
             raise ProviderConfigurationError("本地资料分析暂时缺少模型 API Key。")
         self.settings = settings
         self.api_key = api_key

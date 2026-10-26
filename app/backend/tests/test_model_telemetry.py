@@ -222,7 +222,7 @@ def test_all_known_remote_model_call_sites_are_instrumented_search_is_separate()
                     for d in function.decorator_list
                 )
                 count += 1
-    assert count == 20
+    assert count == 22  # Shared Codex repair helper and native research node.
 
 
 def test_rotating_jsonl_is_bounded_and_no_raw_exception_is_persisted(tmp_path):
@@ -288,3 +288,16 @@ def test_business_guard_rejection_is_separate_and_preserves_error(monkeypatch, e
     assert events[-1]["event"] == "validation"
     assert events[-1]["failure_category"] == "CAPACITY_CONFLICT"
     assert "private planning text" not in json.dumps(events)
+
+
+@pytest.mark.parametrize("remaining, expected", [(False, 2400), (True, 7)])
+def test_codex_telemetry_reports_the_effective_wait_and_effort(events, remaining, expected):
+    def transport(*args):
+        return response("ok")
+    transport.__module__ = "planner_api.codex_runtime.business"
+    transport.codex_timeout_seconds = 2400
+    transport.codex_reasoning_effort = "high"
+    Probe(transport).run({}, {"solevia_budget_remaining": remaining})
+    attempt = next(row for row in events if row["event"] == "attempt")
+    assert attempt["timeout_seconds"] == expected
+    assert attempt["reasoning_effort"] == "high"

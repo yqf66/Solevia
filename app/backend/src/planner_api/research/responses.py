@@ -338,4 +338,4 @@ class ResearchResponseService:
                                   hybrid_rollout_mode=settings.hybrid_rollout_mode,
                                   hybrid_rollout_percentage=settings.hybrid_rollout_percentage)
             method = service.explain_plan if row.intent == "EXPLAIN" else service.revise_plan
-        return method(row.goal_id, row.question, **options, regenerate=regenerate)
+        return method(row.goal_id, row.question, **options, regenerate=regenerate, material_source_ids=sources)

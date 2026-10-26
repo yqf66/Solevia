@@ -103,6 +103,10 @@ def offline_model_settings(monkeypatch, tmp_path):
     def local_test_client(self, *args, **kwargs):
         kwargs.setdefault("base_url", "http://127.0.0.1")
         kwargs.setdefault("headers", {"X-Solevia-Token": token})
+        from planner_api.model_connection import require_model_connection
+        app = args[0] if args else kwargs.get("app")
+        if hasattr(app, "dependency_overrides"):
+            app.dependency_overrides[require_model_connection] = lambda: None
         original_init(self, *args, **kwargs)
     monkeypatch.setattr(TestClient, "__init__", local_test_client)
     # Crawl4AI imports python-dotenv at test time and otherwise promotes the

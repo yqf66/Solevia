@@ -11,3 +11,69 @@
 .plan-review-page .hybrid-work-item { border-radius: 6px; background: var(--surface-subtle); }
 .plan-review-page :is(.plan-day-evidence,.plan-day-dont) { border-radius: 5px 14px 14px 5px; }
 @media (max-width: 540px) { .plan-review-page :is(.plan-outline-detail,.hybrid-work-item-list) { padding: 14px; } .plan-review-page .plan-outline-card > summary { gap: 12px; padding: 16px; } }
+
+/* The same saved actions form the stage, week and day ledgers. */
+.plan-review-page .hybrid-stage-section { padding-top: 0; overflow: hidden; }
+.plan-review-page .hybrid-stage-section > summary { padding: 20px; align-items: center; }
+.plan-review-page .hybrid-stage-section > summary > div { min-width: 0; flex: 1; }
+.plan-review-page .hybrid-stage-section > summary > span { max-width: 190px; font-size: 12px; text-align: right; }
+.plan-review-page .hybrid-stage-section > summary :is(h3,p) { overflow-wrap: anywhere; }
+.plan-review-page .hybrid-task-list { padding: 6px 22px 18px; }
+.plan-review-page .hybrid-task-list > ol { margin: 0; }
+.plan-review-page .plan-task-connections { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 10px 0; color: var(--muted); font-size: 12px; }
+.plan-review-page .plan-task-connections > span { margin: 0; color: var(--accent); font-size: 12px; }
+.plan-review-page .plan-task-connections > small { flex-basis: 100%; }
+.plan-review-page .plan-stage-contribution { padding: 8px 12px; border-left: 2px solid var(--accent); background: var(--surface-blue); }
+.plan-review-page .hybrid-source-requirements { border-top: 1px solid var(--line); }
+.plan-review-page .hybrid-source-requirements > summary { padding: 14px 22px; color: var(--muted); font-size: 13px; cursor: pointer; }
+.plan-review-page .hybrid-source-requirements .hybrid-work-item-list { padding-top: 0; }
+.plan-review-page .hybrid-empty-stage { padding: 18px 22px; line-height: 1.7; }
+.plan-review-page .hybrid-pending-triggers { border: 1px solid var(--line); border-radius: 16px; background: var(--surface-subtle); }
+.plan-review-page .hybrid-pending-triggers > header { display: flex; gap: 10px; align-items: start; padding: 18px 20px 0; }
+.plan-review-page .hybrid-pending-triggers h3 { margin: 0; font-size: 16px; }
+.plan-review-page .hybrid-pending-triggers p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.plan-review-page .hybrid-trigger-conditions { margin: 12px 0; color: var(--text-soft); font-size: 13px; line-height: 1.7; }
+.plan-review-page .hybrid-trigger-conditions ul { margin: 6px 0; padding-left: 20px; }
+
+/* A full-width reading area with its own scroll, plus an always-visible composer.
+   Opening discussion overlays the plan instead of squeezing its scroll region. */
+.plan-review-page .planner-primary-column { position: relative; }
+.plan-review-page .plan-discussion-dock.open { position: absolute; inset: auto 20px 16px; height: min(640px, calc(100% - 140px)); display: flex; flex-direction: column; margin: 0; box-shadow: var(--shadow-float); }
+.plan-review-page .plan-discussion-dock.open.is-expanded { height: calc(100% - 140px); }
+.plan-review-page .plan-discussion-dock.open > .route-discussion-bar { flex: none; }
+.plan-review-page .plan-discussion-panel { flex: 1; min-height: 0; height: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+.plan-review-page .plan-feedback-guide { padding: 20px 24px; scroll-padding-bottom: 20px; }
+.plan-review-page .plan-discussion-panel .route-discussion-composer { display: grid; gap: 10px; padding: 14px 20px 16px; max-height: none; overflow: visible; border-left: 0; border-top: 1px solid var(--line); }
+.plan-review-page .plan-discussion-panel .feedback-intent { padding-right: 140px; min-height: 30px; }
+.plan-review-page .plan-feedback-options { position: relative; }
+.plan-review-page .plan-feedback-options > summary { position: absolute; right: 0; top: -37px; padding: 5px 0; cursor: pointer; color: var(--muted); font-size: 13px; }
+.plan-review-page .plan-feedback-options[open] { max-height: 150px; overflow-y: auto; padding-top: 4px; }
+.plan-review-page .plan-feedback-options[open] > summary { position: static; }
+.plan-review-page .plan-feedback-options .plan-feedback-shortcuts { margin-top: 8px; }
+.plan-review-page .plan-feedback-options .feedback-scope-hint { margin: 10px 0 0; font-size: 12px; }
+.plan-review-page .plan-discussion-panel .composer-input-well { padding: 12px 14px; box-shadow: none; }
+.plan-review-page .plan-discussion-panel .composer-input-well > textarea { min-height: 70px; max-height: 130px; font-size: 14px; }
+.app-shell .plan-review-page .plan-discussion-panel .composer-input-well > textarea:focus-visible { outline: none; box-shadow: none; }
+.plan-review-page .plan-discussion-panel label.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.plan-review-page .plan-discussion-panel .review-actions { margin-top: 0; }
+.plan-review-page .plan-discussion-panel .review-actions > span { max-width: none; font-size: 12px; }
+@media (max-width: 760px) {
+  .plan-review-page .plan-discussion-dock.open { inset-inline: 12px; bottom: 12px; height: min(640px, calc(100% - 180px)); }
+  .plan-review-page .plan-discussion-dock.open.is-expanded { height: calc(100% - 110px); }
+  .plan-review-page .plan-discussion-dock .route-discussion-bar { flex-direction: row; gap: 8px; padding: 12px; }
+  .plan-review-page .plan-discussion-dock .discussion-bar-actions { flex-wrap: wrap; justify-content: end; gap: 6px; }
+  .plan-review-page .plan-discussion-dock .discussion-bar-actions > .button { padding: 8px 10px; font-size: 12px; }
+  .plan-review-page .plan-discussion-dock .discussion-toggle { min-width: 76px; }
+  .plan-review-page .plan-discussion-dock .discussion-toggle > small { display: none; }
+  .plan-review-page .plan-feedback-guide { padding: 16px; }
+  .plan-review-page .plan-discussion-panel .route-discussion-composer { padding: 10px 12px; gap: 8px; }
+  .plan-review-page .hybrid-stage-section > summary { flex-wrap: wrap; padding: 16px; gap: 10px; }
+  .plan-review-page .hybrid-stage-section > summary > span { max-width: none; text-align: left; }
+  .plan-review-page .hybrid-task-list { padding-inline: 16px; }
+}
+@media (max-height: 740px) {
+  .plan-review-page .plan-discussion-dock.open { height: calc(100% - 110px); }
+  .plan-review-page .plan-discussion-panel .route-discussion-composer { padding-block: 10px; gap: 6px; }
+  .plan-review-page .plan-discussion-panel .composer-input-well > textarea { min-height: 48px; max-height: 90px; }
+  .plan-review-page .plan-discussion-panel .review-actions { display: none; }
+}

@@ -1,0 +1,505 @@
+/* Solevia material and interaction layer. Feature CSS owns behavior and local layout.
+   The 12-column workspace uses one 16px gutter: 7 + 5 for the opening, 6 + 6
+   for occupied task lanes. Empty lanes become compact full-width rows. */
+:root { --ease-settle: cubic-bezier(.16, 1, .3, 1); --card-edge: color-mix(in srgb, var(--control-line) 48%, var(--surface)); }
+.app-shell { background: var(--ground); }
+.app-shell .workspace { gap: 12px; padding: 16px 16px 16px 0; grid-template-columns: 240px minmax(0, 1fr); }
+.app-shell .sidebar { padding: 16px 10px 0; }
+.app-shell .sidebar-brand-row { padding-inline: 14px; margin-bottom: 24px; }
+.app-shell .sidebar-quick-nav { gap: 6px; }
+.app-shell .sidebar-quick-nav a { min-height: 44px; padding: 10px 14px; font-size: 14px; border: 1px solid transparent; transition: background 180ms, box-shadow 200ms, transform 200ms var(--ease-settle); }
+.app-shell .sidebar-quick-nav a.active { border-color: var(--card-edge); background: var(--surface); box-shadow: var(--shadow-control); }
+.app-shell .sidebar-quick-nav svg { transition: transform 220ms var(--ease-settle); }
+.app-shell .sidebar-quick-nav a:hover svg { transform: translateX(2px); }
+.app-shell .sidebar-divider { margin-top: 22px; }
+.app-shell .plan-row { margin: 0 2px; }
+.app-shell .plan-link { padding-block: 9px; }
+.app-shell .plan-link strong { font-size: 13px; font-weight: 500; }
+.app-shell .plan-link > span { font-size: 12px; }
+.app-shell .sidebar .plan-row.current-plan, .app-shell .sidebar .plan-list > .plan-link.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-control); border: 1px solid var(--card-edge); }
+.app-shell .sidebar .current-plan-link :is(strong,span) { color: var(--text); }
+.app-shell .sidebar-user-option { min-height: 70px; border: 1px solid var(--card-edge); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-control); transition: box-shadow 200ms, transform 200ms var(--ease-settle); }
+.app-shell .sidebar-user-option:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+.app-shell .content { border: 1px solid var(--card-edge); border-radius: 24px; background: var(--surface); padding: 32px clamp(24px, 2.6vw, 44px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 70%); scrollbar-width: thin; scrollbar-color: var(--control-line) transparent; }
+.app-shell .content.home-content { padding: 32px clamp(24px, 2.6vw, 44px); }
+.app-shell .content.planner-content { padding: 0; }
+.app-shell :is(h1,h2,h3) { text-wrap: pretty; }
+.app-shell :is(.goal-create-body h1,.progress-page-header h1,.today-dashboard-header h1) { font-family: var(--font-display); font-size: 32px; line-height: 1.4; letter-spacing: -.025em; font-weight: 650; }
+.app-shell .button { min-height: 40px; font-size: 14px; padding: 9px 14px; border-radius: 11px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 60%), 0 2px 3px rgb(25 47 65 / 4%); transition: transform 180ms var(--ease-settle), box-shadow 180ms, background 180ms, border-color 180ms; }
+.app-shell .button.primary { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), 0 4px 10px color-mix(in srgb, var(--accent) 15%, transparent); }
+.app-shell .button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-hover); border-color: var(--control-line); }
+.app-shell .button.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.app-shell .button.primary:disabled, .user-settings-panel .button.primary:disabled { color: var(--muted); background: var(--surface-subtle); border-color: var(--line); box-shadow: none; opacity: 1; }
+.app-shell :is(button,a.button):active:not(:disabled) { transform: translateY(1px) scale(.985); }
+.app-shell :is(.icon-button,.text-button,.text-actions button,.goal-starting-points button) { transition: transform 180ms var(--ease-settle), color 160ms, background 160ms, box-shadow 180ms; }
+.app-shell .text-button:hover { color: var(--accent-hover); }
+.app-shell input, .app-shell select, .app-shell textarea, .user-settings-panel :is(input,select,textarea) { transition: border-color 180ms, box-shadow 200ms, background 180ms; }
+.app-shell :is(input,select,textarea):focus-visible, .user-settings-panel :is(input,select,textarea):focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 2px; }
+.app-shell button:disabled { opacity: .65; cursor: not-allowed; }
+
+/* Home: a useful opening with two equal-height objects, then density-led lanes. */
+.app-shell .today-dashboard { width: min(1200px, 100%); }
+.app-shell .today-dashboard-header { align-items: center; gap: 16px; margin-bottom: 24px; }
+.app-shell .today-dashboard-header h1 { margin-bottom: 6px; }
+.app-shell .today-dashboard-header .muted { font-size: 14px; }
+.app-shell .today-opening { grid-template-columns: minmax(0, 7fr) minmax(300px, 5fr); gap: 16px; margin-bottom: 24px; }
+.app-shell :is(.today-focus,.today-calendar) { border: 1px solid var(--card-edge); border-radius: 22px; box-shadow: var(--shadow-card); }
+.app-shell .today-focus { padding: 26px; background: var(--surface); overflow: hidden; isolation: isolate; }
+.app-shell .today-focus::after { display: none; }
+.app-shell .today-focus-heading { font-size: 13px; }
+.app-shell .focus-path { width: 72px; }
+.app-shell .focus-path svg { transition: transform 260ms var(--ease-settle); }
+.app-shell .today-focus:hover .focus-path svg { transform: translate(3px,-3px); }
+.app-shell .today-focus-body { margin-top: 20px; padding-bottom: 22px; }
+.app-shell .today-focus .today-focus-body h2 { font-size: clamp(22px, 1.85vw, 28px); line-height: 1.5; }
+.app-shell .today-focus-body p { margin-top: 9px; font-size: 14px; }
+.app-shell .today-focus-body .focus-task-description { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.7; }
+.today-focus-footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 20px; width: 100%; margin-top: auto; }
+.app-shell .today-focus-action { min-height: 42px; gap: 20px; margin: 0; padding: 10px 14px; color: var(--accent-contrast); background: var(--accent); border: 1px solid var(--accent); border-radius: 11px; font-size: 14px; box-shadow: var(--shadow-control); }
+.today-focus-action svg { transition: transform 220ms var(--ease-settle); }
+.today-focus-action:hover svg { transform: translate(2px,-2px); }
+.focus-momentum { display: grid; gap: 9px; flex: 1 1 120px; max-width: 180px; min-width: 100px; }
+.focus-momentum > span { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 12px; }
+.focus-momentum strong { font-weight: 500; font-variant-numeric: tabular-nums; color: var(--text); }
+.focus-momentum [role="progressbar"] { height: 5px; border-radius: 8px; overflow: hidden; background: var(--surface-blue); }
+.focus-momentum i { display: block; width: 100%; height: 100%; transform-origin: left; background: var(--accent); border-radius: inherit; transition: transform 500ms var(--ease-settle); }
+.app-shell .today-calendar { padding: 22px 24px; background: var(--surface); }
+.app-shell .today-calendar::before, .app-shell .today-calendar::after { display: none; }
+.app-shell .today-calendar-date { margin: 12px 0; gap: 14px; }
+.app-shell .today-calendar-date time { font-size: 38px; font-weight: 400; color: var(--accent); }
+.app-shell .today-calendar-header > span:first-child { font-size: 14px; }
+.app-shell .today-calendar-week { gap: 4px; padding-bottom: 12px; border-color: var(--line); }
+.app-shell .today-calendar-week > div { padding: 6px 0; transition: background 180ms, transform 200ms var(--ease-settle); }
+.app-shell .today-calendar-week .is-today { background: var(--accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent); }
+.app-shell .today-calendar-stats { margin-top: 12px; }
+.app-shell .today-calendar-stats dd { font-size: 24px; }
+.app-shell .today-reading-line { margin-bottom: 16px; font-size: 13px; color: var(--muted); }
+.app-shell .today-dashboard-grid, .app-shell .today-dashboard-grid.main-lane-empty { grid-template-columns: repeat(12,minmax(0,1fr)); gap: 16px; }
+.app-shell .today-dashboard-column { grid-column: span 6; padding: 20px; background: var(--surface); border: 1px solid var(--card-edge); border-radius: 22px; box-shadow: var(--shadow-card); }
+.app-shell .today-dashboard-column > header { padding-bottom: 16px; border: 0; gap: 12px; }
+.app-shell .today-dashboard-column h2 { font-size: 17px; }
+.app-shell .today-dashboard-column > header p { font-size: 12px; }
+.app-shell .today-dashboard-column > header > small { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 7px; background: var(--surface-subtle); font-size: 12px; }
+.today-task-list { display: grid; gap: 12px; align-items: stretch; }
+.app-shell .today-task-card { margin: 0; border: 1px solid var(--line); border-radius: 15px; background: var(--surface-subtle); box-shadow: inset 0 1px 0 rgb(255 255 255 / 70%); transition: transform 230ms var(--ease-settle), border-color 200ms, box-shadow 230ms; }
+.app-shell .today-task-card-main { padding: 18px; gap: 9px; }
+.app-shell .today-task-card-main > strong { font-size: 16px; line-height: 1.6; }
+.app-shell .today-task-card-main > small { font-size: 13px; }
+.app-shell .today-dashboard-task-time, .app-shell .today-task-lane { font-size: 12px; }
+.app-shell .today-task-schedule { padding: 8px 11px; font-size: 12px; border: 1px solid var(--card-edge); }
+.app-shell .today-dashboard-empty { margin-top: 0; min-height: 120px; padding: 18px; gap: 6px; border-radius: 14px; background: var(--surface-subtle); }
+.app-shell .today-dashboard-empty strong { font-size: 15px; font-weight: 500; }
+.app-shell .today-dashboard-empty p { font-size: 13px; }
+.app-shell .today-dashboard-grid.main-lane-empty > .today-lane-main { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(160px,1fr) minmax(0,2fr); align-items: center; gap: 24px; }
+.app-shell .today-dashboard-grid.main-lane-empty > .today-lane-main > header { padding: 0; }
+.app-shell .today-dashboard-grid.main-lane-empty .today-lane-main .today-dashboard-empty { display: flex; flex-wrap: wrap; align-items: center; min-height: auto; padding: 12px 16px; gap: 8px 16px; }
+.app-shell .today-dashboard-grid.main-lane-empty .today-lane-main .today-dashboard-empty strong { flex: 1; }
+.app-shell .today-dashboard-grid.main-lane-empty .today-lane-main .today-dashboard-empty p { display: none; }
+.app-shell .today-dashboard-grid.main-lane-empty .today-lane-main .text-button { margin: 0; font-size: 13px; }
+.app-shell .today-dashboard-grid.main-lane-empty > .today-lane-branch { grid-column: 1 / -1; order: initial; }
+.app-shell .today-dashboard-grid.main-lane-empty .today-lane-branch .today-task-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.app-shell .today-task-card.completed { opacity: .8; background: var(--surface); }
+
+/* Shared workbench: the main plane stays opaque. Small tools are individual objects. */
+.app-shell .planner-primary-column { background: var(--surface-subtle); }
+.app-shell .planner-stage-header { min-height: 102px; background: var(--surface); padding: 20px 28px; }
+.app-shell .planner-stage-header .stage-heading h1 { font-size: 24px; line-height: 1.4; }
+.app-shell .planner-stage-header .stage-heading .eyebrow { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.app-shell .planner-stage-header .stepper li { font-size: 12px; }
+.app-shell .step-dot { transition: background 200ms, box-shadow 220ms, transform 220ms var(--ease-settle); }
+.app-shell .stepper button:hover .step-dot { transform: translateY(-2px); }
+.app-shell .stage-context-column { background: var(--ground); padding: 20px 16px; border-left: 1px solid var(--line); }
+.app-shell .stage-context-column :is(.panel,.notebook-panel,.fixed-calendar-tool,.collapsible-tool,.focus-timer-widget,.commitment-progress-panel) { border: 1px solid var(--card-edge); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-card); }
+.app-shell .stage-context-column :is(h2,.memory-panel-heading h2) { font-size: 16px; }
+.app-shell .stage-context-column :is(p,li) { font-size: 13px; line-height: 1.75; }
+.app-shell .stage-context-column :is(.memory-kicker,.facts-preview span) { font-size: 12px; }
+.app-shell .clarification-page .conversation { width: min(800px,calc(100% - 48px)); gap: 26px; padding-top: 26px; }
+.app-shell .clarification-page .message.assistant { padding: 20px 22px; border: 1px solid var(--card-edge); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-card); }
+.app-shell .clarification-page .message.user { background: var(--accent-soft); padding: 15px 19px; border-radius: 18px 18px 5px 18px; font-size: 15px; }
+.app-shell .clarification-page .assistant-answer { font-size: 16px; line-height: 1.8; }
+.app-shell .clarification-page .agent-identity { font-size: 13px; }
+.app-shell .clarification-page .agent-identity .solevia-mark { width: 26px; height: 26px; }
+.app-shell .clarification-page .composer-shell { margin: 0 24px 16px; background: transparent; }
+.app-shell .composer-input-well { padding: 16px; border-radius: 18px; border: 1px solid var(--control-line); background: var(--surface); box-shadow: var(--shadow-float); transition: box-shadow 220ms, border-color 180ms, transform 220ms var(--ease-settle); }
+.app-shell .composer-input-well:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb,var(--accent) 9%,transparent), var(--shadow-float); border-color: var(--accent); }
+.app-shell .clarification-page .composer-hint { font-size: 12px; }
+.app-shell .clarification-page .reply-form { padding: 0; }
+.app-shell :is(.route-review-page .route-summary,.plan-review-page .relative-plan-stats,.today-page .today-hero,.progress-page .progress-overview,.fixed-tasks-hero) { background: var(--surface); border: 1px solid var(--card-edge); border-radius: 20px; box-shadow: var(--shadow-card); }
+.app-shell .route-review-page .route-summary { font-size: 16px; padding: 22px; }
+.app-shell .route-review-page .route-stage-card { padding: 22px; background: var(--surface); border: 1px solid var(--card-edge); border-radius: 18px; box-shadow: var(--shadow-card); transition: border-color 200ms, box-shadow 220ms, transform 220ms var(--ease-settle); }
+.app-shell .route-review-page .route-stage-card .panel { background: var(--surface-subtle); padding: 18px; }
+.app-shell .route-stage-card h2 { font-size: 19px; }
+.app-shell :is(.plan-outline-card,.plan-day-card,.progress-section,.quick-plan-card,.light-plan-card,.goal-create-form) { background: var(--surface); border: 1px solid var(--card-edge); border-radius: 18px; box-shadow: var(--shadow-card); transition: border-color 200ms, box-shadow 220ms, transform 220ms var(--ease-settle); }
+.app-shell .plan-outline-card[open] { background: var(--surface); border-color: var(--control-line); }
+.app-shell .plan-outline-card > summary { padding: 20px; }
+.app-shell .plan-outline-card > summary h3 { font-size: 17px; }
+.app-shell .plan-view-switch { background: var(--ground); padding: 4px; border-radius: 10px; }
+.app-shell .plan-view-switch button { transition: background 160ms, box-shadow 160ms, transform 180ms var(--ease-settle); }
+.app-shell .plan-view-switch button.selected { box-shadow: var(--shadow-control); }
+.app-shell .today-page .today-hero { padding: 24px; }
+.app-shell .today-page .today-primary-goal { font-size: 17px; line-height: 1.8; font-weight: 400; }
+.app-shell .today-page .task-groups > section > h2 { font-size: 20px; }
+.app-shell .today-page .task-card { padding: 22px; }
+.app-shell .today-page .task-card header strong { font-size: 17px; }
+.app-shell .today-page .task-card p { font-size: 15px; }
+.app-shell .today-page .task-card footer button { font-size: 13px; min-height: 36px; }
+.app-shell .today-page .rest-day-card { margin-top: 24px; padding: 24px; background: var(--surface); border: 1px solid var(--card-edge); border-radius: 20px; box-shadow: var(--shadow-card); }
+.app-shell .today-page .rest-day-card p { font-size: 15px; line-height: 1.8; margin-top: 10px; }
+.app-shell :is(.focus-task-options button,.calendar-day,.calendar-task-row,.plan-day-card > summary) { transition: transform 180ms var(--ease-settle), background 180ms, border-color 180ms, box-shadow 180ms; }
+.app-shell .today-context .collapsible-tool { overflow: hidden; }
+.app-shell .collapsible-tool > summary { padding: 14px; }
+.app-shell .today-tools-scroll { gap: 14px; }
+.app-shell .progress-page-header h1 { font-size: 28px; }
+.app-shell .progress-overview strong { font-size: 30px; }
+.app-shell .goal-create-layout { gap: 24px; }
+.app-shell .goal-create-form { padding: 22px; }
+.app-shell .goal-create-form .goal-input { min-height: 210px; background: var(--surface-subtle); border: 1px solid var(--line); font-size: 17px; }
+.app-shell .goal-create-footer .button { min-height: 44px; }
+.app-shell .setup-section { padding: 22px; border: 1px solid var(--card-edge); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-card); }
+.app-shell .prepare-intro h2 { font-size: 26px; }
+.app-shell .prepare-unavailable { padding: 28px; }
+.app-shell .prepare-unavailable h1 { font-size: 24px; line-height: 1.5; }
+.app-shell .prepare-unavailable .button { justify-self: start; }
+.app-shell .transition-card { width: min(720px,calc(100% - 48px)); margin: 28px auto; padding: 28px; border: 1px solid var(--card-edge); border-radius: 22px; background: var(--surface); box-shadow: var(--shadow-card); }
+.app-shell .transition-card h2 { font-size: 26px; line-height: 1.5; }
+.app-shell .transition-card > .eyebrow { margin-top: 20px; font-size: 13px; }
+.app-shell .transition-orbit { transform: scale(.8); transform-origin: left center; }
+.focus-fullscreen-backdrop { background: rgb(238 246 255 / 52%); backdrop-filter: blur(28px) saturate(145%); -webkit-backdrop-filter: blur(28px) saturate(145%); }
+.focus-fullscreen-center { flex: 0 1 auto; width: min(680px,calc(100% - 32px)); margin-block: auto; padding: 40px 32px; border: 1px solid rgb(255 255 255 / 90%); border-radius: 36px; background: rgb(255 255 255 / 48%); backdrop-filter: blur(18px); box-shadow: inset 0 1px 0 white, 0 24px 90px rgb(36 93 161 / 12%); }
+.focus-fullscreen h2 { font-family: var(--font-display); font-size: clamp(22px,2.5vw,32px); }
+.app-shell .light-header h1 { font-family: var(--font-display); font-size: 30px; line-height: 1.4; }
+.app-shell .light-plan-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; align-content: start; }
+.app-shell .light-plan-list:has(> :only-child) { grid-template-columns: minmax(0,1fr); }
+.app-shell .light-plan-list :is(a,.light-draft-row) { padding: 20px; border: 1px solid var(--card-edge); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-card); transition: transform 220ms var(--ease-settle), box-shadow 200ms; }
+.app-shell .light-page .light-plan-list > a, .app-shell .light-page .light-draft-row { margin-top: 0; }
+.app-shell .light-page .light-plan-list > a::before, .app-shell .light-page .light-draft-row::before { display: none; }
+.app-shell .light-draft-row a { padding: 0; border: 0; box-shadow: none; background: transparent; }
+.app-shell .light-plan-list a { align-items: start; flex-direction: column; }
+.app-shell :is(.quick-intake,.light-task-editor,.light-execution-task) { border: 1px solid var(--card-edge); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-card); }
+.app-shell .light-execution-task { padding: 20px; margin-bottom: 12px; transition: border-color 180ms, box-shadow 200ms; }
+.app-shell .light-execution-list { border: 0; }
+.app-shell .quick-intake { padding: 24px; }
+.app-shell .light-page .quick-intake > textarea { background: var(--surface-subtle); border: 1px solid var(--line); font-size: 18px; }
+.app-shell .light-page :is(input,textarea,select) { border-radius: 9px; }
+.app-shell .light-segment { gap: 4px; padding: 4px; border-radius: 12px; background: var(--ground); }
+.app-shell .light-segment button { border: 0; border-radius: 8px; background: transparent; transition: background 180ms, box-shadow 180ms; }
+.app-shell .light-segment button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-control); }
+.app-shell .assistant-answer table { min-width: 100%; font-size: 14px; }
+.app-shell .assistant-answer :is(th,td) { padding: 11px 14px; border-color: var(--line); }
+.app-shell .assistant-answer thead { background: var(--surface-subtle); }
+.app-shell .assistant-answer tbody tr { transition: background 160ms; }
+.app-shell .assistant-answer tbody tr:hover { background: var(--surface-subtle); }
+
+/* Transient surfaces get a brief, directed opening, with no delay to reading. */
+:is(.create-plan-popover,.codex-composer-popover,.plan-actions[open] > div,.execution-discussion-panel,.time-picker-popover) { animation: surface-open 200ms var(--ease-settle) both; transform-origin: top right; }
+:is(.inline-dialog,.user-settings-panel,.schedule-dialog,.confirmation-dialog,.allocation-dialog) { animation: dialog-open 240ms var(--ease-settle) both; }
+.user-settings-backdrop, .inline-dialog-backdrop { background: rgb(27 40 50 / 25%); backdrop-filter: blur(4px); }
+.user-settings-panel { border: 1px solid var(--card-edge); border-radius: 24px; box-shadow: var(--shadow-float); background: var(--surface); }
+.user-settings-panel > header { background: var(--surface); }
+.user-settings-panel > header .eyebrow { color: var(--muted); font-size: 12px; letter-spacing: 0; }
+.user-settings-backdrop .user-settings-panel > header h2 { font-family: var(--font); font-size: 24px; }
+.user-settings-backdrop .user-settings-panel > nav { margin: 0 24px; padding: 5px; background: var(--surface-subtle); border: 1px solid var(--line); border-radius: 12px; gap: 4px; }
+.user-settings-panel > nav button { border: 0; border-radius: 8px; font-size: 13px; transition: background 180ms, color 180ms, box-shadow 180ms, transform 180ms var(--ease-settle); }
+.user-settings-backdrop .user-settings-panel > nav button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-control); }
+.user-settings-panel .user-settings-body { background: var(--surface); }
+.kernel-connection-state { display: flex; align-items: center; gap: 11px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-subtle); }
+.kernel-state-dot { flex: none; width: 7px; height: 7px; background: var(--positive); border-radius: 50%; }
+.kernel-connection-state.is-pending .kernel-state-dot { background: var(--warm); }
+.kernel-connection-state > div { flex: 1; min-width: 0; }
+.kernel-connection-state strong { font-size: 14px; font-weight: 500; }
+.kernel-connection-state p { margin-top: 3px; color: var(--muted); font-size: 12px; }
+.kernel-connection-state .button { flex: none; font-size: 12px; min-height: 34px; }
+.connection-troubleshoot { padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--warm); border-radius: 12px; background: var(--surface-subtle); }
+.connection-troubleshoot strong, .connection-quickstart strong { font-size: 14px; }
+.connection-troubleshoot p, .connection-quickstart p { margin: 6px 0; font-size: 13px; line-height: 1.7; }
+.connection-troubleshoot small { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.connection-guide-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.connection-guide-actions .button { min-height: 32px; font-size: 12px; }
+.connection-guide { font-size: 13px; line-height: 1.75; }
+.connection-guide summary { cursor: pointer; padding: 6px 0; font-weight: 500; }
+.connection-guide ol, .connection-guide ul { margin: 10px 0; padding-left: 21px; }
+.connection-guide li + li { margin-top: 10px; }
+.connection-guide li strong, .connection-guide li span { display: block; }
+.connection-guide li span, .connection-guide p { color: var(--muted); }
+.connection-guide a { color: var(--accent); text-underline-offset: 3px; }
+.connection-guide code { font-size: 12px; overflow-wrap: anywhere; }
+.kernel-setup-prompt { flex: none; display: grid; gap: 3px; text-align: left; margin: 8px 0; padding: 11px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-subtle); color: var(--text); cursor: pointer; }
+.kernel-setup-prompt strong { font-size: 12px; font-weight: 500; }
+.kernel-setup-prompt span { font-size: 11px; color: var(--muted); }
+.kernel-setup-prompt:hover { border-color: var(--accent); }
+@media (max-width: 620px) { .kernel-connection-state { flex-wrap: wrap; } .kernel-connection-state > div { flex-basis: calc(100% - 25px); } }
+.user-settings-panel .model-settings-form { padding: 20px; background: var(--surface-subtle); border: 1px solid var(--line); border-radius: 16px; }
+.model-settings-form > div, .model-settings-form > label:first-of-type { grid-column: 1 / -1; }
+.model-settings-form > div > small { display: block; margin-top: 8px; }
+.user-settings-panel .settings-form input, .user-settings-panel .settings-form select { min-height: 40px; background: var(--surface); }
+.user-settings-panel .button { border-radius: 10px; transition: transform 180ms var(--ease-settle), box-shadow 180ms; }
+.user-settings-panel .button:hover:not(:disabled) { box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+
+/* Five small sparks along the next-step path; they run only while this card is used. */
+.focus-particles { position: absolute; z-index: -1; pointer-events: none; inset: 0; overflow: hidden; }
+.focus-particles i { position: absolute; right: 10%; bottom: 18%; width: 3px; height: 3px; border-radius: 50%; background: var(--accent); opacity: 0; }
+.focus-particles i:nth-child(2) { right: 20%; bottom: 26%; animation-delay: 100ms; }
+.focus-particles i:nth-child(3) { right: 12%; bottom: 42%; animation-delay: 220ms; width: 4px; height: 4px; }
+.focus-particles i:nth-child(4) { right: 28%; bottom: 46%; animation-delay: 320ms; }
+.focus-particles i:nth-child(5) { right: 7%; bottom: 62%; animation-delay: 440ms; }
+.control-feedback { position: fixed; z-index: 2000; overflow: hidden; pointer-events: none; }
+.control-feedback i { position: absolute; display: block; width: 80px; height: 80px; margin: -40px; border-radius: 50%; background: rgb(111 159 190 / 18%); animation: control-touch 360ms var(--ease-settle) both; }
+@keyframes control-touch { from { transform: scale(.12); opacity: .8; } to { transform: scale(3); opacity: 0; } }
+@keyframes surface-open { from { opacity: .4; transform: translateY(-5px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes dialog-open { from { opacity: .5; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes step-sparks { 0% { transform: translate(0,8px) scale(.5); opacity: 0; } 35% { opacity: .35; } 100% { transform: translate(12px,-28px) scale(1); opacity: 0; } }
+@media (hover: hover) and (pointer: fine) {
+  .app-shell :is(.today-task-card,.route-stage-card,.plan-outline-card,.today-page .task-card,.goal-starting-points button):hover { transform: translateY(-3px); border-color: var(--control-line); box-shadow: var(--shadow-hover); }
+  .app-shell .today-calendar-week > div:hover { background: var(--surface-subtle); transform: translateY(-2px); }
+  .app-shell .today-focus:is(:hover,:focus-within) .focus-particles i { animation-name: step-sparks; animation-duration: 1400ms; animation-timing-function: ease-out; animation-iteration-count: 1; }
+  .app-shell .calendar-day:hover { box-shadow: inset 0 0 0 1px var(--control-line); }
+}
+@supports (interpolate-size: allow-keywords) {
+  .app-shell :is(.plan-outline-card,.collapsible-tool,.goal-group)::details-content { interpolate-size: allow-keywords; block-size: 0; overflow: clip; transition: block-size 240ms var(--ease-settle), content-visibility 240ms allow-discrete; }
+  .app-shell :is(.plan-outline-card,.collapsible-tool,.goal-group)[open]::details-content { block-size: auto; }
+}
+@media (min-width: 1600px) { .app-shell .today-dashboard-grid.main-lane-empty .today-lane-branch .today-task-list { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media (max-width: 1250px) and (min-width: 1101px) { .app-shell .today-opening { grid-template-columns: minmax(0,1.1fr) minmax(260px,1fr); } .today-focus-footer { gap: 16px; } .focus-momentum { max-width: none; flex-basis: 100%; } }
+@media (max-width: 1100px) {
+  .app-shell .workspace { display: block; padding: 0 12px 12px; }
+  .app-shell .mobile-workspace-bar { background: var(--ground); }
+  .app-shell .navigation-open .sidebar { padding: 16px 12px; box-shadow: var(--shadow-float); }
+  .app-shell .content, .app-shell .content.home-content { padding: 26px; border-radius: 20px; }
+  .app-shell .content.planner-content { padding: 0; }
+  .app-shell .prepare-page { display: block; overflow-y: auto; }
+  .app-shell .prepare-page .planner-stage-header { grid-template-columns: minmax(0,1fr); gap: 18px; }
+  .app-shell .prepare-page .planner-stage-header .stage-heading h1 { white-space: normal; }
+  .app-shell .prepare-page .stage-main-scroll { overflow: visible; }
+}
+@media (max-width: 850px) {
+  .app-shell .today-dashboard-header { flex-direction: row; align-items: center; }
+  .app-shell .today-dashboard-header h1 { font-size: 26px; }
+  .app-shell .today-dashboard-header .muted { max-width: 250px; font-size: 13px; }
+  .app-shell .today-dashboard-column { grid-column: 1 / -1; }
+  .app-shell .today-dashboard-grid.main-lane-empty > .today-lane-main { grid-template-columns: minmax(140px,1fr) minmax(0,1.5fr); gap: 16px; }
+  .app-shell .today-dashboard-grid.main-lane-empty .today-lane-branch .today-task-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .app-shell .today-task-card { flex-direction: column; align-items: stretch; }
+  .app-shell .today-task-card-main { flex: 1; }
+  .app-shell .today-task-schedule { align-self: start; margin: 0 18px 16px; }
+}
+@media (max-width: 700px) { .app-shell .today-opening { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 540px) {
+  .app-shell .workspace { padding: 0; }
+  .app-shell .content, .app-shell .content.home-content { padding: 24px 16px 32px; border: 0; border-radius: 0; }
+  .app-shell .content.planner-content { padding: 0; }
+  .app-shell .today-dashboard-header { align-items: start; flex-direction: column; gap: 16px; }
+  .app-shell .today-dashboard-header h1 { font-size: 26px; }
+  .app-shell .today-dashboard-header .muted { max-width: none; }
+  .app-shell .today-dashboard-actions { gap: 8px; }
+  .app-shell .button { min-height: 44px; }
+  .app-shell .today-opening { gap: 14px; margin-bottom: 20px; }
+  .app-shell :is(.today-focus,.today-calendar) { padding: 21px; border-radius: 18px; }
+  .app-shell .today-focus .today-focus-body h2 { font-size: 23px; }
+  .today-focus-footer { align-items: center; }
+  .focus-momentum { max-width: 130px; }
+  .app-shell .today-dashboard-column { padding: 17px; border-radius: 18px; }
+  .app-shell .today-dashboard-grid.main-lane-empty > .today-lane-main { display: block; }
+  .app-shell .today-dashboard-grid.main-lane-empty > .today-lane-main > header { margin-bottom: 12px; }
+  .app-shell .today-dashboard-grid.main-lane-empty .today-lane-branch .today-task-list { grid-template-columns: minmax(0,1fr); }
+  .app-shell .today-task-card-main { padding: 17px; }
+  .app-shell .today-task-schedule { min-height: 40px; }
+  .app-shell .planner-stage-header { padding: 18px 20px; }
+  .app-shell .planner-stage-header .stage-heading h1 { font-size: 22px; }
+  .app-shell .clarification-page .conversation { width: calc(100% - 28px); gap: 20px; }
+  .app-shell .clarification-page .message.assistant { padding: 18px; border-radius: 16px; }
+  .app-shell .clarification-page .composer-shell { margin: 0 12px 12px; }
+  .app-shell .composer-input-well { padding: 13px; border-radius: 16px; }
+  .app-shell .route-review-page .route-stage-card { padding: 18px; }
+  .app-shell .route-stage-map ol { display: grid; gap: 14px; overflow: visible; }
+  .app-shell .route-stage-map li { min-width: 0; max-width: none; }
+  .app-shell .route-stage-map li:not(:last-child)::after { left: 16px; right: auto; top: 33px; width: 1px; height: calc(100% - 19px); }
+  .app-shell .route-stage-map button { grid-template-columns: 33px minmax(0,1fr); align-items: center; padding: 0; gap: 12px; min-height: 44px; }
+  .app-shell .route-stage-map button > strong { display: block; overflow: visible; overflow-wrap: anywhere; }
+  .app-shell .goal-create-body h1, .app-shell .progress-page-header h1 { font-size: 26px; }
+  .app-shell .light-header h1 { font-size: 26px; }
+  .app-shell .light-plan-list { grid-template-columns: minmax(0,1fr); }
+  .app-shell .quick-intake { padding: 18px; }
+  .app-shell .setup-section { padding: 18px; }
+  .app-shell .prepare-main { width: calc(100% - 40px); }
+  .app-shell .prepare-unavailable { padding: 20px; }
+  .app-shell .transition-card { width: calc(100% - 32px); padding: 22px; }
+  .app-shell .transition-card h2 { font-size: 23px; }
+  .focus-fullscreen-center { padding: 24px 20px; }
+  .user-settings-backdrop .user-settings-panel > nav { margin-inline: 16px; padding: 4px; }
+  .kernel-connection-state { flex-wrap: wrap; padding: 13px; }
+  .kernel-connection-state > div { flex-basis: calc(100% - 18px); }
+  .kernel-connection-state .kernel-state-dot { align-self: start; margin-top: 7px; }
+  .kernel-connection-state .button { margin-left: 18px; }
+  .user-settings-panel .model-settings-form { padding: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *, .app-shell *::before, .app-shell *::after, .user-settings-panel *, .user-settings-panel { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .app-shell :is(.today-task-card,.route-stage-card,.plan-outline-card,.today-page .task-card,.button,.today-focus-action,.sidebar-user-option,.calendar-day,.today-calendar-week > div):hover { transform: none; }
+  .app-shell :is(button,a.button):active:not(:disabled) { transform: none; }
+  .control-feedback, .focus-particles { display: none; }
+}
+@media (prefers-color-scheme: dark) {
+  .app-shell .content { box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%); }
+  .app-shell .button { box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%); }
+  .app-shell .today-task-card { box-shadow: none; }
+  .user-settings-backdrop, .inline-dialog-backdrop { background: rgb(0 0 0 / 45%); }
+}
+
+/* Bright instrument desk. Solid papers carry the work; glass belongs to focus mode.
+   Card colors identify objects and tools; they do not encode completion or priority. */
+.app-shell .sidebar { background: var(--surface); border-radius: 0 22px 22px 0; }
+.app-shell .sidebar-quick-nav a.active { background: var(--accent-soft); color: var(--accent); border-color: transparent; box-shadow: none; }
+.app-shell .sidebar .plan-row.current-plan { background: var(--surface-blue); border-color: transparent; box-shadow: none; }
+.app-shell .planner-stage-header .stage-heading h1 { font-family: var(--font-display); font-weight: 650; font-size: 27px; letter-spacing: -.02em; }
+.app-shell .today-page .execution-header .stage-heading h1 { white-space: normal; overflow: visible; text-overflow: clip; }
+.app-shell :is(.today-dashboard-column h2,.task-groups > section > h2,.route-stage-card h2,.progress-section h2,.prepare-intro h2) { font-family: var(--font-display); font-weight: 650; }
+.app-shell .planner-primary-column { background: var(--surface); }
+.app-shell .today-focus { background: var(--surface-blue); border-color: color-mix(in srgb,var(--accent) 15%,var(--surface)); }
+.app-shell .today-focus .today-focus-body h2 { font-family: var(--font-display); font-weight: 650; }
+.app-shell .today-calendar { background: var(--surface-mint); border-color: color-mix(in srgb,var(--positive) 12%,var(--surface)); }
+.app-shell .today-dashboard-column.today-lane-main { background: var(--surface-lavender); }
+.app-shell .today-dashboard-column.today-lane-branch { background: var(--surface); }
+.app-shell .today-task-card { background: var(--surface-blue); border-color: transparent; }
+.app-shell .today-task-card:nth-child(4n+2) { background: var(--surface-mint); }
+.app-shell .today-task-card:nth-child(4n+3) { background: var(--surface-peach); }
+.app-shell .today-task-card:nth-child(4n) { background: var(--surface-lavender); }
+.app-shell .route-review-page .route-summary { background: var(--surface-blue); }
+.app-shell .route-review-page .route-stage-card:nth-of-type(3n+1) { background: var(--surface-blue); }
+.app-shell .route-review-page .route-stage-card:nth-of-type(3n+2) { background: var(--surface-mint); }
+.app-shell .route-review-page .route-stage-card:nth-of-type(3n) { background: var(--surface-peach); }
+.app-shell .route-review-page .route-stage-card .panel { background: color-mix(in srgb,var(--surface) 78%,transparent); }
+.app-shell .plan-outline-card:nth-child(3n+1), .app-shell .plan-outline-card:nth-child(3n+1)[open] { background: var(--surface-blue); }
+.app-shell .plan-outline-card:nth-child(3n+2), .app-shell .plan-outline-card:nth-child(3n+2)[open] { background: var(--surface-mint); }
+.app-shell .plan-outline-card:nth-child(3n), .app-shell .plan-outline-card:nth-child(3n)[open] { background: var(--surface-peach); }
+.app-shell .goal-create-form { border-color: color-mix(in srgb,var(--accent) 18%,var(--line)); }
+.app-shell .goal-create-form .goal-input { background: var(--surface-blue); }
+.app-shell .light-plan-list > :nth-child(3n+1), .app-shell .light-execution-task:nth-child(3n+1) { background: var(--surface-blue); }
+.app-shell .light-plan-list > :nth-child(3n+2), .app-shell .light-execution-task:nth-child(3n+2) { background: var(--surface-mint); }
+.app-shell .light-plan-list > :nth-child(3n), .app-shell .light-execution-task:nth-child(3n) { background: var(--surface-peach); }
+.app-shell .clarification-page .message.user { background: var(--surface-blue); }
+.app-shell .stage-context-column .notebook-panel { background: var(--surface-peach); }
+.app-shell .stage-context-column .panel:nth-of-type(2n) { background: var(--surface-mint); }
+.app-shell .setup-section:nth-of-type(3n+1) { background: var(--surface-blue); }
+.app-shell .setup-section:nth-of-type(3n+2) { background: var(--surface-mint); }
+
+/* Restore the execution papers instead of painting every task white. */
+.app-shell .today-page .today-hero { background: var(--surface-blue); border-color: color-mix(in srgb,var(--accent) 13%,var(--surface)); padding: 20px 22px; }
+.app-shell .today-page .execution-task-card.task-card { background: var(--task-paper); border-color: var(--task-edge); box-shadow: inset 0 1px 0 rgb(255 255 255 / 85%), 0 8px 22px rgb(28 62 112 / 5%); }
+.app-shell .today-page .execution-task-card.task-tone-0 { --task-paper: #eaf3ff; --task-edge: #d5e5fc; --task-ink: #245ab0; }
+.app-shell .today-page .execution-task-card.task-tone-1 { --task-paper: #fff0e6; --task-edge: #f5dbc7; --task-ink: #975126; }
+.app-shell .today-page .execution-task-card.task-tone-2 { --task-paper: #e6f8f1; --task-edge: #ccebdd; --task-ink: #206d57; }
+.app-shell .today-page .execution-task-card.task-tone-3 { --task-paper: #eeedff; --task-edge: #dbdafa; --task-ink: #5658a8; }
+.app-shell .today-page .execution-task-card.completed { --task-paper: #ecf9f2; --task-edge: #ccebdc; --task-ink: #206d57; }
+.app-shell .today-page .execution-task-card header > strong { font-size: 19px; font-weight: 650; }
+.app-shell .today-page .execution-task-card .task-duration { color: var(--task-ink); }
+.app-shell .today-page .task-card p { color: var(--text); }
+.app-shell .today-page .execution-task-card .execution-task-outcome { border: 1px solid rgb(255 255 255 / 70%); }
+.app-shell .today-page :is(.fixed-task-card,.fixed-execution-card):nth-child(3n+1) { background: var(--surface-blue); }
+.app-shell .today-page :is(.fixed-task-card,.fixed-execution-card):nth-child(3n+2) { background: var(--surface-mint); }
+.app-shell .today-page :is(.fixed-task-card,.fixed-execution-card):nth-child(3n) { background: var(--surface-peach); }
+
+/* The header and progress never shrink. Only the tool list consumes/scrolls the rest. */
+.app-shell .today-page .today-context { background: var(--surface-subtle); padding: 16px 12px; gap: 14px; }
+.app-shell .today-context-toggle { flex: 0 0 auto; order: -1; min-height: 40px; padding: 8px 10px; color: var(--text); }
+.app-shell .today-context-toggle > svg { flex: none; color: var(--accent); }
+.app-shell .today-context-toggle strong { font-weight: 600; }
+.app-shell .today-context-toggle small { font-size: 12px; }
+.app-shell .today-context-content { flex: 1 1 0; min-height: 0; gap: 16px; }
+.app-shell .today-context .compact-progress { flex: 0 0 auto; min-height: 108px; border-color: var(--line); border-radius: 16px; background: var(--line); box-shadow: var(--shadow-control); }
+.app-shell .today-context .compact-progress > span { gap: 5px; padding: 12px 4px; font-size: 12px; }
+.app-shell .today-context .compact-progress strong { font-size: 21px; font-weight: 500; color: var(--accent); }
+.app-shell .today-context .compact-progress em { padding: 8px; font-size: 12px; font-weight: 400; }
+.app-shell .today-tools-scroll { flex: 1 1 0; min-height: 0; padding: 0 5px 24px 0; scrollbar-width: thin; scrollbar-color: var(--control-line) transparent; }
+.app-shell .today-page.today-tools-collapsed { grid-template-columns: minmax(0,1fr) 84px; }
+.app-shell .today-page.today-tools-collapsed > .today-context { padding: 16px 9px; gap: 14px; }
+.app-shell .today-page.today-tools-collapsed .today-context-toggle { min-height: 72px; writing-mode: horizontal-tb; flex-direction: column; gap: 7px; padding: 10px 4px; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; }
+.app-shell .today-page.today-tools-collapsed .today-context-toggle strong { font-size: 12px; letter-spacing: 0; }
+.app-shell .today-page.today-tools-collapsed .today-context-toggle small { display: none; }
+.app-shell .today-context-mini-progress { flex: none; border: 0; border-radius: 14px; padding: 0; gap: 0; background: transparent; }
+.app-shell .today-context-mini-progress > span { padding: 12px 0; gap: 4px; }
+.app-shell .today-context-mini-progress > span + span { border-top: 1px solid var(--line); }
+.app-shell .today-context-mini-progress strong { color: var(--accent); font-size: 17px; font-weight: 500; }
+.app-shell .today-context-mini-progress small { font-size: 11px; }
+.app-shell .today-page .fixed-calendar-tool { padding: 0 0 12px; background: var(--surface); border-radius: 18px; }
+.app-shell .today-page .fixed-calendar-tool > header { background: var(--surface-blue); padding: 16px 14px; border-bottom: 0; }
+.app-shell .today-page .fixed-calendar-tool .calendar-widget { border: 0; background: transparent; border-radius: 0; padding: 12px 14px 0; }
+.app-shell .today-page .calendar-widget > p { font-size: 12px; line-height: 1.7; }
+.app-shell .today-context .collapsible-tool { border-radius: 18px; box-shadow: none; }
+.app-shell .today-context .collapsible-tool > summary { padding: 16px 14px; }
+.app-shell .today-context .collapsible-tool > summary i { font-style: normal; color: var(--muted); }
+.app-shell .today-context .collapsible-tool:has(.task-recommendations) { background: var(--surface-mint); }
+.app-shell .today-context .collapsible-tool:has(.capture-widget) { background: var(--surface-peach); }
+.app-shell .today-context .collapsible-tool:has(.insight-widget) { background: var(--surface-lavender); }
+.app-shell .today-context .collapsible-tool:has(.focus-widget) { background: var(--surface-blue); }
+.app-shell .today-context .collapsible-tool[open] > summary { border-color: color-mix(in srgb,var(--accent) 10%,transparent); }
+.app-shell .today-context :is(.fixed-calendar-tool > header,.collapsible-tool > summary) > span { color: var(--accent); }
+
+/* A lens-like timer: the rest of the desk stays solid and bright. */
+.app-shell .today-page .focus-clock { position: relative; isolation: isolate; width: 186px; height: 186px; border: 1px solid rgb(255 255 255 / 90%); background: radial-gradient(circle at 26% 16%,rgb(255 255 255 / 95%),rgb(224 239 255 / 35%) 66%,rgb(183 222 255 / 45%)); backdrop-filter: blur(16px); box-shadow: inset 0 2px 3px white, inset 0 -6px 16px rgb(63 135 225 / 9%), 0 12px 30px rgb(37 101 185 / 10%); }
+.app-shell .today-page .focus-clock-ring { width: 180px; height: 180px; }
+.app-shell .today-page .focus-clock time { font-size: 39px; font-weight: 400; }
+.focus-fullscreen .focus-clock { border-radius: 50%; background: radial-gradient(circle at 28% 15%,rgb(255 255 255 / 80%),rgb(230 243 255 / 15%) 72%); box-shadow: inset 0 2px 3px rgb(255 255 255 / 90%), 0 20px 70px rgb(42 109 182 / 8%); }
+.focus-fullscreen > header { padding: 18px 28px; }
+.focus-fullscreen-center { padding: 24px 28px; flex-shrink: 0; }
+.focus-fullscreen-kicker { margin-bottom: 12px; font-size: 14px; }
+.focus-fullscreen h2 { margin-bottom: 16px; }
+.focus-fullscreen .focus-clock { width: clamp(180px,32dvh,300px); height: clamp(180px,32dvh,300px); margin-bottom: 18px; }
+.focus-fullscreen .focus-clock time { font-size: clamp(50px,8dvh,76px); }
+.focus-fullscreen-note { margin-top: 16px; font-size: 13px; }
+.focus-fullscreen > footer { padding: 12px 0; font-size: 14px; }
+
+/* Content must size the paper. A long record may wrap, never disappear at an edge. */
+.app-shell .progress-page .progress-overview { background: var(--surface-blue); }
+.app-shell .progress-page .progress-columns { grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 20px; align-items: start; }
+.app-shell .progress-page .progress-section { min-width: 0; padding: 24px; overflow: visible; }
+.app-shell .progress-columns > .progress-section:first-of-type { background: var(--surface-blue); }
+.app-shell .progress-columns > .progress-section:nth-of-type(2) { background: var(--surface-mint); }
+.app-shell .progress-page .revisions-section { background: var(--surface-peach); }
+.app-shell .progress-page .progress-section > header { flex-wrap: wrap; gap: 12px; }
+.app-shell .progress-page .progress-section > header > div { min-width: 0; }
+.app-shell .progress-page .progress-section > header > small { flex: none; white-space: normal; }
+.app-shell .progress-page .execution-day-timeline > article { grid-template-columns: minmax(0,1fr); gap: 8px; padding-block: 16px; }
+.app-shell .execution-day-timeline > article > i { display: none; }
+.app-shell .progress-page .execution-day-timeline > article > time { font-size: 13px; color: var(--accent); }
+.app-shell .progress-page .execution-day-timeline header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.app-shell .progress-page .execution-day-timeline header strong { display: block; flex: 1 1 100%; overflow: visible; -webkit-line-clamp: unset; font-size: 16px; }
+.app-shell .progress-page .execution-day-timeline :is(header span,small) { white-space: normal; overflow-wrap: anywhere; }
+.app-shell .progress-page .progress-feedback-list article > header { flex-wrap: wrap; }
+.app-shell .progress-page .progress-feedback-list article > header > span { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.app-shell .progress-page .execution-day-timeline > article > div { padding-bottom: 16px; }
+
+@media (min-width: 1051px) and (max-width: 1350px) {
+  .app-shell .today-page:not(.today-tools-collapsed) .execution-header { grid-template-columns: minmax(0,1fr); align-items: start; gap: 16px; }
+  .app-shell .today-page:not(.today-tools-collapsed) .execution-header .stage-heading { width: 100%; }
+}
+@media (max-width: 1050px) {
+  .app-shell .today-page .today-context-content, .app-shell .today-page .today-tools-scroll { flex: none; overflow: visible; }
+  .app-shell .today-page.today-tools-collapsed .today-context { flex-direction: row; align-items: center; padding: 14px 20px; }
+  .app-shell .today-page.today-tools-collapsed .today-context-toggle { flex-direction: row; min-height: 44px; padding: 10px 12px; }
+  .app-shell .today-context-mini-progress { flex: 1; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .app-shell .today-context-mini-progress > span + span { border-top: 0; border-left: 1px solid var(--line); }
+  .app-shell .progress-page .progress-columns { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 540px) {
+  .app-shell .planner-stage-header .stage-heading h1 { font-size: 23px; }
+  .app-shell .today-page .execution-task-card header > strong { font-size: 17px; }
+  .app-shell .progress-page .progress-section { padding: 20px; }
+  .app-shell .today-page .today-hero { padding: 18px; }
+  .focus-fullscreen-center { padding: 28px 18px; border-radius: 26px; }
+}
+@media (prefers-color-scheme: dark) {
+  .app-shell .today-page .execution-task-card { --task-paper: var(--surface-blue); --task-edge: var(--line); --task-ink: var(--accent); }
+  .app-shell .today-page .execution-task-card.task-tone-1 { --task-paper: var(--surface-peach); --task-ink: var(--warm); }
+  .app-shell .today-page .execution-task-card.task-tone-2, .app-shell .today-page .execution-task-card.completed { --task-paper: var(--surface-mint); --task-ink: var(--positive); }
+  .app-shell .today-page .execution-task-card.task-tone-3 { --task-paper: var(--surface-lavender); --task-ink: var(--accent); }
+  .app-shell .today-page .execution-task-card :is(p,.task-rule-help,.task-skip-guidance,.task-duration span) { color: var(--text); }
+  .app-shell .today-page .focus-clock, .focus-fullscreen .focus-clock { background: rgb(38 52 72 / 55%); border-color: rgb(255 255 255 / 14%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 12%); }
+  .focus-fullscreen-backdrop { background: rgb(15 23 37 / 55%); }
+  .focus-fullscreen-center { background: rgb(34 43 59 / 55%); border-color: rgb(255 255 255 / 16%); box-shadow: 0 24px 70px rgb(0 0 0 / 18%); }
+}
+
+.capability-settings { grid-column:1 / -1; }
+.capability-install-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 20px; margin:12px 0; }
+.capability-install-list > span { display:flex; justify-content:space-between; gap:8px; font-size:12px; }
+.capability-install-list small { color:var(--muted); white-space:nowrap; }
+@media(max-width:540px) { .capability-install-list { grid-template-columns:1fr; } }

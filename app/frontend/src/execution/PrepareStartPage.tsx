@@ -186,6 +186,7 @@ export function PrepareStartPage() {
   }
 
   if (!setup && !error) return <StageTransition current={3} title="正在准备开始" detail="Solevia 正在把已经确认的安排放进日历，不会改变刚才确认的内容。" checkpoints={['回顾已经确认的安排', '准备推荐执行日', '预览接下来的日期']} />
+  if (!setup) return <section className="page prepare-unavailable"><div className="setup-section" role="alert"><h1>暂时无法准备开始</h1><p>{error}</p><button type="button" className="button" onClick={() => navigate(`/goals/${goalId}/plan`)}>返回时间计划</button></div></section>
 
   return (
     <section className="page planner-stage-page prepare-page">

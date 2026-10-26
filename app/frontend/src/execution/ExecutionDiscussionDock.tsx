@@ -1,7 +1,8 @@
+import { ConnectionAwareError } from '../ui/ConnectionAwareError'
 import { submitOnEnter } from '../ui/submitOnEnter'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Globe2, MessageCircle, Send, X } from 'lucide-react'
+import { Globe2, Maximize2, MessageCircle, Minimize2, Send, X } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { getExecutionDiscussion, revisePlan, retryExecutionDiscussion, sendExecutionDiscussionMessage, dismissExecutionReview, type ExecutionDiscussionWorkspace, type GoalMaterial } from '../api'
 import { useResearchResponse } from '../ui/useResearchResponse'
@@ -11,8 +12,11 @@ import { ResearchConnectionStatus } from '../ui/ResearchConnectionStatus'
 import { ASSISTANT_NAME, scheduleTypeLabels, displayMessageContent } from '../ui/plannerPresentation'
 import { AnswerResearch } from '../ui/AnswerResearch'
 import { AssistantAnswer, useFreshAnswers } from '../ui/AssistantAnswer'
+import { AutoResizeTextarea } from '../ui/AutoResizeTextarea'
 import { OperationProgress } from '../ui/ProcessDetails'
 import { MaterialWorkspacePanel } from '../ui/MaterialWorkspacePanel'
+import { CodexComposerSettings, useCodexSelectionPending } from '../codex/CodexModelSettings'
+import './ExecutionDiscussionDock.css'
 
 const executionIntentLabels: Record<string, string> = {
   QUESTION: '问题',
@@ -30,13 +34,15 @@ export function ExecutionDiscussionDock({ goalId }: { goalId: string }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [open, setOpen] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const [workspace, setWorkspace] = useState<ExecutionDiscussionWorkspace | null>(null)
   const [draft, setDraft] = useState('')
   const [localBusy, setBusy] = useState(false)
   const [operationLabel, setOperationLabel] = useState('正在结合执行进度生成回答')
   const freshAnswer = useFreshAnswers(goalId, workspace?.goal_id === goalId ? workspace?.messages : undefined)
   const research = useResearchResponse(goalId, ['EXECUTION'], getExecutionDiscussion, setWorkspace)
-  const busy = localBusy || research.busy
+  const modelSelectionPending = useCodexSelectionPending()
+  const busy = localBusy || research.busy || modelSelectionPending
   const [error, setError] = useState('')
   const webConnection = useWebResearch(goalId)
   const { enabled: webResearchEnabled, setEnabled: setWebResearchEnabled } = webConnection
@@ -68,6 +74,7 @@ export function ExecutionDiscussionDock({ goalId }: { goalId: string }) {
     setWebResearchEnabled(false)
     setAttachedMaterials([])
     setOpen(false)
+    setExpanded(false)
     return () => { activeGoalIdRef.current = null }
   }, [goalId])
 
@@ -225,10 +232,13 @@ export function ExecutionDiscussionDock({ goalId }: { goalId: string }) {
       <span className="execution-discussion-trigger-label">和 {ASSISTANT_NAME} 讨论</span>
       {needsAttention && <span className="execution-discussion-attention" aria-hidden="true" />}
     </button>
-    {open && <aside className="execution-discussion-panel" aria-label="执行讨论">
+    {open && <aside className={`execution-discussion-panel${expanded ? ' is-expanded' : ''}`} aria-label="执行讨论">
       <header>
         <div><p className="eyebrow">执行中的讨论</p><h2>和 {ASSISTANT_NAME} 说说近况</h2></div>
-        <button className="icon-button" type="button" aria-label="关闭执行讨论" title="关闭" onClick={() => setOpen(false)}><X size={18} /></button>
+        <div className="execution-discussion-actions">
+          <button className="icon-button execution-discussion-expand" type="button" aria-label={expanded ? '收起执行讨论' : '展开执行讨论'} title={expanded ? '恢复小窗' : '展开阅读'} onClick={() => setExpanded((value) => !value)}>{expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}</button>
+          <button className="icon-button" type="button" aria-label="关闭执行讨论" title="关闭" onClick={() => setOpen(false)}><X size={18} /></button>
+        </div>
       </header>
       <p className="execution-discussion-context">{workspace ? `延续前期讨论 · ${workspace.planning_mode === 'EXPLORATORY' ? '先试试看' : '直接固定规划'} · ${scheduleTypeLabels[workspace.schedule_type]}` : '正在读取当前计划…'}</p>
       <div className="execution-discussion-scroll">
@@ -243,7 +253,7 @@ export function ExecutionDiscussionDock({ goalId }: { goalId: string }) {
             <span>{message.role === 'USER' ? '你' : ASSISTANT_NAME}</span>
             {Array.isArray(message.metadata?.material_titles) && <small className="message-materials">{message.metadata.material_titles.map(String).join(' · ')}</small>}
             {message.generation_status === 'GENERATING' || message.generation_status === 'PENDING' ? <p>正在生成回复…</p>
-              : message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content, message.generation_status === 'FAILED')} animate={message.generation_status === 'SUCCEEDED' && freshAnswer(message.id)} /> : <p>{message.content}</p>}
+              : message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content, message.generation_status === 'FAILED')} animate={message.generation_status === 'SUCCEEDED' && freshAnswer(message.id)} onPresented={() => freshAnswer.markPresented(message.id, message.content)} /> : <p>{message.content}</p>}
             <AnswerResearch message={message} summary={workspace?.latest_research ?? null} research={research} />
           </article>)}
           <ResearchProgress research={research} />
@@ -257,23 +267,26 @@ export function ExecutionDiscussionDock({ goalId }: { goalId: string }) {
         {confirmedInsights.length > 0 && <details className="execution-confirmed-memory"><summary>讨论中记住的内容 · {confirmedInsights.length}</summary><ul>{confirmedInsights.map((insight) => <li key={insight.id}>{insight.content}</li>)}</ul></details>}
         {workspace?.latest_analysis?.adjustment_signal.recommended && workspace.latest_analysis.adjustment_signal.request && <section className="execution-adjustment-signal"><strong>这可能需要调整计划</strong><p>{workspace.latest_analysis.adjustment_signal.reason}</p><button className="button primary" type="button" disabled={busy} onClick={() => void prepareAdjustment()}>{busy ? '正在整理…' : '生成可确认的调整建议'}</button><small>只会生成预览，不会直接修改当前安排。</small></section>}
         {workspace?.planning_mode === 'EXPLORATORY' && workspace.active_review && !workspace.latest_analysis?.adjustment_signal.recommended && <button className="button exploration-next-entry" type="button" onClick={() => navigate(`/goals/${goalId}/plan`)}>查看并决定下一阶段</button>}
-        {error && <p className="form-error" role="alert">{error}</p>}
+        {error && <ConnectionAwareError message={error} />}
       </div>
       <form className="execution-discussion-compose" onSubmit={submit}>
         {attachedMaterials.length > 0 && <div className="material-attachment-strip">{attachedMaterials.map((m) => <span key={m.source_id}>{m.title}{m.latest_revision?.status !== 'READY' ? ' · 解析中' : m.latest_revision.metadata.cache_reused ? ' · 已复用' : ''}<button type="button" disabled={busy} aria-label={`移除附件 ${m.title}`} onClick={() => setAttachedMaterials((current) => current.filter((item) => item.source_id !== m.source_id))}>×</button></span>)}</div>}
         {attachmentsPending && <small className="material-attachment-hint">解析完成后可发送；失败时可重试或移除附件。</small>}
-        <textarea onKeyDown={submitOnEnter} title="Enter 发送，Shift + Enter 换行" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="说说进展、卡点、心得或想调整的地方…" aria-label="执行讨论内容" />
-        <MaterialWorkspacePanel goalId={goalId} compact selectedSourceIds={attachedMaterials.map((m) => m.source_id)} onSelectionChange={setAttachedMaterials} disabled={busy} />
-        <button
-          className={`research-toggle-button${webResearchEnabled ? ' active' : ''}`}
-          type="button"
-          aria-label={webResearchEnabled ? '关闭联网检索' : '开启联网检索'}
-          aria-pressed={webResearchEnabled}
-          title={webResearchEnabled ? '已允许模型判断并调用联网检索，点击关闭' : '允许模型判断是否需要联网检索'}
-          disabled={busy}
-          onClick={() => setWebResearchEnabled((current) => !current)}
-        ><Globe2 size={16} aria-hidden="true" /></button>
-        <button type="submit" disabled={!draft.trim() || busy || attachmentsPending} aria-label="发送" title="发送"><Send size={18} /></button>
+        <AutoResizeTextarea onKeyDown={submitOnEnter} title="Enter 发送，Shift + Enter 换行" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="说说进展或卡点…" aria-label="执行讨论内容" />
+        <div className="execution-discussion-toolbar">
+          <MaterialWorkspacePanel goalId={goalId} compact selectedSourceIds={attachedMaterials.map((m) => m.source_id)} onSelectionChange={setAttachedMaterials} disabled={busy} />
+          <CodexComposerSettings disabled={busy} />
+          {webConnection.available && <button
+            className={`research-toggle-button${webResearchEnabled ? ' active' : ''}`}
+            type="button"
+            aria-label={webResearchEnabled ? '关闭联网检索' : '开启联网检索'}
+            aria-pressed={webResearchEnabled}
+            title={webResearchEnabled ? '已允许模型判断并调用联网检索，点击关闭' : '允许模型判断是否需要联网检索'}
+            disabled={busy}
+            onClick={() => setWebResearchEnabled((current) => !current)}
+          ><Globe2 size={16} aria-hidden="true" /></button>}
+          <button type="submit" disabled={!draft.trim() || busy || attachmentsPending} aria-label="发送" title="发送"><Send size={18} /></button>
+        </div>
       </form>
       <ResearchConnectionStatus connection={webConnection} />
     </aside>}

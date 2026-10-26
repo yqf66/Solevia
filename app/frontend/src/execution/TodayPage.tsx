@@ -5,7 +5,7 @@ import './ExecutionRefinement.css'
 import './ExecutionIdentity.css'
 import { TodayBrief } from './TodayBrief'
 import { useEffect, useRef, useState } from 'react'
-import { CalendarClock } from 'lucide-react'
+import { CalendarClock, PanelRightClose, PanelRightOpen } from 'lucide-react'
 import { ExecutionDayMoveDialog } from '../ExecutionDateControls'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
@@ -643,12 +643,12 @@ export function TodayPage() {
       </div>
         <aside className="stage-context-column today-context" aria-label="每日工具">
           {!todayToolsOpen && <button className="today-context-mini-progress" type="button" aria-label="查看简要进度与调整" onClick={() => navigate(`/goals/${goalId}/progress`)}><span><small>今日</small><strong>{workspace.day_progress.percentage}%</strong></span><span><small>阶段</small><strong>{workspace.stage_progress.percentage}%</strong></span><span><small>{workspace.exploration?.next_unplanned_week ? '已展开' : '整体'}</small><strong>{workspace.overall_progress.percentage}%</strong></span></button>}
-          <button className="today-context-toggle" type="button" aria-label={todayToolsOpen ? '收起每日工具' : '展开每日工具'} aria-expanded={todayToolsOpen} onClick={toggleTodayTools}>
-            <span aria-hidden="true">{todayToolsOpen ? '›' : '‹'}</span>
-            <strong>{todayToolsOpen ? '收起辅助栏' : '辅助工具'}</strong>
-            {!todayToolsOpen && <small>进度 · 日历 · 专注</small>}
+          <button className="today-context-toggle" type="button" aria-label={todayToolsOpen ? '收起每日工具' : '展开每日工具'} aria-expanded={todayToolsOpen} aria-controls="daily-tools-panel" onClick={toggleTodayTools}>
+            {todayToolsOpen ? <PanelRightClose size={17} aria-hidden="true" /> : <PanelRightOpen size={19} aria-hidden="true" />}
+            <strong>{todayToolsOpen ? '每日工具' : '工具'}</strong>
+            <small>{todayToolsOpen ? '收起' : '展开'}</small>
           </button>
-          <div className="today-context-content">
+          <div className="today-context-content" id="daily-tools-panel">
             <button className="compact-progress progress-entry" type="button" aria-label="查看进度与调整" onClick={() => navigate(`/goals/${goalId}/progress`)}><span>今日 <strong>{workspace.day_progress.percentage}%</strong></span><span>阶段 <strong>{workspace.stage_progress.percentage}%</strong></span><span>{workspace.exploration?.next_unplanned_week ? '已展开任务' : '整体'} <strong>{workspace.overall_progress.percentage}%</strong></span><em>查看进度与调整 →</em></button>
             <div className="today-tools-scroll">
               {goalId && <ExecutionObligations goalId={goalId} workspace={workspace} onActivated={(result) => { setWorkspace(result); refreshCalendar(); void getUnifiedToday().then(setUnifiedToday).catch(() => undefined) }} />}
