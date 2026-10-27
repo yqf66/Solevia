@@ -17,9 +17,10 @@ RequestCallback = Callable[[dict[str, Any]], None]
 
 
 class CodexUnavailable(RuntimeError):
-    def __init__(self, message: str, *, code: str = "CODEX_UNAVAILABLE"):
+    def __init__(self, message: str, *, code: str = "CODEX_UNAVAILABLE", details=None):
         super().__init__(message)
         self.code = code
+        self.details = details if details is not None else message
 
 
 def find_codex() -> str | None:
@@ -142,7 +143,7 @@ class CodexAppServer:
             raise
         if "error" in response:
             error = response["error"]
-            raise RuntimeError(f"Codex {method} 失败: {error}")
+            raise CodexUnavailable(f"Codex {method} 请求失败", details=error)
         return response.get("result", {})
 
     def notify(self, method: str, params: dict[str, Any] | None = None) -> None:

@@ -6,7 +6,7 @@
 
 ## 安装与启动
 
-1. 在[官方下载页面](https://github.com/yqf66/Solevia/releases)下载对应版本。0.2.0 安装包为 **Solevia-Setup-0.2.0-windows-x64.exe**，公开发布情况以页面实际资产为准。
+1. 在[官方下载页面](https://github.com/yqf66/Solevia/releases)下载对应版本。0.2.1 安装包为 **Solevia-Setup-0.2.1-windows-x64.exe**，公开发布情况以页面实际资产为准。
 2. 双击安装程序，先检测本机 Codex；发现后询问是否连接，由你决定。再选择所需能力，查看下载估算与所选磁盘空余空间后安装。可以不连接模型、跳过全部可选能力，先安装基础工作台。安装位置与网络选项可展开。准备过程中可查看步骤、下载或传输速度，详细日志按需展开。
 3. 安装完成后点击 **打开 Solevia**，或使用桌面、开始菜单中的 **Solevia** 图标。后台服务自动启动，工作台在默认浏览器中打开。
 4. 安装时的连接选择已保存：Codex 复用本机登录自动连接；API 在个人卡片的「模型连接」填写配置，再开始第一个目标。
@@ -19,7 +19,7 @@
 
 ![安装中的文件进度、下载速度与步骤提示](docs/assets/solevia/install-progress.webp)
 
-也可以下载 **Solevia-0.2.0-windows-x64.zip** 或从[公开源码仓库](https://github.com/yqf66/Solevia)下载源码，完整解压后运行 Install.cmd。脚本安装完成同样会生成 **Solevia.exe**；保留 CMD 入口便于命令行使用。
+也可以下载 **Solevia-0.2.1-windows-x64.zip** 或从[公开源码仓库](https://github.com/yqf66/Solevia)下载源码，完整解压后运行 Install.cmd。脚本安装完成同样会生成 **Solevia.exe**；保留 CMD 入口便于命令行使用。
 
 ## 选择模型连接
 

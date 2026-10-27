@@ -6589,21 +6589,24 @@ class PlanService:
                 ProviderUnavailableError("本批次没有生成可采用的周计划。"),
             )
         self.session.commit()
-        if failures and not completed:
+        from planner_api.codex_runtime.failures import failure_for_code
+        codex_failure_code = next((code for code in failure_codes if failure_for_code(code)), None)
+        if failures and (not completed or codex_failure_code):
             diagnostic = "; ".join(failures)
             raise HTTPException(
                 status_code=503,
                 detail={
                     "message": self._generation_failure_message(
-                        "MODEL_REQUEST_REJECTED"
+                        codex_failure_code or ("MODEL_REQUEST_REJECTED"
                         if "MODEL_REQUEST_REJECTED" in failure_codes
-                        else "PLAN_WEEK_GENERATION_FAILED",
+                        else "PLAN_WEEK_GENERATION_FAILED"),
                         diagnostic,
                         "这一批周计划暂时生成失败，之前完成的内容仍然保留。",
                     ),
                     "code": "PLAN_WEEK_GENERATION_FAILED",
+                    "provider_code": codex_failure_code,
                     "diagnostic": diagnostic,
-                    "retryable": all(
+                    "retryable": not codex_failure_code and all(
                         code
                         not in {
                             "MODEL_REQUEST_REJECTED",
@@ -9404,6 +9407,10 @@ class PlanService:
         diagnostic: str | None,
         fallback: str | None,
     ) -> str | None:
+        from planner_api.codex_runtime.failures import failure_for_code
+        codex_failure = failure_for_code(error_code)
+        if codex_failure:
+            return codex_failure.message
         if error_code == "MODEL_REQUEST_REJECTED" and "HTTP 402" in (diagnostic or ""):
             return (
                 "模型服务拒绝了请求（HTTP 402，通常是余额或额度不足）。"
@@ -9444,6 +9451,7 @@ class PlanService:
                 "code": f"PLAN_{phase}_GENERATION_FAILED",
                 "provider_code": error.code,
                 "diagnostic": error.diagnostic,
+                "retryable": getattr(error, 'retryable', True),
             },
         ) from None
 

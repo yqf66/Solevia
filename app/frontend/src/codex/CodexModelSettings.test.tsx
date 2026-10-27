@@ -51,3 +51,13 @@ it('does not call a disconnected or unobservable backend normal generation', asy
   await waitFor(() => expect(screen.getByText(/暂时无法取得后台生成状态/)).toBeInTheDocument())
   expect(screen.queryByText(/正在处理 1/)).not.toBeInTheDocument()
 })
+
+it('shows a bounded retry wait and does not send another generation request', async () => {
+  vi.stubEnv('VITE_SOLEVIA_RUNTIME', 'codex')
+  vi.mocked(request).mockResolvedValue({ connected: true, active_count: 0, queued_count: 0, requests: [],
+    retries: [{ attempt: 2, maximum_attempts: 3, wait_seconds: 4 }] })
+  render(<CodexGenerationStatus active scope="retry" />)
+  await screen.findByText(/4 秒后自动进行第 2 \/ 3 次尝试/)
+  expect(request).toHaveBeenCalledOnce()
+  expect(request).toHaveBeenCalledWith('/api/codex/generation-status')
+})

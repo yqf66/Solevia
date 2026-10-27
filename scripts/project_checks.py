@@ -23,31 +23,37 @@ def versions(root, *, write=False):
         product / "desktop/Program.cs": (r'AssemblyVersion\("[^"]+"\)', f'AssemblyVersion("{version}.0")'),
     }
     for path, (pattern, replacement) in mirrors.items():
-        old = path.read_text(encoding="utf8")
+        old = path.read_bytes().decode("utf8")
         new, count = re.subn(pattern, replacement, old)
         if count != 1:
             raise ValueError("Missing unique version mirror: " + path.name)
         if write:
-            path.write_text(new, encoding="utf8")
+            path.write_bytes(new.encode("utf8"))
         elif new != old:
             raise ValueError("Version mismatch: " + path.name)
     for relative in ["frontend/package.json", "services/web-research/package.json", "services/web-research/package-lock.json"]:
         path = app / relative
-        data = json.loads(path.read_text(encoding="utf8"))
+        original = path.read_bytes()
+        data = json.loads(original.decode("utf8"))
         mismatch = data["version"] != version
         data["version"] = version
         if "packages" in data:
             mismatch |= data["packages"][""]["version"] != version
             data["packages"][""]["version"] = version
         if write:
-            path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf8")
+            updated = json.dumps(data, indent=2) + "\n"
+            if b"\r\n" in original:
+                updated = updated.replace("\n", "\r\n")
+            path.write_bytes(updated.encode("utf8"))
         elif mismatch:
             raise ValueError("Version mismatch: " + relative)
-    for path in [root / "README.md", product / "START_HERE.md"]:
-        old = path.read_text(encoding="utf8")
+    # README may retain a versioned feature walkthrough between patch releases.
+    # Only the installation guide mirrors current installer filenames.
+    for path in [product / "START_HERE.md"]:
+        old = path.read_bytes().decode("utf8")
         new = re.sub(r'(Solevia-(?:Setup-)?)\d+\.\d+\.\d+(-windows-x64)', rf'\g<1>{version}\g<2>', old)
         if write:
-            path.write_text(new, encoding="utf8")
+            path.write_bytes(new.encode("utf8"))
         elif new != old:
             raise ValueError("Download filename version mismatch: " + path.name)
     print("Version mirrors verified: " + version)

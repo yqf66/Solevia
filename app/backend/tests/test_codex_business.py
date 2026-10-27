@@ -125,15 +125,18 @@ def test_direct_hybrid_planning_keeps_author_design_contract_without_second_mode
 
 def test_failed_and_timed_out_turns_never_return_partial_success(runtime):
     runtime.server.fail = True
-    with pytest.raises(URLError, match='rejected'):
+    with pytest.raises(ProviderUnavailableError) as failed:
         runtime.generate({}, 1)
+    assert failed.value.code == 'CODEX_GENERATION_UNAVAILABLE'
     runtime.server.completed = False
-    with pytest.raises(TimeoutError):
+    with pytest.raises(ProviderUnavailableError) as timed_out:
         runtime.generate({}, 0.02)
+    assert timed_out.value.code == 'CODEX_TIMEOUT'
     assert any(method == 'turn/interrupt' for method, _ in runtime.server.calls)
     assert not runtime.pending
     runtime.disconnected()
-    with pytest.raises(URLError):
+    runtime.stopping = True
+    with pytest.raises(ProviderUnavailableError):
         runtime.generate({}, 1)
 
 

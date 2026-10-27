@@ -1808,7 +1808,7 @@ class ClarificationService:
         job = self.session.get(ClarificationAnalysisJob, job_id)
         if job is None:
             return True, None
-        retryable = job.attempts < job.max_attempts
+        retryable = job.attempts < job.max_attempts and getattr(error, 'retryable', True)
         delay = min(30, 2**job.attempts)
         now = utc_now()
         job.status = "PENDING" if retryable else "FAILED"

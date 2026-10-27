@@ -6,6 +6,7 @@ type Status = {
   connected: boolean
   queued_count: number
   active_count: number
+  retries?: Array<{ attempt: number; maximum_attempts: number; wait_seconds: number; message: string }>
   requests: Array<{ stage: string; last_activity_seconds: number; reasoning_effort: string; wait_seconds: number }>
   plan_checkpoint?: { status: string; completed_weeks: number; total_weeks: number | null }
 }
@@ -35,10 +36,12 @@ export function CodexGenerationStatus({ active, scope }: { active: boolean; scop
   return <div className="codex-generation-status" role="status" aria-live="polite">
     <p>{unavailable ? '暂时无法取得后台生成状态，尚未确认完成，请勿重复提交。'
       : !status ? '正在连接后台，查询生成状态…'
+      : status.retries?.length ? `遇到临时连接或服务问题，${status.retries[0].wait_seconds} 秒后自动进行第 ${status.retries[0].attempt} / ${status.retries[0].maximum_attempts} 次尝试。已完成内容保留，无需重复提交。`
       : !status.connected ? 'Codex 连接已断开，正在等待本次请求返回错误信息。'
       : status.active_count ? `Codex 已连接，当前正在处理 ${status.active_count} 个生成请求${status.queued_count ? `，另有 ${status.queued_count} 个排队` : ''}。`
       : status.queued_count ? 'Codex 已连接，请求正在排队。'
       : '后台已连接，正在等待本次处理结果。'}</p>
+    {!unavailable && status?.requests.some(row => row.stage === 'RETRYING') && <p>Codex 正在恢复临时连接，请继续等待；Solevia 正在等待同一次生成，不会另发重复请求。</p>}
     {!unavailable && status?.connected && status.requests.some(row => row.last_activity_seconds > 90) && <p>生成尚未结束，暂未收到新的阶段事件。复杂规划可能需要较长时间，请继续等待。</p>}
     {checkpoint?.status === 'RUNNING' && checkpoint.total_weeks != null && <p>本规划已校验 {checkpoint.completed_weeks} / {checkpoint.total_weeks} 周；通过的段落已保存。</p>}
   </div>

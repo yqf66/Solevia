@@ -1,4 +1,6 @@
 import type { ResearchSummary } from '../api'
+import { codexFailureForCode } from './codexFailures'
+import { ConnectionAwareError } from './ConnectionAwareError'
 
 function evidenceLabel(level: string): string {
   if (level === 'DIRECT_EVIDENCE') return '正文证据'
@@ -17,6 +19,8 @@ function statusLabel(status: string): string {
 }
 
 function stopLabel(reason: string): string {
+  const failure = codexFailureForCode(reason)
+  if (failure) return failure.message
   const labels: Record<string, string> = {
     CODEX_EVIDENCE_VERIFIED: '本轮所需的正文证据已核验',
     CODEX_EVIDENCE_REVIEW_REQUIRED: '已保留收集的资料，仍有证据需要核实',
@@ -32,7 +36,11 @@ function readLabel(status: string | undefined): string {
 }
 
 export function ResearchSources({ research }: { research: ResearchSummary | null }) {
-  if (!research || research.sources.length === 0) return null
+  if (!research) return null
+  if (research.sources.length === 0) {
+    const failure = codexFailureForCode(research.stop_reason ?? undefined)
+    return failure ? <ConnectionAwareError code={research.stop_reason ?? undefined} message={failure.message} /> : null
+  }
   return (
     <details className="research-sources-panel">
       <summary>

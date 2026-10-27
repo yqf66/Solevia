@@ -75,11 +75,13 @@ class KernelManager:
             ResearchRun,
             ResearchResponseRequest,
             ClarificationAnalysisJob,
+            PlanGenerationJob,
         )
 
         with SessionLocal() as session:
             for cls, statuses in (
                 (GenerationBatch, ["QUEUED", "RUNNING"]),
+                (PlanGenerationJob, ["QUEUED", "RUNNING"]),
                 (ResearchRun, ["QUEUED", "RUNNING"]),
                 (ClarificationAnalysisJob, ["PENDING", "PROCESSING"]),
                 (ResearchResponseRequest, ["WAITING_RESEARCH", "QUEUED_ANSWER", "ANSWERING"]),
@@ -89,7 +91,7 @@ class KernelManager:
         runtime = getattr(self.application.state, "codex_business", None)
         if runtime:
             status = runtime.generation_status()
-            if status["active_count"] or status["queued_count"]:
+            if status["active_count"] or status["queued_count"] or status.get('retries'):
                 return True
         files = getattr(self.application.state, "conversation_files", None)
         return bool(

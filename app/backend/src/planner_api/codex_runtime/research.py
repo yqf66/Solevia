@@ -11,7 +11,7 @@ from urllib.error import URLError
 from pydantic import BaseModel, Field, AnyHttpUrl
 
 from planner_api.config import get_settings
-from planner_api.ai import _safe_validation_feedback
+from planner_api.ai import _safe_validation_feedback, ClarificationProviderError
 from planner_api.model_telemetry import model_node, observed_model_call, trace_policy
 from planner_api.research.orchestrator import ResearchLimits
 from planner_api.research.providers import ResearchProviderError
@@ -269,6 +269,13 @@ class CodexResearchOrchestrator:
             refresh_evidence_metrics(packet)
             refresh_research_coverage(packet)
             packet.stop_reason = "CODEX_EVIDENCE_VERIFIED" if packet.status == "READY" else "CODEX_EVIDENCE_REVIEW_REQUIRED"
+        except ClarificationProviderError as error:
+            packet.status = "PARTIAL" if packet.sources else "FAILED"
+            packet.stop_reason = error.code
+            packet.uncertain_points.append(str(error))
+            packet.coverage.result_count = len(packet.sources)
+            packet.coverage.selected_pages = len(packet.sources)
+            packet.coverage.full_text_sources = packet.coverage.read_pages
         except (URLError, TimeoutError, OSError, ValueError) as error:
             packet.status = "PARTIAL" if packet.sources else "FAILED"
             packet.stop_reason = "CODEX_RESEARCH_INCOMPLETE"

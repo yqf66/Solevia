@@ -22,7 +22,8 @@ namespace Solevia.Desktop {
             }
         }
         static async Task<bool> Probe(Process process) {
-            await process.StandardInput.WriteLineAsync("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"clientInfo\":{\"name\":\"solevia-installer\",\"version\":\"0.2.0\"}}}");
+            string version=System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+            await process.StandardInput.WriteLineAsync("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"clientInfo\":{\"name\":\"solevia-installer\",\"version\":\""+version+"\"}}}");
             if(await Reply(process,1)==null)return false;
             await process.StandardInput.WriteLineAsync("{\"jsonrpc\":\"2.0\",\"method\":\"initialized\"}");
             await process.StandardInput.WriteLineAsync("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"account/read\",\"params\":{}}");

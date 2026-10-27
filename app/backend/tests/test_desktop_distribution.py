@@ -77,14 +77,15 @@ def test_installer_can_extract_beside_itself_without_overwriting_other_files(exe
     local_exe = target / executable.name
     shutil.copyfile(executable, local_exe)
     marker = tmp_path / 'done.txt'
-    result = subprocess.run([str(local_exe), '--extract-package', str(target), str(marker)], timeout=40)
+    # First execution and hundreds of extracted files can trigger Windows scans.
+    result = subprocess.run([str(local_exe), '--extract-package', str(target), str(marker)], timeout=120)
     assert result.returncode == 0 and marker.exists()
     cache = target / '.runtime/downloads/uv.zip'
     assert hashlib.sha256(cache.read_bytes()).hexdigest() == 'bb701bd35b586c45966654ea2703c9bd116a6a4fc0a8ca755bd644c2c41c5ebe'
     assert local_exe.read_bytes() == executable.read_bytes()
     blocked = tmp_path / 'other'; blocked.mkdir()
     (blocked / 'unrelated.txt').write_text('keep')
-    assert subprocess.run([str(executable), '--extract-package', str(blocked), str(tmp_path / 'blocked.txt')], timeout=40).returncode != 0
+    assert subprocess.run([str(executable), '--extract-package', str(blocked), str(tmp_path / 'blocked.txt')], timeout=120).returncode != 0
     assert (blocked / 'unrelated.txt').read_text() == 'keep'
     assert not (blocked / 'release.json').exists()
 
@@ -94,7 +95,7 @@ def test_embedded_tool_bootstraps_without_network(executable, tmp_path):
     import shutil
     import test_installer_guidance as guidance
     target = tmp_path / 'offline-tool';marker = tmp_path / 'extracted'
-    assert subprocess.run([str(executable), '--extract-package', str(target), str(marker)], timeout=40).returncode == 0
+    assert subprocess.run([str(executable), '--extract-package', str(target), str(marker)], timeout=120).returncode == 0
     # No runtime has been installed. A matching embedded archive is the only tool source.
     result = guidance.run_installer(target, '-NonInteractive', '-Profile Minimal', '-BootstrapOnly')
     assert result.returncode == 0, result.stdout + result.stderr

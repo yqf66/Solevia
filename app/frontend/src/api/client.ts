@@ -1,5 +1,6 @@
 import { usesCodexKernel } from './kernelMode'
 import { clearLocalSession, localSession } from './localSession'
+import { codexFailureForCode } from '../ui/codexFailures'
 
 
 export async function request<T>(path: string, options?: RequestInit, timeoutMs?: number): Promise<T> {
@@ -90,6 +91,13 @@ async function requestWithoutDeadline<T>(path: string, options?: RequestInit): P
     if (detail && typeof detail === 'object' && 'message' in detail) {
       const message = (detail as { message?: unknown }).message
       const providerCode = (detail as { provider_code?: unknown }).provider_code
+      const failureCode = typeof providerCode === 'string' ? providerCode : (detail as { code?: string }).code
+      const codexFailure = codexFailureForCode(failureCode)
+      if (codexFailure) {
+        const error = new Error(codexFailure.message) as Error & { code?: string }
+        error.code = failureCode
+        throw error
+      }
       if (typeof message === 'string' && providerCode === 'MODEL_GATEWAY_TIMEOUT') {
         throw new Error('这次等待得有些久，但你已经填写和确认的内容仍然保留，可以稍后重试。')
       }

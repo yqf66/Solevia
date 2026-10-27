@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import copy
 import logging
-import re
+import random
 import threading
 import time
 from dataclasses import dataclass, field
@@ -17,6 +17,7 @@ from typing import Any
 from urllib.error import URLError
 
 from .protocol import CodexAppServer, CodexUnavailable
+from .failures import CodexFailure, classify_failure, retry_delay
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -51,7 +52,7 @@ class PendingTurn:
     turn_id: str | None = None
     parts: dict[str, str] = field(default_factory=dict)
     phases: dict[str, str | None] = field(default_factory=dict)
-    error: str | None = None
+    error: Any = None
     tool_handler: Any = None
     completed: bool = False
     events: list[dict] = field(default_factory=list)
@@ -63,6 +64,7 @@ class PendingTurn:
     material_reads: int = 0
     denied_tools: int = 0
     timeout_seconds: float = 0
+    host_operation_requested: bool = False
 
 
 class BusinessCodexRuntime:
@@ -78,11 +80,19 @@ class BusinessCodexRuntime:
         self.connection_error_code: str | None = None
         self.connected = False
         self.queued = 0
+        self.retry_waits: dict[int, dict] = {}
+        self.reconnect_lock = threading.Lock()
+        self.was_connected = False
+        self.connection_epoch = 0
+        self.stopping = False
+        self.sleeper = time.sleep
 
     def generation_status(self):
         now = time.monotonic()
         with self.lock:
             return {'connected': self.connected, 'queued_count': self.queued,
+                    'retries': [dict({key: value for key, value in row.items() if key != 'retry_at'}, wait_seconds=max(0, round(row['retry_at'] - now)))
+                                for row in self.retry_waits.values()],
                     'active_count': len(self.pending), 'requests': [
                         {'stage': pending.stage, 'elapsed_seconds': round(now - pending.started),
                          'last_activity_seconds': round(now - pending.last_activity),
@@ -94,6 +104,7 @@ class BusinessCodexRuntime:
     def start(self):
         # Alembic logging setup can disable module loggers during startup.
         logger.disabled = False
+        self.stopping = False
         self.connected = False
         self.start_error = None
         self.connection_error = "Codex 尚未连接，请先完成本机安装与登录。"
@@ -105,6 +116,8 @@ class BusinessCodexRuntime:
                 self.connection_error = "已找到 Codex，但尚未登录。请先在 Codex 完成登录，再点击「检测并连接」。"
                 raise CodexUnavailable(self.connection_error, code="CODEX_LOGIN_REQUIRED")
             self.connected = True
+            self.was_connected = True
+            self.connection_epoch += 1
             self.connection_error = None
             self.connection_error_code = None
         except Exception as exc:
@@ -117,6 +130,10 @@ class BusinessCodexRuntime:
                 code = "CODEX_ACCESS_DENIED"
             elif isinstance(exc, TimeoutError):
                 code = "CODEX_START_TIMEOUT"
+            elif code in {'CODEX_START_FAILED', 'CODEX_UNAVAILABLE'}:
+                classified = classify_failure(exc)
+                if classified.code != 'CODEX_GENERATION_UNAVAILABLE':
+                    code = classified.code
             messages = {
                 "CODEX_NOT_FOUND": "尚未找到本机 Codex。请先安装 Codex，再点击「检测并连接」。",
                 "CODEX_LOGIN_REQUIRED": "已找到 Codex，但尚未登录。请先在 Codex 完成登录，再点击「检测并连接」。",
@@ -124,11 +141,16 @@ class BusinessCodexRuntime:
                 "CODEX_START_TIMEOUT": "Codex 启动或登录状态检查超时。请先确认 Codex 本身能正常打开，再点击「检测并连接」。",
             }
             self.connection_error_code = code
-            self.connection_error = messages.get(code, "Codex 本机连接未建立。请先确认 Codex 能正常运行并更新到可用版本，再点击「检测并连接」；这不代表模型无法生成。")
+            from .failures import failure_for_code
+            failure = failure_for_code(code)
+            self.connection_error = messages.get(code) or (failure.message if failure else "Codex 本机连接未建立。请先确认 Codex 能正常运行并更新到可用版本，再点击「检测并连接」；这不代表模型无法生成。")
 
     def stop(self):
-        self.server.stop()
-        self.disconnected()
+        self.stopping = True
+        with self.reconnect_lock:
+            self.stopping = True
+            self.server.stop()
+            self.disconnected()
 
     def disconnected(self):
         if self.connected:
@@ -137,7 +159,7 @@ class BusinessCodexRuntime:
         self.connected = False
         with self.lock:
             for pending in self.pending.values():
-                pending.error = "Codex 连接已关闭。"
+                pending.error = CodexUnavailable("Codex 连接已关闭。", code="CODEX_DISCONNECTED")
                 pending.done.set()
 
     def on_event(self, message):
@@ -147,6 +169,9 @@ class BusinessCodexRuntime:
             if pending is None or pending.done.is_set():
                 return
             method = message.get("method")
+            event_turn = params.get('turnId') or (params.get('turn') or {}).get('id')
+            if event_turn and pending.turn_id and event_turn != pending.turn_id:
+                return
             pending.last_activity = time.monotonic()
             if method == "turn/started":
                 pending.turn_id = params["turn"]["id"]
@@ -174,11 +199,20 @@ class BusinessCodexRuntime:
                 turn = params["turn"]
                 if turn.get("status") != "completed":
                     error = turn.get("error") or {}
-                    pending.error = error.get("message", "Codex 本次生成未完成。")
+                    pending.error = error or {"message": "Codex 本次生成未完成。", "status": turn.get("status")}
                 pending.done.set()
                 logger.info('codex_turn_completed status=%s elapsed_seconds=%.3f model=%s effort=%s material_reads=%s denied_tools=%s',
                             turn.get('status'), time.monotonic() - pending.started, pending.model,
                             pending.effort, pending.material_reads, pending.denied_tools)
+            elif method == "error":
+                error = params.get("error") or {}
+                # Some versions retry their own stream. Keep waiting for that
+                # turn instead of starting a duplicate request at the host.
+                if params.get("willRetry") is True:
+                    pending.stage = 'RETRYING'
+                else:
+                    pending.error = error or {"message": "Codex 本次生成未完成。"}
+                    pending.done.set()
             elif method == "item/completed":
                 pending.events.append(params.get("item", {}))
 
@@ -197,11 +231,14 @@ class BusinessCodexRuntime:
 
     def _tool_call(self, message):
         params = message.get("params", {})
-        with self.lock:
-            pending = self.pending.get(params.get("threadId"))
+        pending = None
         try:
-            if pending is None or pending.done.is_set() or pending.tool_handler is None:
-                raise ValueError("当前请求没有此资料读取授权。")
+            with self.lock:
+                pending = self.pending.get(params.get("threadId"))
+                if pending is None or pending.done.is_set() or pending.tool_handler is None:
+                    raise ValueError("当前请求没有此资料读取授权。")
+                if params.get('tool') not in {'solevia_list_materials', 'solevia_read_material'}:
+                    pending.host_operation_requested = True
             result = pending.tool_handler(params.get("tool"), params.get("arguments", {}))
             with self.lock:
                 if params.get('tool') == 'solevia_read_material':
@@ -219,6 +256,68 @@ class BusinessCodexRuntime:
 
     def generate(self, payload: dict[str, Any], timeout: float) -> str:
         deadline = time.monotonic() + timeout
+        key = id(threading.current_thread())
+        reconnected = False
+        try:
+            for attempt in range(3):
+                request_epoch = self.connection_epoch
+                try:
+                    if not self.connected and reconnected:
+                        raise CodexFailure('CODEX_DISCONNECTED').as_error()
+                    reconnected = self._reconnect_if_needed() or reconnected
+                    request_epoch = self.connection_epoch
+                    return self._generate_once(payload, max(0.001, deadline - time.monotonic()))
+                except Exception as error:
+                    from planner_api.ai import ClarificationProviderError
+                    if not isinstance(error, (ClarificationProviderError, CodexUnavailable, URLError, RuntimeError, OSError)):
+                        raise
+                    failure = classify_failure(error)
+                    if self.stopping:
+                        raise CodexFailure('CODEX_INTERRUPTED').as_error() from None
+                    if failure.code == 'CODEX_DISCONNECTED' and request_epoch == self.connection_epoch:
+                        self.disconnected()
+                    elif failure.code == 'CODEX_LOGIN_REQUIRED':
+                        self.connected = False
+                        self.connection_error_code = failure.code
+                        self.connection_error = failure.message
+                    delay = retry_delay(failure, attempt, deadline - time.monotonic(), jitter=random.random())
+                    if not failure.retryable or attempt == 2 or delay is None or (reconnected and failure.code == 'CODEX_DISCONNECTED'):
+                        raise failure.as_error() from None
+                    with self.lock:
+                        self.retry_waits[key] = {'code': failure.code, 'message': failure.message,
+                            'attempt': attempt + 2, 'maximum_attempts': 3, 'retry_at': time.monotonic() + delay}
+                    self.sleeper(delay)
+                    with self.lock:
+                        self.retry_waits.pop(key, None)
+        finally:
+            with self.lock:
+                self.retry_waits.pop(key, None)
+
+    def _reconnect_if_needed(self):
+        if self.connected:
+            return
+        # Consent comes from a previously successful connection. Never start a
+        # fresh installation or replace a process that still owns other turns.
+        if not self.was_connected or self.stopping or self.connection_error_code == 'CODEX_LOGIN_REQUIRED':
+            from .failures import failure_for_code
+            raise (failure_for_code(self.connection_error_code) or CodexFailure('CODEX_NOT_CONNECTED')).as_error()
+        with self.reconnect_lock:
+            if self.stopping:
+                raise CodexFailure('CODEX_INTERRUPTED').as_error()
+            if self.connected:
+                return
+            with self.lock:
+                if self.pending:
+                    raise CodexFailure('CODEX_DISCONNECTED').as_error()
+            self.server.stop()
+            self.start()
+            if not self.connected:
+                failure = classify_failure(CodexUnavailable(self.connection_error or '', code=self.connection_error_code or 'CODEX_DISCONNECTED'))
+                raise failure.as_error()
+            return True
+
+    def _generate_once(self, payload: dict[str, Any], timeout: float) -> str:
+        deadline = time.monotonic() + timeout
         with self.lock:
             self.queued += 1
         try:
@@ -227,7 +326,7 @@ class BusinessCodexRuntime:
             with self.lock:
                 self.queued -= 1
         if not acquired:
-            raise TimeoutError("Codex 正在处理其他请求，请稍后重试。")
+            raise CodexFailure('CODEX_QUEUE_TIMEOUT').as_error()
         # Waiting for a slot is distinct from the model's inference budget.
         deadline = time.monotonic() + timeout
         thread_id = None
@@ -236,7 +335,7 @@ class BusinessCodexRuntime:
                               model=payload.get('model') or '', timeout_seconds=timeout)
         try:
             if not self.connected:
-                raise CodexUnavailable(self.start_error or "Codex 尚未连接。")
+                raise CodexUnavailable("Codex 连接已关闭。", code="CODEX_DISCONNECTED")
             result = self.server.call("thread/start", {
                 "cwd": str(self.workspace), "sandbox": "read-only", "approvalPolicy": "on-request",
                 **({"model": payload['model']} if payload.get('model') else {}),
@@ -298,22 +397,17 @@ class BusinessCodexRuntime:
                                    sum(len(value) for value in pending.parts.values()), pending.completed)
                     raise TimeoutError("Codex 生成超时，原有业务数据保持不变。")
             if pending.error:
-                if re.search(r'model.{0,250}(?:not available|not found|not supported)|model_not_found', pending.error, re.I):
-                    from planner_api.ai import ProviderUnavailableError
-                    raise ProviderUnavailableError(
-                        '所选模型在当前 Codex 连接中不可用，请在对话框切换模型后重试。你的输入和当前计划已保留。',
-                        code='CODEX_MODEL_UNAVAILABLE', diagnostic='Selected model unavailable on the configured Codex provider')
-                raise CodexUnavailable(pending.error)
+                raise classify_failure(pending.error).as_error()
             final = [text for key, text in pending.parts.items() if pending.phases.get(key) == "final_answer"]
             text = "\n\n".join(final or pending.parts.values()).strip()
             if not text:
-                raise CodexUnavailable("Codex 未返回业务结果。")
+                raise CodexUnavailable("Codex 未返回业务结果。", code='CODEX_EMPTY_RESPONSE')
             return text
-        except (CodexUnavailable, RuntimeError) as exc:
-            from planner_api.ai import ClarificationProviderError
-            if isinstance(exc, ClarificationProviderError):
-                raise
-            raise URLError(str(exc)) from exc
+        except (CodexUnavailable, RuntimeError, URLError, OSError) as exc:
+            failure = classify_failure(exc)
+            if pending.host_operation_requested:
+                failure = CodexFailure('CODEX_OUTCOME_UNKNOWN')
+            raise failure.as_error() from None
         finally:
             if thread_id:
                 if not pending.completed and pending.turn_id:

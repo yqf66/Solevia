@@ -423,7 +423,7 @@ export function RouteReviewPage() {
                     <article className={`discussion-message ${message.role.toLowerCase()}${failed ? ' failed' : ''}`} key={message.id}>
                       <strong>{message.role === 'USER' ? '你' : ASSISTANT_NAME}</strong>
                       {failed && <b>这次没有完成，但当前路线没有变化</b>}
-                      {message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content, failed)} animate={!failed && freshAnswer(message.id)} onPresented={() => freshAnswer.markPresented(message.id, message.content)} /> : <p>{message.content}</p>}
+                      {failed ? <ConnectionAwareError message={displayMessageContent(message.content, true)} /> : message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content)} animate={freshAnswer(message.id)} onPresented={() => freshAnswer.markPresented(message.id, message.content)} /> : <p>{message.content}</p>}
                       <AnswerResearch message={message} summary={workspace.latest_research} research={research} />
                       {failed && (
                         <div className="failure-actions">

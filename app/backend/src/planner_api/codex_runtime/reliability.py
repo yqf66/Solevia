@@ -3,22 +3,17 @@ from __future__ import annotations
 
 import copy
 import time
-from urllib.error import HTTPError, URLError
+from urllib.error import URLError
 
-from planner_api.ai import ProviderUnavailableError, _safe_validation_feedback
+from planner_api.ai import _safe_validation_feedback
 from planner_api.model_telemetry import observed_model_call, mark_attempt_failure, model_node
+from .failures import classify_failure, CodexFailure
 
 
 def retryable(error: Exception) -> bool:
-    if isinstance(error, HTTPError):
-        return error.code in {408, 409, 429, 500, 502, 503, 504}
-    # Retrying cannot repair authentication, exhausted quotas or denied permissions.
-    message = str(error).lower()
-    return not any(word in message for word in (
-        "unauthorized", "authentication", "usage limit", "usagelimitexceeded", "quota", "permission denied",
-        "badrequest", "sandboxerror", "forbidden", "invalid_json_schema", "invalid_request_error",
-        "not supported", "invalid params", "budget_exhausted", "未登录", "额度", "尚未连接", "尚未启动",
-    ))
+    if isinstance(error, ValueError):
+        return 'budget_exhausted' not in str(error).lower()
+    return classify_failure(error).retryable
 
 
 @model_node('codex.validated_generation')
@@ -54,8 +49,9 @@ def validated_generation(provider, payload, validate, *, attempts=3):
                 )
             if attempt + 1 < attempts:
                 provider.sleeper(min(0.25 * 2**attempt, max(0, deadline - time.monotonic())))
-    raise ProviderUnavailableError(
-        "这次结果在有限修复后仍未通过检查，已保留你的输入和当前计划。请补充冲突信息或稍后重试。",
-        diagnostic=_safe_validation_feedback(last_error) if last_error else "Codex generation time budget exhausted",
-        code="CODEX_VALIDATION_EXHAUSTED" if isinstance(last_error, ValueError) else "CODEX_GENERATION_UNAVAILABLE",
-    ) from None
+    if last_error is not None and not isinstance(last_error, ValueError):
+        raise classify_failure(last_error).as_error() from None
+    failure = CodexFailure('CODEX_VALIDATION_EXHAUSTED' if last_error else 'CODEX_TIMEOUT').as_error()
+    if last_error:
+        failure.diagnostic = _safe_validation_feedback(last_error)
+    raise failure from None

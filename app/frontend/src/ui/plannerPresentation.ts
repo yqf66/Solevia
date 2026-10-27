@@ -1,10 +1,15 @@
 import { type GoalListItem } from '../api'
 import { normalizeAssistantName } from '../brand/identity'
+import { codexFailureForMessage } from './codexFailures'
 
 export { ASSISTANT_NAME } from '../brand/identity'
 
 export function displayMessageContent(content: string, failed = false) {
   content = normalizeAssistantName(content)
+  if (failed) {
+    const codexFailure = codexFailureForMessage(content)
+    if (codexFailure) return codexFailure.message
+  }
   const looksLikeInternalFailure = /模型暂时没有返回|模型服务|结构化结果|ValidationError|Schema 校验|HTTP \d|API 配置|中转站|provider|gateway/i.test(content)
   // Technical terms can be part of a successful answer (for example Agent
   // provider boundaries). Only redact diagnostics on an actually failed reply.

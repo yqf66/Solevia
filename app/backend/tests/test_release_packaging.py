@@ -15,6 +15,42 @@ import launcher
 import updater
 
 
+def test_patch_version_sync_preserves_readme_and_checks_runtime_versions(tmp_path):
+    import shutil
+    from project_checks import versions
+
+    installed = (ROOT / 'release.json').is_file()
+    product = ROOT if installed else ROOT / 'distribution'
+    app = ROOT / 'app' if installed else ROOT
+    for relative in ['release.json', 'desktop/Program.cs', 'START_HERE.md']:
+        destination = tmp_path / 'distribution' / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(product / relative, destination)
+    for relative in ['backend/pyproject.toml', 'backend/src/planner_api/main.py',
+                     'frontend/package.json', 'services/web-research/package.json',
+                     'services/web-research/package-lock.json']:
+        destination = tmp_path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(app / relative, destination)
+    readme = b'Previous release example: Solevia-Setup-0.2.0-windows-x64.exe\n'
+    (tmp_path / 'README.md').write_bytes(readme)
+    frontend = tmp_path / 'frontend/package.json'
+    frontend.write_bytes(frontend.read_bytes().replace(b'\r\n', b'\n').replace(b'\n', b'\r\n'))
+    release = tmp_path / 'distribution/release.json'
+    config = json.loads(release.read_text())
+    config['version'] = '9.8.7'
+    release.write_text(json.dumps(config), encoding='utf8')
+
+    versions(tmp_path, write=True)
+    versions(tmp_path)
+    assert (tmp_path / 'README.md').read_bytes() == readme
+    assert b'\r\n' in frontend.read_bytes()
+    assert 'AssemblyVersion("9.8.7.0")' in (tmp_path / 'distribution/desktop/Program.cs').read_text()
+    frontend.write_text('{"version":"0.0.0"}', encoding='utf8')
+    with pytest.raises(ValueError, match='Version mismatch'):
+        versions(tmp_path)
+
+
 @pytest.mark.parametrize('name',['../secret.txt','user-data/.env','app/backend/data/planner.db',
                                 'app/.env','app/CON.txt','app/thing.','/absolute','app\\file','app/file.key'])
 def test_private_or_unsafe_paths_are_rejected(name):

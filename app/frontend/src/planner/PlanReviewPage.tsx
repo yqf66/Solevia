@@ -528,7 +528,7 @@ export function PlanReviewPage() {
       <p className="eyebrow">第 3 步 · 安排时间</p>
       <h1>{workspace.capacity_negotiation ? '一起调整可行的时间安排' : workspace.plan ? '继续生成剩余计划' : '准备安排时间'}</h1>
       {workspace.plan && <p>已经完成 {workspace.generated_weeks} / {workspace.generation_target_weeks} 周，只会补齐缺失部分。</p>}
-      {failedMessage && <p className="inline-error" role="alert">{failedMessage}</p>}
+      {failedMessage && <ConnectionAwareError message={failedMessage} code={workspace.generation_job?.error_code ?? undefined} />}
       {capacityFailure && <button className="button secondary" type="button" onClick={() => navigate(`/goals/${workspace.goal_id}/clarify`)}>复核需求与时间</button>}
       {workspace.capacity_negotiation && <CapacityNegotiationPanel workspace={workspace} draft={planFeedbackDrafts.REVISE} busy={isPlanResponding} progress={planDiscussionProgress.message} error={planDiscussionError} preview={planAdjustmentPreview} onDraft={value => setPlanFeedbackDraft('REVISE', value)} onSubmit={() => void submitPlanDiscussion(planFeedbackDrafts.REVISE, 'REVISE')} onPreview={() => void applyPendingAdjustment()} onDiscard={() => void discardPendingAdjustment()} />}
       {!workspace.plan && <div className="planning-strategy-summary"><strong>{workspace.planning_mode === 'EXPLORATORY' ? '先试试看' : '直接固定规划'} · {scheduleTypeLabels[workspace.schedule_type]}</strong><span>{workspace.schedule_type === 'OUTCOME' ? '按弹性成果窗口设置目标与检查点，不指定某天必须行动。' : workspace.schedule_type === 'RHYTHM' ? '按效果所需频率形成稳定节奏，不锁死具体钟点。' : '围绕已确认期限倒排，并在开始前映射到日历。'}</span></div>}
@@ -688,7 +688,7 @@ export function PlanReviewPage() {
                   <article className="discussion-message assistant failed" key={message.id}>
                     <strong>{ASSISTANT_NAME}</strong>
                     <b>这次{message.metadata?.intent === 'APPLY' ? '应用调整' : message.metadata?.intent === 'REVISE' ? '调整分析' : '解释'}没有完成，但当前计划没有变化</b>
-                    <p>{displayMessageContent(message.content, true)}</p>
+                    <ConnectionAwareError message={displayMessageContent(message.content, true)} />
                     <div className="failure-actions">
                       {message.metadata?.intent === 'APPLY' ? (
                         <button type="button" onClick={() => void applyPendingAdjustment()}>重新应用</button>

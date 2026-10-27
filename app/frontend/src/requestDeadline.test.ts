@@ -41,4 +41,16 @@ describe('request connection lifecycle', () => {
     await expect(request('/api/example')).rejects.toThrow('需先完成前置工作项：模拟考试')
     await expect(request('/api/example')).rejects.toMatchObject({ code: 'SCHEDULE_CONFLICT', message: '所选时段与课程重叠' })
   })
+
+  it('preserves Codex recovery categories without exposing raw upstream messages or replaying writes', async () => {
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ detail: {
+      code: 'PLAN_DETAILS_GENERATION_FAILED', provider_code: 'CODEX_QUOTA_EXHAUSTED',
+      message: 'HTTP 429 private-endpoint sk-secret',
+    } }), { status: 503 }))
+    vi.stubGlobal('fetch', fetch)
+    await expect(request('/api/example', { method: 'POST' })).rejects.toMatchObject({
+      code: 'CODEX_QUOTA_EXHAUSTED', message: expect.stringContaining('Codex 可用额度已用完'),
+    })
+    expect(fetch).toHaveBeenCalledOnce()
+  })
 })

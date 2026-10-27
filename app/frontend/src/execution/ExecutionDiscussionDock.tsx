@@ -253,7 +253,8 @@ export function ExecutionDiscussionDock({ goalId }: { goalId: string }) {
             <span>{message.role === 'USER' ? '你' : ASSISTANT_NAME}</span>
             {Array.isArray(message.metadata?.material_titles) && <small className="message-materials">{message.metadata.material_titles.map(String).join(' · ')}</small>}
             {message.generation_status === 'GENERATING' || message.generation_status === 'PENDING' ? <p>正在生成回复…</p>
-              : message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content, message.generation_status === 'FAILED')} animate={message.generation_status === 'SUCCEEDED' && freshAnswer(message.id)} onPresented={() => freshAnswer.markPresented(message.id, message.content)} /> : <p>{message.content}</p>}
+              : message.generation_status === 'FAILED' ? <ConnectionAwareError message={displayMessageContent(message.content, true)} />
+              : message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content)} animate={message.generation_status === 'SUCCEEDED' && freshAnswer(message.id)} onPresented={() => freshAnswer.markPresented(message.id, message.content)} /> : <p>{message.content}</p>}
             <AnswerResearch message={message} summary={workspace?.latest_research ?? null} research={research} />
           </article>)}
           <ResearchProgress research={research} />

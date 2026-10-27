@@ -455,7 +455,8 @@ export function ClarificationPage() {
                     ? <ConnectionAwareError message={actionError} onRetry={() => { initialReplyStartedRef.current = null; setInitialReplyRetryKey(value => value + 1) }} />
                     : message.generation_status === 'PENDING'
                     ? <p><span className="typing-dots" aria-hidden="true"><i /><i /><i /></span>正在理解你的想法，准备从最有帮助的地方聊起…</p>
-                    : message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content, message.generation_status === 'FAILED')} animate={message.generation_status === 'SUCCEEDED' && freshAnswer(message.id)} onPresented={() => freshAnswer.markPresented(message.id, message.content)} /> : <p>{message.content}</p>}
+                    : message.generation_status === 'FAILED' ? <ConnectionAwareError message={displayMessageContent(message.content, true)} />
+                    : message.role === 'ASSISTANT' ? <AssistantAnswer content={displayMessageContent(message.content)} animate={message.generation_status === 'SUCCEEDED' && freshAnswer(message.id)} onPresented={() => freshAnswer.markPresented(message.id, message.content)} /> : <p>{message.content}</p>}
                   <AnswerResearch message={message} summary={workspace.latest_research} research={research} />
                   {message.generation_status === 'FAILED' && messageIndex === workspace.messages.length - 1 && (
                     <div className="failed-message-actions">

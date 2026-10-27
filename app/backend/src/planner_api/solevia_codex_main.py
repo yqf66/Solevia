@@ -46,6 +46,8 @@ async def lifespan(application):
     migration = Config(str(ROOT / "backend/alembic.ini"))
     migration.set_main_option("script_location", str(ROOT / "backend/migrations"))
     await asyncio.to_thread(command.upgrade, migration, "head")
+    from planner_api.plan_generation import recover_interrupted_plan_generation
+    await asyncio.to_thread(recover_interrupted_plan_generation)
     workspace = RUNTIME / "workspace"
     await asyncio.to_thread(prepare_workspace, workspace)
     runtime = BusinessCodexRuntime(workspace)
