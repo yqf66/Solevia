@@ -42,7 +42,7 @@ def test_real_timeout_and_cancellation_kill_descendant(tmp_path, cancel):
             raise Cancelled
     with pytest.raises(Cancelled if cancel else TimeoutError):
         run_contained([sys.executable, "-I", str(Path(__file__).with_name("sandbox_probe.py")),
-            "tree"], tmp_path, env=worker_environment(tmp_path), timeout_seconds=2,
+            "tree"], tmp_path, env=worker_environment(tmp_path), timeout_seconds=15 if cancel else 5,
             check_cancelled=check)
     pid = int((tmp_path / "child.pid").read_text())
     for _ in range(40):

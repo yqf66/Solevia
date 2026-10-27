@@ -14,7 +14,9 @@ folder = Path.cwd()
 worker_ready(folder)
 if sys.argv[1] == "tree":
     child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])
-    (folder / "child.pid").write_text(str(child.pid))
+    marker = folder / "child.pid.tmp"
+    marker.write_text(str(child.pid))
+    marker.replace(folder / "child.pid")
     time.sleep(120)
 elif sys.argv[1] == "memory":
     try:

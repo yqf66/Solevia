@@ -42,14 +42,17 @@ namespace Solevia.Desktop {
 
             var setup=new Panel {Dock=DockStyle.Top,Height=442,Width=704};
             var title=Theme.Text("准备你的 Solevia 工作台",20);title.SetBounds(0,2,650,42);
+            title.Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right;
             var intro=Theme.Text("先安装基础环境。模型连接和额外能力，都可以稍后完成。",10);intro.ForeColor=Theme.Muted;intro.SetBounds(0,52,690,27);intro.Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right;
             codexCard.SetBounds(0,96,704,112);codexCard.Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right;
             var question=Theme.Text("发现本机 Codex，是否连接作为 Solevia 内核？",11,true);question.SetBounds(18,15,660,27);
+            question.Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right;
             codexChoice.Font=Font;codexChoice.SetBounds(18,58,650,28);
             codexCard.Controls.AddRange(new Control[]{question,codexChoice});
             connectionHint.SetBounds(0,224,704,66);connectionHint.Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right;connectionHint.ForeColor=Theme.Muted;
             help.SetBounds(0,306,144,36);detect.SetBounds(156,306,116,36);advanced.SetBounds(284,306,184,36);
             shortcuts.Font=Font;shortcuts.SetBounds(0,368,600,26);
+            shortcuts.Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right;
             setup.Height=410;
             setup.Controls.AddRange(new Control[]{title,intro,codexCard,connectionHint,help,detect,advanced,shortcuts});
             connectionPage.Controls.Add(advancedPanel);connectionPage.Controls.Add(setup);
@@ -61,6 +64,7 @@ namespace Solevia.Desktop {
             network.SetBounds(0,72,330,28);source.SetBounds(346,72,358,28);source.Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right;
             advancedPanel.Controls.AddRange(new Control[]{pathLabel,location,browse,network,source});
             var capabilityContent=new TableLayoutPanel {Dock=DockStyle.Top,Height=444,ColumnCount=1,RowCount=5,Margin=Padding.Empty};
+            capabilityContent.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             capabilityContent.RowStyles.Add(new RowStyle(SizeType.Absolute,42));capabilityContent.RowStyles.Add(new RowStyle(SizeType.Absolute,64));
             capabilityContent.RowStyles.Add(new RowStyle(SizeType.Absolute,244));capabilityContent.RowStyles.Add(new RowStyle(SizeType.Absolute,50));capabilityContent.RowStyles.Add(new RowStyle(SizeType.Percent,100));
             var capabilityTitle=Theme.Text("按需添一点能力",20);capabilityTitle.Dock=DockStyle.Fill;

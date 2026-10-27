@@ -7,6 +7,7 @@ from pathlib import Path
 from threading import RLock
 import os
 import tempfile
+import time
 
 from dotenv import set_key
 from fastapi import APIRouter, HTTPException, Request
@@ -18,6 +19,17 @@ from planner_api.config import get_settings, settings_env_file
 settings_lock = RLock()
 
 
+def _retry_settings_write(operation):
+    """Windows scanners can briefly hold even a closed settings file."""
+    for attempt in range(6):
+        try:
+            return operation()
+        except PermissionError as error:
+            if getattr(error, "winerror", None) not in {5, 32, 33} or attempt == 5:
+                raise
+            time.sleep(0.05 * (2 ** attempt))
+
+
 def save_values(path: Path, values: dict[str, str]):
     """Publish a whole settings update, so readers never see half a profile."""
     with settings_lock:
@@ -27,10 +39,10 @@ def save_values(path: Path, values: dict[str, str]):
             with os.fdopen(fd, "w", encoding="utf-8") as handle:
                 handle.write(path.read_text(encoding="utf-8") if path.exists() else "")
             for key, value in values.items():
-                set_key(temporary, key, value, quote_mode="auto")
-            os.replace(temporary, path)
+                _retry_settings_write(lambda key=key, value=value: set_key(temporary, key, value, quote_mode="auto"))
+            _retry_settings_write(lambda: os.replace(temporary, path))
         finally:
-            Path(temporary).unlink(missing_ok=True)
+            _retry_settings_write(lambda: Path(temporary).unlink(missing_ok=True))
         get_settings.cache_clear()
 
 

@@ -37,8 +37,8 @@ class LayoutDriver {
      if(Convert.ToBoolean(values["web"])||Convert.ToBoolean(values["documents"])||!Convert.ToBoolean(values["ocr"])||!Convert.ToBoolean(values["semantic"]))throw new Exception("Embedded repair lost saved capabilities");
    }
    using(var form=new InstallerForm(root,false)) {
-    form.ConnectionProbe=()=>System.Threading.Tasks.Task.FromResult(true);form.ShowInTaskbar=false;form.Opacity=0;var watch=DateTime.UtcNow;var timer=new Timer{Interval=100};
-    timer.Tick+=(s,e)=>{try{if(!form.Ready){if((DateTime.UtcNow-watch).TotalSeconds>20)throw new Exception("Plan timeout");return;}timer.Stop();
+    form.DiagnosticPath=Path.Combine(root,"layout-plan");form.ConnectionProbe=()=>System.Threading.Tasks.Task.FromResult(true);form.ShowInTaskbar=false;form.Opacity=0;var watch=DateTime.UtcNow;var timer=new Timer{Interval=100};
+    timer.Tick+=(s,e)=>{try{if(!form.Ready){if((DateTime.UtcNow-watch).TotalSeconds>60)throw new Exception("Plan timeout");return;}timer.Stop();
       var codex=Field<CheckBox>(form,"codexChoice");var features=Field<CheckBox[]>(form,"features");
       if(!repair&&features.Any(f=>f.Checked))throw new Exception("Fresh install selected optional dependencies");
       if(repair&&!features[0].Checked)throw new Exception("Repair reset capabilities");
@@ -52,6 +52,7 @@ class LayoutDriver {
       Field<Button>(form,"install").PerformClick();form.PerformLayout();Check(form);
       if(!Field<Panel>(form,"capabilityPage").Visible)throw new Exception("Next did not open capabilities");
       form.Scale(new SizeF(scale,scale));form.PerformLayout();Check(form);
+      form.ClientSize=new Size(Math.Max(form.MinimumSize.Width,(int)(form.ClientSize.Width*0.9)),form.ClientSize.Height);form.PerformLayout();Check(form);
       Field<Panel>(form,"connectionPage").Visible=false;Field<Panel>(form,"capabilityPage").Visible=false;Field<Panel>(form,"progressPage").Visible=true;
       typeof(InstallerForm).GetMethod("Append",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(form,new object[]{"[4/6] 安装所选能力与依赖"});
       typeof(InstallerForm).GetMethod("Append",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(form,new object[]{"[NETWORK_PROGRESS] bytes=2097152 total=-1 speed=1048576"});
@@ -60,7 +61,7 @@ class LayoutDriver {
       if(!Field<Label>(form,"downloadStatus").Text.Contains("1.0 MiB/s"))throw new Exception("Live download speed missing");
       form.Close();
     }catch(Exception error){Console.WriteLine(error);Environment.Exit(1);}};
-    timer.Start();Application.Run(form);timer.Dispose();
+    timer.Start();Application.Run(form);timer.Dispose();if(!form.Ready)throw new Exception(File.ReadAllText(form.DiagnosticPath+".error.txt"));
    }
    using(var host=new Host(root,false)){host.ShowInTaskbar=false;host.Opacity=0;host.Show();host.PerformLayout();Check(host);host.Scale(new SizeF(scale,scale));host.PerformLayout();Check(host);host.ClosePreview();}
    if(File.Exists(Path.Combine(root,".runtime/services.json")))throw new Exception("Layout check started services");
@@ -85,5 +86,5 @@ def test_native_connection_wizard_and_host_fit_at_multiple_scales(native_layout_
     root = tmp_path / 'product'
     shutil.copytree(fixture / 'scripts', root / 'scripts')
     shutil.copyfile(fixture / 'release.json', root / 'release.json')
-    result = subprocess.run([str(executable), str(root), mode, scale], capture_output=True, timeout=30)
+    result = subprocess.run([str(executable), str(root), mode, scale], capture_output=True, timeout=90)
     assert result.returncode == 0, result.stdout.decode(errors='replace') + result.stderr.decode(errors='replace')

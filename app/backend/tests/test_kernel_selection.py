@@ -128,6 +128,8 @@ def test_research_readiness_follows_selected_kernel(profile, monkeypatch):
     path, manager = profile
     configure_api(path)
     save_values(path, {"WEB_SEARCH_PROVIDER": "open_websearch"})
+    monkeypatch.setenv("WEB_SEARCH_PROVIDER", "open_websearch")
+    get_settings.cache_clear()
     created = []
 
     class Ready:
@@ -154,6 +156,61 @@ def test_research_readiness_follows_selected_kernel(profile, monkeypatch):
     assert readiness.snapshot()["provider"] == "codex"
     assert len(created) == 2
     readiness.stop()
+
+
+@pytest.mark.parametrize("stage", ["stage", "publish"])
+def test_settings_retry_windows_locks_without_exposing_partial_profile(tmp_path, monkeypatch, stage):
+    import planner_api.kernel as kernel
+    from dotenv import dotenv_values
+
+    path = tmp_path / ".env"
+    path.write_text("# keep this comment\nLLM_MODEL=original\n", encoding="utf-8")
+    before = path.read_bytes()
+    attempts = []
+    target = "set_key" if stage == "stage" else "replace"
+    owner = kernel if stage == "stage" else kernel.os
+    original = getattr(owner, target)
+
+    def briefly_locked(*args, **kwargs):
+        if stage == "publish" and args[1] != path:
+            return original(*args, **kwargs)
+        attempts.append(1)
+        assert path.read_bytes() == before
+        if len(attempts) == 1:
+            error = PermissionError("temporarily locked")
+            error.winerror = 32
+            raise error
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(owner, target, briefly_locked)
+    monkeypatch.setattr(kernel.time, "sleep", lambda _: None)
+    kernel.save_values(path, {"LLM_MODEL": "new model", "LLM_BASE_URL": "https://example.test/v1"})
+    values = dotenv_values(path)
+    assert values["LLM_MODEL"] == "new model" and values["LLM_BASE_URL"] == "https://example.test/v1"
+    assert path.read_text(encoding="utf-8").startswith("# keep this comment\n")
+    assert len(attempts) >= 2 and not list(tmp_path.glob(".solevia-settings-*"))
+
+
+def test_settings_permanent_lock_preserves_original_and_has_bounded_retries(tmp_path, monkeypatch):
+    import planner_api.kernel as kernel
+
+    path = tmp_path / ".env"
+    path.write_text("LLM_MODEL=original\n", encoding="utf-8")
+    before = path.read_bytes()
+    attempts = []
+
+    def locked(*args, **kwargs):
+        attempts.append(1)
+        error = PermissionError("locked")
+        error.winerror = 5
+        raise error
+
+    monkeypatch.setattr(kernel, "set_key", locked)
+    monkeypatch.setattr(kernel.time, "sleep", lambda _: None)
+    with pytest.raises(PermissionError):
+        kernel.save_values(path, {"LLM_MODEL": "new"})
+    assert path.read_bytes() == before and len(attempts) == 6
+    assert not list(tmp_path.glob(".solevia-settings-*"))
 
 
 def test_explicit_connect_preserves_unconfigured_mode_on_failure_and_can_retry(profile):

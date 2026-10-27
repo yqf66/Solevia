@@ -19,8 +19,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 5401,
-      "sha256": "e6196ca5cbe85ec46842627eaf39906858109b003a82380d8bfc8663da517b4d"
+      "bytes": 5573,
+      "sha256": "a33bdb493e8e70ea8ba225df929924a76fd012492c3e02ff29ffd7ea91541695"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -714,8 +714,8 @@
     },
     {
       "path": "app/backend/src/planner_api/kernel.py",
-      "bytes": 7619,
-      "sha256": "b2c2d63038e0407e161f77af96d68014c1d33dc63801828677bf1bda79b6eeca"
+      "bytes": 8136,
+      "sha256": "cf525cebca19ac766f83868fd364034e452a02ebb74ddc842eff90a88fb0ca29"
     },
     {
       "path": "app/backend/src/planner_api/kernel_readiness.py",
@@ -1354,8 +1354,8 @@
     },
     {
       "path": "app/backend/tests/sandbox_probe.py",
-      "bytes": 1553,
-      "sha256": "5d4f6437858f29c0af45082d1a8ab5a7dc7d3d8162a9db20909d9238511520dc"
+      "bytes": 1618,
+      "sha256": "866fab590a2a25738716a2deacb3f9c799399697c86268bae151c1071574d666"
     },
     {
       "path": "app/backend/tests/test_adjustment_reentry.py",
@@ -1489,8 +1489,8 @@
     },
     {
       "path": "app/backend/tests/test_desktop_layout.py",
-      "bytes": 7872,
-      "sha256": "4ccb83da461a9d4f39c99d82c52c90c9b46ed4bfcb6c9259f84afe5a22d0d3dd"
+      "bytes": 8168,
+      "sha256": "ca87e65f51e7d1c2bc1b560f1d908992d15ae2f3853f80869fb5a55028b399fc"
     },
     {
       "path": "app/backend/tests/test_e2e_journey.py",
@@ -1584,8 +1584,8 @@
     },
     {
       "path": "app/backend/tests/test_kernel_selection.py",
-      "bytes": 6976,
-      "sha256": "0bb0b2763d9ff919faf906a6a61785e7750eea9b2510a1cca44c5b245ad9b10a"
+      "bytes": 9348,
+      "sha256": "779a1f27b0b364e5074cc62aac25bc3027d197dbe12d471e0949afcb8f2ec89d"
     },
     {
       "path": "app/backend/tests/test_knowledge.py",
@@ -2029,8 +2029,8 @@
     },
     {
       "path": "app/backend/tests/test_worker_sandbox.py",
-      "bytes": 4844,
-      "sha256": "7db81b82326c234e23bf97b96ecbba7bd66f38b4bb2246d16c8d7419c437d7b4"
+      "bytes": 4862,
+      "sha256": "2ccbebd6caf620a3010c11b6fa39c4a44dac3f4c54b111875d7890733d08c396"
     },
     {
       "path": "app/backend/tools/setup_material_models.py",
@@ -3404,8 +3404,8 @@
     },
     {
       "path": "desktop/InstallerLayout.cs",
-      "bytes": 16887,
-      "sha256": "593a502e1aa988ae441ee27d019caf20b701e22465e02b0f6f53cf9a7ed99469"
+      "bytes": 17225,
+      "sha256": "584af9a5d8870f97df787d3d0b07583718ba9af2e69e06a3a8c47981dfc4b441"
     },
     {
       "path": "desktop/Package.cs",
