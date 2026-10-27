@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/solevia-logo-header-final.gif" width="180" alt="Solevia Logo" />
+  <img src="app/frontend/public/solevia-mark.png" width="88" alt="Solevia Logo" />
 </p>
 
 <h1 align="center">Solevia · 足下</h1>

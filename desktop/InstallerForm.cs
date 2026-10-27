@@ -26,7 +26,7 @@ namespace Solevia.Desktop {
         readonly Button install=Theme.Button("开始安装",true), close=Theme.Button("取消"), details=Theme.Button("查看详细日志");
         readonly TableLayoutPanel rows=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=1,RowCount=4,AutoScroll=true};
         readonly Panel logPanel=new Panel {Dock=DockStyle.Fill,Visible=false};
-        readonly Panel progressPage=new Panel {Dock=DockStyle.Fill,Visible=false,Padding=new Padding(0,10,0,0)};
+        readonly Panel progressPage=new Panel {Dock=DockStyle.Fill,Visible=false,AutoScroll=true,Padding=new Padding(0,10,0,0)};
         readonly Label[] stepLabels=new Label[6];
         readonly Label elapsedLabel=Theme.Text("正在准备安装…",10);
         readonly System.Windows.Forms.Timer elapsedTimer=new System.Windows.Forms.Timer {Interval=1000};

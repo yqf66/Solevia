@@ -59,8 +59,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 21349,
-      "sha256": "6f4f1ad5f2ca3fb87fa7e34a0516f094ec589e26bfdabd56d7d75a27d62b4391"
+      "bytes": 21343,
+      "sha256": "57fdd22f5723700513532418ec7ce7a2e8ae17d9d5922354991b8b73a07ebbe6"
     },
     {
       "path": "SECURITY.md",
@@ -3399,8 +3399,8 @@
     },
     {
       "path": "desktop/InstallerForm.cs",
-      "bytes": 16044,
-      "sha256": "3374f13ddf1854a7d0783c38d5611a934c07c396471ab893c3acd5d6271f894c"
+      "bytes": 16060,
+      "sha256": "e63a8a48c8d79016f59d31c38d156385c4e06f78a9aa59c78992335e51e6b401"
     },
     {
       "path": "desktop/InstallerLayout.cs",
